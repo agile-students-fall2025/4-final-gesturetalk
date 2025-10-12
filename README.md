@@ -1,4 +1,26 @@
-# Project Repository
+# gesturetalk
+
+# Product Vision Statement
+- Product Owner decides this
+
+# Team Members
+- [Iva Park](https://github.com/ivapark)
+- [Jasmine Fan](https://github.com/jasmine7310)
+- [Terry Cao](https://github.com/cao-exe)
+- [Walker Tupman](https://github.com/bestole)
+- [Venetia Liu](https://github.com/venetialiu)
+
+# Project History
+- a short history of how the project came to be 
+
+# How to Contribute
+- information about how to contribute to the project (i.e. a link to the [CONTRIBUTING.md](./CONTRIBUTING.md) document)
+
+# How to Build and Test 
+- WIP, PROJECT NOT THERE YET.
+
+# Additional Information
+- links to any additional Markdown documents or web pages that may be relevant reading about the project
 
 This repository will be used for team projects.
 
