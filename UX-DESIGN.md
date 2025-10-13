@@ -9,7 +9,7 @@ Our site prototype utilizes an easily readable, familiar GUI that someone hard o
       
 [Link to App Map Source](https://www.figma.com/board/mXDyGe4CLLr3FmKj9eIAta/gesturetalk-App-Map?node-id=0-1&t=K30FH86JzFjKx8mg-1) 
        
-<img width="796" height="692" alt="App Map" src="https://github.com/user-attachments/assets/83d35767-f7f3-49cb-8200-32319a81b2f4" />   
+<img width="796" height="692" alt="App Map" src="ux-design/gt-app-map.png" />   
                   
 Our web app will have 5 distinct pages as seen above. A user upon opening the app for the first time will be prompted to log-in / sign-up. If a logged-in user has cookies enabled, they will be directed to the home page immediately where they can join or create a gesturetalk meeting. A logged-in user from the home page can also access their profile where they will be able to change information like their screen name, etc.. Creating or joining a meeting will redirect the user to a meeting page.
 
@@ -18,22 +18,22 @@ Our web app will have 5 distinct pages as seen above. A user upon opening the ap
 [Link to Wireframe Source](https://www.figma.com/design/CYLPLEl7Iq3l6b4s67Qb20/gesturetalk-Wireframe-and-Prototype?node-id=0-1&t=zZn2rYZmLR8RMAFH-1)
 
 ### Sign In Page
-<img width="393" height="852" alt="sign-in" src="https://github.com/user-attachments/assets/70b586d7-f952-468c-a356-16fe71b0ad2f" />
+<img width="393" height="852" alt="sign-in" src="ux-design/gt-sign-in.png" />
        
 ### Sign Up Page
-<img width="393" height="852" alt="sign-up" src="https://github.com/user-attachments/assets/ea4b1fad-d31d-4dd8-be49-f4e14c4226ed" />
+<img width="393" height="852" alt="sign-up" src="ux-design/gt-sign-up.png" />
 
 ### Home Page
-<img width="393" height="852" alt="home" src="https://github.com/user-attachments/assets/c8772373-6703-4782-9d3b-f1233b064775" />
+<img width="393" height="852" alt="home" src="ux-design/gt-home.png" />
        
 ### Profile Page
-<img width="393" height="852" alt="profile" src="https://github.com/user-attachments/assets/4e5e1952-f34b-43b1-9014-3d1740e1b216" />
+<img width="393" height="852" alt="profile" src="ux-design/gt-profile.png" />
 
 ### Join Meeting Page
-<img width="393" height="852" alt="join-meeting" src="https://github.com/user-attachments/assets/24f2c4ff-ec99-4c7a-94a5-1e574dc20a61" />
+<img width="393" height="852" alt="join-meeting" src="ux-design/gt-join-meeting.png" />
 
 ### Meeting Page
-<img width="393" height="852" alt="meeting" src="https://github.com/user-attachments/assets/2eaff23c-ceee-4fb1-aa37-085fa0a86ef5" />
+<img width="393" height="852" alt="meeting" src="ux-design/gt-meeting.png" />
 
 
 
