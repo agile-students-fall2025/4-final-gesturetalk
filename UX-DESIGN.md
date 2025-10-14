@@ -19,21 +19,33 @@ Our web app will have 5 distinct pages as seen above. A user upon opening the ap
 
 ### Sign In Page
 <img width="393" height="852" alt="sign-in" src="ux-design/gt-sign-in.png" />
+
+The sign-in page is the first page a user will see when they open gesturetalk. This page will allow account holders to sign in using their credentials. If the user does not have an account, they can click the "Sign Up" button to be redirected to the sign-up page.
        
 ### Sign Up Page
 <img width="393" height="852" alt="sign-up" src="ux-design/gt-sign-up.png" />
 
+The sign-up page will allow new users to create an account by entering a Username and Password. Once the user clicks "Sign Up", they will be redirected to the home page and automatically logged in.
+
 ### Home Page
 <img width="393" height="852" alt="home" src="ux-design/gt-home.png" />
+
+The home page is where a logged-in user will be directed to. From here, they can either create a new meeting or be redirected to the join meeting page. The user can also access their profile from this page.
        
 ### Profile Page
 <img width="393" height="852" alt="profile" src="ux-design/gt-profile.png" />
 
+The profile page will allow a logged-in user to view and edit their profile information as well as logout. The user can change their profile picture, display name, email, and password. Once the user clicks the back button, changes will be saved and they will be redirected to the home page. 
+
 ### Join Meeting Page
 <img width="393" height="852" alt="join-meeting" src="ux-design/gt-join-meeting.png" />
 
+The join meeting page will allow a logged-in user to enter a meeting code to join an existing meeting. Once the user clicks "Join Meeting", they will be redirected to the meeting page.
+
 ### Meeting Page
 <img width="393" height="852" alt="meeting" src="ux-design/gt-meeting.png" />
+
+The meeting page is where the user will be able to see other participants in the meeting as well as a live sign language transcription. The user can also leave the meeting by clicking the "End Call" button which will redirect them to the home page.
 
 
 
