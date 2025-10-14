@@ -5,8 +5,8 @@
 
 # Team Members
 - [Iva Park](https://github.com/ivapark)
-- [Jasmine Fan](https://github.com/jasmine7310)
-- [Terry Cao](https://github.com/cao-exe)
+- [Jasmine Fan](https://github.com/jasmine7310) (*Product Owner*)
+- [Terry Cao](https://github.com/cao-exe) (*Scrum Master*)
 - [Walker Tupman](https://github.com/bestole)
 - [Venetia Liu](https://github.com/venetialiu)
 
