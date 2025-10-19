@@ -11,8 +11,7 @@ Our site prototype utilizes an easily readable, familiar GUI that someone hard o
        
 <img width="796" height="692" alt="App Map" src="ux-design/gt-app-map.png" />   
                   
-Our web app will have 5 distinct pages as seen above. A user upon opening the app for the first time will be prompted to log-in / sign-up. If a logged-in user has cookies enabled, they will be directed to the home page immediately where they can join or create a gesturetalk meeting. A logged-in user from the home page can also access their profile where they will be able to change information like their screen name, etc.. Creating or joining a meeting will redirect the user to a meeting page.
-
+The GestureTalk web application is composed of five main pages: Sign Up / Login, Home, Call History, Profile, and Meeting. When users first access the app, they are prompted to either sign up or log in. Returning users with cookies enabled are automatically redirected to the Home page. From the Home page, users can join or create a GestureTalk meeting, view their Call History, access their Profile, or enter an ongoing Meeting. The Call History page provides a record of past meetings and includes access to a Translation Log that stores the text translations from those sessions. This structure ensures a clear and intuitive navigation flow, connecting user authentication, meeting participation, and activity tracking in a streamlined experience.
 ## Wireframe
        
 [Link to Wireframe Source](https://www.figma.com/design/CYLPLEl7Iq3l6b4s67Qb20/gesturetalk-Wireframe-and-Prototype?node-id=0-1&t=zZn2rYZmLR8RMAFH-1)
