@@ -28,8 +28,8 @@ The GestureTalk web application is composed of five main pages: Sign Up / Login,
 ### Sign Up Page Input
 <img width="393" height="852" alt="sign-up" src="ux-design/gt-signup-input.png" />
 
-### Log In Page Failed 
-<img width="393" height="852" alt="sign-up" src="ux-design/gt-login-failed.png" />
+### Log In Page Invalid 
+<img width="393" height="852" alt="sign-up" src="ux-design/gt-login-invalid.png" />
 
 ### Log In Page Input
 <img width="393" height="852" alt="sign-up" src="ux-design/gt-login-input.png" />
@@ -46,17 +46,32 @@ The GestureTalk web application is composed of five main pages: Sign Up / Login,
 ### Call History Page
 <img width="393" height="852" alt="profile" src="ux-design/gt-call-history.png" />
 
-### Upload Picture Page
-<img width="393" height="852" alt="profile" src="ux-design/gt-upload-picture.png" />
+### Transcription Log Page
+<img width="393" height="852" alt="profile" src="ux-design/gt-translation-log.png" />
 
-### Upload Picture Page
-<img width="393" height="852" alt="profile" src="ux-design/gt-upload-picture.png" />
+### Join Meeting Page Blank
+<img width="393" height="852" alt="profile" src="ux-design/gt-join-meeting-blank.png" />
 
-### Join Meeting Page
-<img width="393" height="852" alt="join-meeting" src="ux-design/gt-join-meeting.png" />
+### Join Meeting Page Invalid
+<img width="393" height="852" alt="profile" src="ux-design/gt-join-meeting-invalid.png" />
+
+### Join Meeting Page Input
+<img width="393" height="852" alt="join-meeting" src="ux-design/gt-join-meeting-input.png" />
+
+### Create Meeting Page
+<img width="393" height="852" alt="join-meeting" src="ux-design/gt-create-meeting.png" />
 
 ### Meeting Page
-<img width="393" height="852" alt="meeting" src="ux-design/gt-meeting.png" />
+<img width="393" height="852" alt="join-meeting" src="ux-design/gt-meeting.png" />
+
+### Meeting Details Page
+<img width="393" height="852" alt="join-meeting" src="ux-design/gt-meeting-details.png" />
+
+### Edit Meeting Name Page
+<img width="393" height="852" alt="join-meeting" src="ux-design/gt-edit-meeting-name.png" />
+
+### Meeting Renamed Page
+<img width="393" height="852" alt="meeting" src="ux-design/gt-meeting-renamed.png" />
 
 
 
