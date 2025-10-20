@@ -16,36 +16,47 @@ The GestureTalk web application is composed of five main pages: Sign Up / Login,
        
 [Link to Wireframe Source](https://www.figma.com/design/CYLPLEl7Iq3l6b4s67Qb20/gesturetalk-Wireframe-and-Prototype?node-id=0-1&t=zZn2rYZmLR8RMAFH-1)
 
-### Sign In Page
-<img width="393" height="852" alt="sign-in" src="ux-design/gt-sign-in.png" />
-
-The sign-in page is the first page a user will see when they open gesturetalk. This page will allow account holders to sign in using their credentials. If the user does not have an account, they can click the "Sign Up" button to be redirected to the sign-up page.
+### Log In / Sign Up Page
+<img width="393" height="852" alt="sign-in" src="ux-design/gt-login-signup.png" />
        
-### Sign Up Page
-<img width="393" height="852" alt="sign-up" src="ux-design/gt-sign-up.png" />
+### Sign Up Page Blank
+<img width="393" height="852" alt="sign-up" src="ux-design/gt-signup-blank.png" />
 
-The sign-up page will allow new users to create an account by entering a Username and Password. Once the user clicks "Sign Up", they will be redirected to the home page and automatically logged in.
+### Sign Up Page Invalid
+<img width="393" height="852" alt="sign-up" src="ux-design/gt-signup-invalid.png" />
+
+### Sign Up Page Input
+<img width="393" height="852" alt="sign-up" src="ux-design/gt-signup-input.png" />
+
+### Log In Page Failed 
+<img width="393" height="852" alt="sign-up" src="ux-design/gt-login-failed.png" />
+
+### Log In Page Input
+<img width="393" height="852" alt="sign-up" src="ux-design/gt-login-input.png" />
 
 ### Home Page
 <img width="393" height="852" alt="home" src="ux-design/gt-home.png" />
-
-The home page is where a logged-in user will be directed to. From here, they can either create a new meeting or be redirected to the join meeting page. The user can also access their profile from this page.
        
 ### Profile Page
 <img width="393" height="852" alt="profile" src="ux-design/gt-profile.png" />
 
-The profile page will allow a logged-in user to view and edit their profile information as well as logout. The user can change their profile picture, display name, email, and password. Once the user clicks the back button, changes will be saved and they will be redirected to the home page. 
+### Upload Picture Page
+<img width="393" height="852" alt="profile" src="ux-design/gt-upload-picture.png" />
+
+### Call History Page
+<img width="393" height="852" alt="profile" src="ux-design/gt-call-history.png" />
+
+### Upload Picture Page
+<img width="393" height="852" alt="profile" src="ux-design/gt-upload-picture.png" />
+
+### Upload Picture Page
+<img width="393" height="852" alt="profile" src="ux-design/gt-upload-picture.png" />
 
 ### Join Meeting Page
 <img width="393" height="852" alt="join-meeting" src="ux-design/gt-join-meeting.png" />
 
-The join meeting page will allow a logged-in user to enter a meeting code to join an existing meeting. Once the user clicks "Join Meeting", they will be redirected to the meeting page.
-
 ### Meeting Page
 <img width="393" height="852" alt="meeting" src="ux-design/gt-meeting.png" />
-
-The meeting page is where the user will be able to see other participants in the meeting as well as a live sign language transcription. The user can also leave the meeting by clicking the "End Call" button which will redirect them to the home page.
-
 
 
 
