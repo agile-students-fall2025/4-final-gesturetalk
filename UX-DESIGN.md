@@ -1,9 +1,9 @@
 # User Experience Design for gesturetalk
 
 ## Site Prototype 
-[Link to Site Prototype](https://www.figma.com/proto/CYLPLEl7Iq3l6b4s67Qb20/gesturetalk-Wireframe-and-Prototype?node-id=6-2&p=f&t=63xqQjh0fmtifJg9-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=6%3A2&show-proto-sidebar=1&device-frame=0)
+[Link to Site Prototype](https://www.figma.com/proto/CYLPLEl7Iq3l6b4s67Qb20/gesturetalk-Wireframe-and-Prototype?node-id=174-120&t=be6AD7D5J06uhTgD-1&scaling=scale-down&content-scaling=fixed&page-id=0%3A1)
 
-Our site prototype utilizes an easily readable, familiar GUI that someone hard of hearing could use even if they are not familiar with technology. We hoped to make it as easy as possible for users to join/create a meeting, as the point of our app is to provide more accessibility to hard of hearing users -- not less. It follows the design principles of similar video calling apps like Zoom. There are two "flows" in our site prototype. Flow 1 relates to a user who has already signed up and is still logged in. It takes the user directly to the home page where they can start or join a meeting. Users will also be able to access the profile page when logged in where they can change information like their picture, screen namem etc.. Flow 2 relates to a user who needs to sign-in or sign-up before accessing gesturetalk. All users will be required to make an account in order to use gesturetalk. 
+Our site prototype utilizes an easily readable, familiar GUI that someone hard of hearing could use even if they are not familiar with technology. We hoped to make it as easy as possible for users to join/create a meeting, as the point of our app is to provide more accessibility to hard of hearing users -- not less. It follows the design principles of similar video calling apps like Zoom. A user who has already signed up and is still logged in will be taken directly to the home page, where they can start or join a meeting. Users will also be able to access the profile page when logged in where they can change information like their picture, screen name, password, email etc.. Users will also be able to access a call history where they can see the translation logs of past meetings. All users will be required to make an account/login in order to use gesturetalk. 
 
 ## App Map
       
