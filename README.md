@@ -17,7 +17,7 @@
 - [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 # How to Build and Test 
-- WIP, PROJECT NOT THERE YET.
+- WIP, PROJECT NOT THERE YET...
 
 # Additional Information
 - [UX-DESIGN.md](./UX-DESIGN.md)
