@@ -1,0 +1,77 @@
+.translation-log {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 2rem auto;
+  background: linear-gradient(135deg, #f4f6ff, #fefaff);
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', sans-serif;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.back-btn:hover {
+  text-decoration: underline;
+}
+
+.translation-log h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.log-container {
+  background-color: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  max-height: 450px;            /* ✅ makes it scrollable */
+  overflow-y: auto;             /* ✅ scrolls down when overflow */
+}
+
+.log-entry {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.sender {
+  background: #fff6fa;
+}
+
+.receiver {
+  background: #f5f9ff;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.display-name {
+  font-weight: 600;
+  color: #555;
+}
+
+.timestamp {
+  font-weight: 500;
+  color: #888;
+}
+
+.entry-text {
+  color: #333;
+  line-height: 1.5;
+  font-size: 0.95rem;
+  margin-top: 4px;
+  white-space: pre-line;
+}
