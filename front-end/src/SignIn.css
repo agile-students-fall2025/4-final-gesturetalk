@@ -1,3 +1,88 @@
-#signin-content{
-    background: conic-gradient(from 200deg at 68.75% 39.99%, #ABC4FF 3.663443550467491deg, #EDF2FB 60.1590621471405deg, #EDF1FB 130.93648552894592deg, #EA9CD9 199.03846979141235deg);
+@import url(https://fonts.google.com/specimen/Narnoor);
+
+#signin-content {
+    background-image: url('/public/signInUpBg.png');
+    background-size: cover;
+    background-position: center;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#signin-form {
+    width: 30%;
+    height: 600px;
+    flex-shrink: 0;
+    border-top-left-radius: 91px;
+    border-top-right-radius: 91px;
+    opacity: 0.87;
+    background: radial-gradient(61.41% 43.29% at 50% 40.32%, rgba(255, 255, 255, 0.00) 55.77%, rgba(255, 255, 255, 0.73) 100%);
+    box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+}
+
+p, input, a {
+    font-family: 'Narnoor', serif;
+}
+
+#sub{
+    margin-top: 8%;
+    font-size: 20px;
+}
+
+img{
+    margin-top: 10%;
+}
+
+#hook{
+    margin-top: 1%;
+    margin-bottom: 5%;
+    font-size: 26px;
+}
+
+input{
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 10%;
+    padding-right: 10%;
+    margin-bottom: 5%;
+    border-radius: 10px;
+    background: radial-gradient(50% 50% at 50% 50%, rgba(215, 220, 240, 0.00) 0%, rgba(255, 255, 255, 0.54) 100%);
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
+    color: black;
+    font-family: 'Narnoor', serif;
+    vertical-align: middle;
+    font-size: 18px;
+}
+
+input[type="username"]{
+    margin-top: 20%;
+}
+
+input::placeholder{
+    color: black;
+    font-size: 18px;
+}
+
+button{
+    padding: 15px;
+    padding-left: 20%;
+    padding-right: 20%;
+    background-color: black;
+    color: white;
+    border-radius: 10px;
+    margin-top: 30px;
+}
+
+a{
+    text-decoration: underline;
+    margin-top: 10px;
+    cursor: pointer;
 }
