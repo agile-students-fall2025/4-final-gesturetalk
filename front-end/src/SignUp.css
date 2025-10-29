@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=MuseoModerno:wght@100;300;400;500;700;900&display=swap');
+
+#signup-content {
+    background-image: url('/public/signInUpBg.png');
+    background-size: cover;
+    background-position: center;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-direction: row;
+    overflow: hidden;
+    position: relative;
+}
+
+#signup-form{
+    width: 30%;
+    height: 800px;
+    flex-shrink: 0;
+    border-radius: 91px;
+    opacity: 0.87;
+    background: radial-gradient(61.41% 43.29% at 50% 40.32%, rgba(255, 255, 255, 0.00) 55.77%, rgba(255, 255, 255, 0.73) 100%);
+    box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    overflow: hidden;
+    margin-right: 5%;
+}
+
+h1{
+    margin-top: 8%;
+    font-size: 48px;
+    font-family: 'MuseoModerno', sans-serif;
+    font-style: normal;
+}
+
+#dNameInput{
+    margin-top: 5%;
+}
+
+#signUpBtn{
+    margin-bottom: 10px;
+}
+
+#googleBtn{
+    margin-top: 10px;
+    padding-left: 15.5%;
+    padding-right: 15.5%;
+    margin-bottom: 30px;
+}
+
+#signup-content img {
+    position: absolute;
+    top: 0px;   
+    left: 20px;  
+    margin-top: 0;
+    margin-left: 2%;
+    height: auto;
+}
+
+#returnHomeBtn{
+    position: absolute;
+    bottom: 60px;   
+    left: 20px;  
+    font-size: 22px;
+    margin-left: 2%;
+    font-weight: 300;
+    font-family: 'Narnoor', serif;
+}
