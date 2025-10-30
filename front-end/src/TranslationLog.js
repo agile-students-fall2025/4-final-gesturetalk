@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom'; 
 
 const TranslationLog = () => {
-    const { meetingId } = useParams();
+    const { meetingIdOld } = useParams();
+    const meetingId = Number(meetingIdOld);
     const navigate = useNavigate();
     const [meetingTitle, setMeetingTitle] = useState('');
     const [logData, setLogData] = useState([]);
