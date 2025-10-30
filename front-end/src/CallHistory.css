@@ -137,3 +137,13 @@
     padding-right: 5rem;
     padding-left: 5rem;
 }
+
+.title {
+    color: #000;
+    font-family: Narnoor;
+    font-size: 48px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-align: center;
+}
