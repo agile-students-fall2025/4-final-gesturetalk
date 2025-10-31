@@ -1,21 +1,149 @@
 @import url(https://fonts.google.com/specimen/Narnoor);
 
-title {
+.call-history {
+    background-image: url('/public/callHistoryBg.png');
+    background-size: cover;
+    background-position: center;
+    width: 100vw;
+    height: 100vh;
+}
+
+.inner-call-history {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    position: relative;     
+    padding: 5rem; 
+}
+
+.title {
     color: #000;
     font-family: Narnoor;
     font-size: 48px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;
+    text-align: center;
 }
 
-meetingListbox {
-    width: 1068px;
-    height: 737px;
+.meeting-box {
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
     border-radius: 91px;
     opacity: 0.87;
     background: radial-gradient(61.41% 43.29% at 50% 40.32%, rgba(255, 255, 255, 0.00) 55.77%, rgba(255, 255, 255, 0.73) 100%);
     box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
+    padding-left: 10rem;
+    padding-right: 10rem;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+    width: 80%;
+    height: 80%;
 }
 
+.log-button {
+    display: flex;
+    align-items: center;  
+    width: auto;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: #000;
+    color: #FFF;
+    font-family: Narnoor;
+    font-size: 1.5rem;
+    font-style: normal;
+    font-weight: 400;
+    text-align: center;
+    justify-content: center;
+    cursor: pointer;
+    white-space: nowrap;   
+    margin: 1rem;
+}
+
+.meeting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: transparent;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.meeting-title {
+    flex: 1;                
+    text-align: left;
+    font-size: 1.7rem;
+    font-weight: 500;
+    color: #000;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.back-button {
+    position: absolute;  
+    left: 20px;    
+    background: none;
+    margin-right: auto;
+    border: none;
+    cursor: pointer;
+    padding: 3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.back-button:hover {
+  transform: scale(1.1);
+}
+
+.back-button svg path {
+  fill: #000;
+  transition: fill 0.2s ease;
+}
+
+.back-button svg {
+    width: 4.5rem;
+    height: 4.5rem;
+}
+
+.meeting-list-box {
+    overflow-y: auto;
+    max-height: 700px;
+}
+
+
+.meeting-title-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-right: 5rem;
+    padding-left: 5rem;
+}
+
+.log-button-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-right: 5rem;
+    padding-left: 5rem;
+}
+
+.title {
+    color: #000;
+    font-family: Narnoor;
+    font-size: 48px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-align: center;
+}
