@@ -1,13 +1,13 @@
 /* ========== Theme tokens ========== */
 :root{
-  --bg1:#EDF2F7;                 /* base background */
-  --bg2:#EEF2FF;                 /* cool tint */
-  --bg3:#F7E9FF;                 /* warm tint */
-  --panel: rgba(255,255,255,.70);/* glass panel */
-  --indigo:#5955EE;              /* primary button */
-  --slate:#0f172a;               /* text */
-  --muted:#64748b;               /* secondary text */
-  --ring: rgba(99,102,241,.35);  /* glow shadow */
+  --bg1:#EDF2F7;
+  --bg2:#EEF2FF;
+  --bg3:#F7E9FF;
+  --panel: rgba(255,255,255,.70);
+  --indigo:#5955EE;
+  --slate:#0f172a;
+  --muted:#64748b;
+  --ring: rgba(99,102,241,.35);
   --soft-shadow: 0 20px 60px -18px rgba(31,41,55,.35);
 }
 
@@ -34,67 +34,95 @@ body{
   padding:32px 24px;
 }
 
-/* ========== Shell layout ========== */
+/* =========================
+   SHELL -> 2-row GRID LAYOUT
+   Row 1: meeting-main (two panels)
+   Row 2: controls-bar (bottom)
+   ========================= */
 .meeting-shell{
-  width:min(1200px, 100%);
+  width: 90vw;
+  height: 90vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  row-gap: 16px;
+  transform-origin: center center;
+}
+
+/* Top row: two equal-height panels */
+.meeting-main{
   display:flex;
   gap:24px;
+  align-items:stretch;   /* equal heights */
+  min-height:0;
 }
 
-.meeting-left{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
-
+/* Columns (ratios preserved) */
+.meeting-left,
 .meeting-right{
-  width:380px;
   display:flex;
   flex-direction:column;
+  min-height:0;
 }
+.meeting-left{ flex:2; }
+.meeting-right{ flex:1; overflow:hidden; }
 
-/* ========== Panels / cards ========== */
+/* Panels fill their column height exactly */
 .panel{
   background:var(--panel);
   backdrop-filter: blur(12px);
   border-radius:18px;
   border:1px solid rgba(255,255,255,.35);
   box-shadow:var(--soft-shadow);
+
+  height:100%;
+  display:flex;
+  flex-direction:column;
 }
 
+/* Meeting title (left panel) */
 .meeting-title{
   padding:16px 18px 0 18px;
   font-weight:600;
   color:#334155;
 }
 
-/* ========== Video grid ========== */
+/* ========== Video grid (left) ========== */
 .video-grid{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:14px;
-  padding:12px 12px 16px 12px;
+  flex: 1;                      /* fill the remaining height of the panel */
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));  /* always 2 columns */
+  gap: 14px;
+  padding: 12px 12px 16px 12px;
+
+  /* critically: pack items to the top-left, not centered */
+  align-content: start;         /* vertical packing */
+  justify-content: stretch;     /* no horizontal centering shrink */
+  place-content: start start;   /* redundant safety across browsers */
 }
 
+/* each tile keeps its ratio and fills its grid cell */
 .tile{
-  position:relative;
+  position: relative;
+  width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius:20px;
-  overflow:hidden;
-  background:#eaeef5;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #eaeef5;
   box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
 }
 
+.tile > img,
+.placeholder{
+  position: absolute; inset: 0;
+}
 .tile > img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
 }
 
 /* Placeholder user glyph */
 .placeholder{
-  position:absolute; inset:0;
   display:flex; align-items:center; justify-content:center;
   background: radial-gradient(80% 80% at 50% 30%, #f0f4ff 0%, #ece9ff 40%, #ead9ff 100%);
 }
@@ -103,70 +131,33 @@ body{
   opacity:.75; color:#8aa1ff;
 }
 
-/* ========== Bottom controls ========== */
-.controls{
-  margin:10px 12px 12px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px 14px;
-  border-radius:16px;
-  background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.55));
-  box-shadow: var(--soft-shadow);
-}
-
-/* Small circular icons (mic/cam) */
-.footer-icons{ display:flex; gap:10px; color:#475569; }
-.footer-icon{
-  display:inline-flex; align-items:center; justify-content:center;
-  width:34px; height:34px; border-radius:999px;
-  background:#fff;
-  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
-  border:0; cursor:pointer;
-}
-
-/* End call button */
-.end-btn{
-  display:inline-flex; align-items:center; gap:10px;
-  background:var(--indigo); color:#fff;
-  border:none; cursor:pointer;
-  padding:10px 16px; border-radius:12px; font-weight:600;
-  box-shadow: 0 14px 26px -12px var(--ring);
-}
-.end-btn:active{ transform: translateY(1px); }
-.end-btn svg{ width:18px; height:18px }
-
 /* ========== Translation log (right) ========== */
-.log {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  height: 100%;
-  padding: 16px;
+.log{
+  flex:1;
+  min-height:0;
+  padding:16px;
+  overflow:hidden; /* contain the scroller */
 }
 
-.log h2 {
-  margin: 6px 0 8px;
-  font-size: 26px;
-  font-weight: 700;
-  color: #1f2937;
+.log h2{
+  margin:6px 0 8px;
+  font-size:26px; font-weight:700; color:#1f2937;
 }
 
-/* Scrollable message feed */
-.log-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 8px;
-  margin-top: 8px;
-  max-height: 100%;
+/* Scrollable message feed; never taller than the panel */
+.log-scroll{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding-right:8px;
+  margin-top:8px;
 }
 
-.log-scroll::-webkit-scrollbar {
-  width: 10px;
-}
-.log-scroll::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.12);
-  border-radius: 999px;
+/* Scrollbar cosmetics */
+.log-scroll::-webkit-scrollbar{ width:10px; }
+.log-scroll::-webkit-scrollbar-thumb{
+  background: rgba(15,23,42,.12);
+  border-radius:999px;
 }
 
 /* One message row */
@@ -197,8 +188,44 @@ body{
   line-height:1.6;
 }
 
+/* ========== Bottom control bar (separate, full width) ========== */
+.controls-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:10px 14px;
+  border-radius:16px;
+  background: var(--panel);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: var(--soft-shadow);
+}
+
+/* Small circular icons (mic/cam) */
+.footer-icons{ display:flex; gap:10px; color:#475569; }
+.footer-icon{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:999px;
+  background:#fff;
+  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
+  border:0; cursor:pointer;
+}
+
+/* End call button */
+.end-btn{
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--indigo); color:#fff;
+  border:none; cursor:pointer;
+  padding:10px 16px; border-radius:12px; font-weight:600;
+  box-shadow: 0 14px 26px -12px var(--ring);
+}
+.end-btn:active{ transform: translateY(1px); }
+.end-btn svg{ width:18px; height:18px }
+
 /* ========== Responsive tweaks ========== */
+/* Keep two columns even on small screens — no single-column fallback */
 @media (max-width: 980px){
-  .meeting-shell{ flex-direction:column; }
-  .meeting-right{ width:100%; }
+  .meeting-main{ flex-direction:column; }
+  .video-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

@@ -9,10 +9,10 @@ function Meeting() {
   const [camOn, setCamOn] = useState(true);
 
   const participants = [
-    { id: "1", src: "null" },
-    { id: "2", src: "null" },
-    { id: "3", src: "null" },
-    { id: "4", src: "null" },
+    { id: "1", src: null },
+    { id: "2", src: null },
+    { id: "3", src: null },
+    { id: "4", src: null },
   ];
 
   const messages = [
@@ -37,26 +37,16 @@ function Meeting() {
   }
 
   return (
-    <div id="page-content">
-      <div className="meeting-shell">
+  <div id="page-content">
+    <div className="meeting-shell">
+      {/* Main row with two equal-height panels */}
+      <div className="meeting-main">
         <section className="meeting-left">
           <div className="panel">
             <div className="meeting-title">Meeting Name</div>
 
             <div className="video-grid">
-              {participants.map(function (p) {
-                return <VideoTile key={p.id} src={p.src} />;
-              })}
-            </div>
-
-            <div className="controls">
-              <ControlsBar
-                micOn={micOn}
-                camOn={camOn}
-                onToggleMic={handleToggleMic}
-                onToggleCam={handleToggleCam}
-                onEndCall={handleEndCall}
-              />
+              {participants.map((p) => <VideoTile key={p.id} src={p.src} />)}
             </div>
           </div>
         </section>
@@ -68,8 +58,20 @@ function Meeting() {
           </div>
         </aside>
       </div>
+
+      {/* Bottom control bar (full width, equals the width of the two panels combined) */}
+      <div className="controls-bar">
+        <ControlsBar
+          micOn={micOn}
+          camOn={camOn}
+          onToggleMic={handleToggleMic}
+          onToggleCam={handleToggleCam}
+          onEndCall={handleEndCall}
+        />
+      </div>
     </div>
-  );
+  </div>
+);
 }
 
 
