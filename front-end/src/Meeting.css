@@ -1,68 +1,204 @@
-@import url('https://fonts.googleapis.com/css2?family=MuseoModerno:wght@100;300;400;500;700;900&display=swap');
-
-#page-content {
-    background-image: url('/public/signInUpBg.png');
-    background-size: cover;
-    background-position: center;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    flex-direction: row;
-    overflow: hidden;
-    position: relative;
+/* ========== Theme tokens ========== */
+:root{
+  --bg1:#EDF2F7;                 /* base background */
+  --bg2:#EEF2FF;                 /* cool tint */
+  --bg3:#F7E9FF;                 /* warm tint */
+  --panel: rgba(255,255,255,.70);/* glass panel */
+  --indigo:#5955EE;              /* primary button */
+  --slate:#0f172a;               /* text */
+  --muted:#64748b;               /* secondary text */
+  --ring: rgba(99,102,241,.35);  /* glow shadow */
+  --soft-shadow: 0 20px 60px -18px rgba(31,41,55,.35);
 }
 
-#meeting-section{
-    width: 90%;
-    height: 800px;
-    flex-shrink: 0;
-    border-radius: 91px;
-    opacity: 0.87;
-    background: radial-gradient(61.41% 43.29% at 50% 40.32%, rgba(255, 255, 255, 0.00) 55.77%, rgba(255, 255, 255, 0.73) 100%);
-    box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    overflow: hidden;
-    margin-right: 5%;
+/* Global reset-ish */
+*{ box-sizing:border-box }
+html, body, #root{ height:100% }
+body{
+  margin:0;
+  color:var(--slate);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
 }
 
-#video-feed{
-    width: 90%;
-    height: 500px;
-    flex-shrink: 0;
-    border-radius: 20px;
-    background-color: #FFFFFF;
-    box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    overflow: hidden;
-    margin-bottom: 20px;
+/* ========== Page background ========== */
+#page-content{
+  min-height:100vh;
+  width:100%;
+  background:
+    radial-gradient(1200px 800px at 20% 10%, var(--bg2) 0%, transparent 70%),
+    radial-gradient(900px 700px at 80% 90%, var(--bg3) 0%, transparent 60%),
+    var(--bg1);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:32px 24px;
 }
 
-#translation-log{
-    width: 90%;
-    height: 150px;
-    flex-shrink: 0;
-    border-radius: 20px;
-    background-color: #FFFFFF;
-    box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    overflow: hidden;
-    margin-bottom: 20px;
+/* ========== Shell layout ========== */
+.meeting-shell{
+  width:min(1200px, 100%);
+  display:flex;
+  gap:24px;
 }
-#meeting-controls{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: row;
-    margin-bottom: 20px;
+
+.meeting-left{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.meeting-right{
+  width:380px;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ========== Panels / cards ========== */
+.panel{
+  background:var(--panel);
+  backdrop-filter: blur(12px);
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:var(--soft-shadow);
+}
+
+.meeting-title{
+  padding:16px 18px 0 18px;
+  font-weight:600;
+  color:#334155;
+}
+
+/* ========== Video grid ========== */
+.video-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
+  padding:12px 12px 16px 12px;
+}
+
+.tile{
+  position:relative;
+  aspect-ratio: 16 / 9;
+  border-radius:20px;
+  overflow:hidden;
+  background:#eaeef5;
+  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
+}
+
+.tile > img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* Placeholder user glyph */
+.placeholder{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(80% 80% at 50% 30%, #f0f4ff 0%, #ece9ff 40%, #ead9ff 100%);
+}
+.placeholder svg{
+  width:30%; height:30%;
+  opacity:.75; color:#8aa1ff;
+}
+
+/* ========== Bottom controls ========== */
+.controls{
+  margin:10px 12px 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 14px;
+  border-radius:16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.55));
+  box-shadow: var(--soft-shadow);
+}
+
+/* Small circular icons (mic/cam) */
+.footer-icons{ display:flex; gap:10px; color:#475569; }
+.footer-icon{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:999px;
+  background:#fff;
+  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
+  border:0; cursor:pointer;
+}
+
+/* End call button */
+.end-btn{
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--indigo); color:#fff;
+  border:none; cursor:pointer;
+  padding:10px 16px; border-radius:12px; font-weight:600;
+  box-shadow: 0 14px 26px -12px var(--ring);
+}
+.end-btn:active{ transform: translateY(1px); }
+.end-btn svg{ width:18px; height:18px }
+
+/* ========== Translation log (right) ========== */
+.log {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  padding: 16px;
+}
+
+.log h2 {
+  margin: 6px 0 8px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Scrollable message feed */
+.log-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-top: 8px;
+  max-height: 100%;
+}
+
+.log-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.log-scroll::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+}
+
+/* One message row */
+.msg{ display:flex; gap:12px; margin-bottom:18px; }
+
+.bubble{
+  margin-top:2px;
+  border-radius:999px;
+  background:#fff;
+  padding:6px;
+  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
+}
+.bubble.pink{ color:#ec4899; }
+.bubble.indigo{ color:#4f46e5; }
+
+.meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.text{
+  margin-top:4px;
+  color:var(--slate);
+  font-size:14px;
+  line-height:1.6;
+}
+
+/* ========== Responsive tweaks ========== */
+@media (max-width: 980px){
+  .meeting-shell{ flex-direction:column; }
+  .meeting-right{ width:100%; }
 }
