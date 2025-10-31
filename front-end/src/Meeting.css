@@ -10,10 +10,7 @@
   height: 100vh;
 
   /* full token set so all vars resolve */
-  --bg1:#EDF2F7;
-  --bg2:#EEF2FF;
-  --bg3:#F7E9FF;
-  --panel: rgba(255,255,255,0.9); /* less transparent / more solid */
+  --panel: rgba(255,255,255,0.4); /* less transparent / more solid */
   --indigo:#5955EE;
   --slate:#0f172a;
   --muted:#64748b;
@@ -165,7 +162,12 @@ body{
   align-items: center;
   justify-content: center;
   background: radial-gradient(80% 80% at 50% 30%, #f0f4ff 0%, #ece9ff 40%, #ead9ff 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(15,23,42,0.06); /* subtle border */
+  box-shadow: 0 6px 18px rgba(15,23,42,0.12); /* simple drop shadow */
+  transition: transform .18s ease, box-shadow .18s ease;
 }
+
 .placeholder svg{
   width: 30%;
   height: 30%;
@@ -205,12 +207,22 @@ body{
 /* One message row */
 .msg{ display:flex; gap:12px; margin-bottom:18px; }
 
-.bubble{
-  margin-top:2px;
-  border-radius:999px;
-  background:#fff;
-  padding:6px;
+.bubble {
+  flex-shrink: 0;
+  width: 40px;                 /* equal width/height ensures perfect circle */
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;          /* circle! */
+  background: #fff;
   box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
+
+  color: #4f46e5;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
 }
 .bubble.pink{ color:#ec4899; }
 .bubble.indigo{ color:#4f46e5; }
@@ -243,15 +255,13 @@ body{
   box-shadow: var(--soft-shadow);
 }
 
-/* Buttons */
-.footer-icons{ display:flex; gap:10px; color:#475569; }
-.footer-icon{
-  display:inline-flex; align-items:center; justify-content:center;
-  width:34px; height:34px; border-radius:999px;
-  background:#fff;
-  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
-  border:0; cursor:pointer;
+.controls-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
+
+/* Buttons */
 .end-btn{
   display:inline-flex; align-items:center; gap:10px;
   background:var(--indigo); color:#fff;

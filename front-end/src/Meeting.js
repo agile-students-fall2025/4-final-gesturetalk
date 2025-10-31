@@ -3,8 +3,11 @@ import VideoTile from "./components/VideoTile";
 import ControlsBar from "./components/ControlsBar";
 import TranslationFeed from "./components/TranslationFeed";
 import "./Meeting.css";
+import { useNavigate } from 'react-router-dom'; 
+
 
 function Meeting() {
+  const navigate = useNavigate();
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
 
@@ -34,6 +37,8 @@ function Meeting() {
 
   function handleEndCall() {
     alert("Call ended!");
+    navigate(`/home`);
+    
   }
 
   return (
