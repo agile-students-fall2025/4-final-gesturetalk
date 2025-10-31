@@ -43,7 +43,7 @@ function Meeting() {
       <div className="meeting-main">
         <section className="meeting-left">
           <div className="panel">
-            <div className="meeting-title">Meeting Name</div>
+            <div className="meeting-title-1">Meeting Name</div>
 
             <div className="video-grid">
               {participants.map((p) => <VideoTile key={p.id} src={p.src} />)}
