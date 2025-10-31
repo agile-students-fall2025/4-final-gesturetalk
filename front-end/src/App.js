@@ -17,7 +17,7 @@ function App() {
           {/* sign in's the first page users land on */}
           <Route path="/" element={<div className="App"><SignIn /></div>} />
           <Route path="/meeting" element={<Meeting />} />
-          // to add: unique meeting page routes to ID
+          {/* to add: unique meeting page routes to ID */}
         </Routes>
       </Router>
     </>
