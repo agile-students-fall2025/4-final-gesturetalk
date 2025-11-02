@@ -27,7 +27,7 @@ function SignIn(){
             <div id="signin-form">
                 <input id='usernameInput' type='username' placeholder='email'/>
                 <input type='password' placeholder='password'/>
-                <button>Sign in</button>
+                <button onClick={toHome}>Sign in</button>
                 <a onClick={toSignUp}>Getting started? Sign Up Here</a>
             </div>
         </div>
