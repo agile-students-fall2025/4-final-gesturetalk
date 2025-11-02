@@ -5,6 +5,7 @@ import CallHistory from './CallHistory';
 import TranslationLog from './TranslationLog';
 import Meeting from './Meeting';
 import Home from './Home';
+import Profile from './Profile';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
@@ -19,11 +20,12 @@ function App() {
           <Route path="/translation-log/:meetingId" element={<TranslationLog/>} />
           <Route path="/meeting" element={<Meeting />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/profile" element={<Profile />} />
           {/* to add: unique meeting page routes to ID */}
         </Routes>
       </Router>
     </>
-    
+
   );
 }
 
