@@ -70,3 +70,31 @@ h1{
     font-weight: 300;
     font-family: 'Narnoor', serif;
 }
+
+
+@media (max-width: 800px){
+    #signup-content{
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    #signup-form{
+        width: 80%;
+        border-radius: 61px;
+        height: 730px;
+        margin: 0;
+        margin-top: 42%;
+    }
+
+    
+    #returnHomeBtn{
+        position: absolute;
+        bottom: 30px;   
+        left: 20px;  
+        font-size: 22px;
+        margin-left: 2%;
+        font-weight: 300;
+        font-family: 'Narnoor', serif;
+    }
+
+}

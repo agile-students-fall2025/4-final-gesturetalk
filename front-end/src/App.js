@@ -12,11 +12,11 @@ function App() {
     <>
       <Router>
         <Routes>
+           {/* sign in's the first page users land on */}
+          <Route path="/" element={<div className="App"><SignIn /></div>} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/call-history" element={<CallHistory/>} />
           <Route path="/translation-log/:meetingId" element={<TranslationLog/>} />
-          {/* sign in's the first page users land on */}
-          <Route path="/" element={<div className="App"><SignIn /></div>} />
           <Route path="/meeting" element={<Meeting />} />
           <Route path="/home" element={<Home />} />
           {/* to add: unique meeting page routes to ID */}

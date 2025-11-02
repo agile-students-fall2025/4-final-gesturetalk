@@ -86,3 +86,76 @@ a{
     cursor: pointer;
     font-size: 22px;
 }
+
+button:hover{
+    background-color: rgb(145, 97, 218);
+}
+
+@media (max-width: 800px){
+    img{
+        width: 80%;
+    }
+
+    input{
+    padding-top: 20px;
+    padding-bottom: 25px;
+    padding-left: 10%;
+    padding-right: 10%;
+    margin-bottom: 5%;
+    border-radius: 10px;
+    background: radial-gradient(50% 50% at 50% 50%, rgba(215, 220, 240, 0.00) 0%, rgba(255, 255, 255, 0.54) 100%);
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
+    color: black;
+    font-family: 'Narnoor', serif;
+    vertical-align: middle;
+    font-size: 16px;
+    }
+
+    #usernameInput{
+        margin-top: 20%;
+    }
+
+    input::placeholder{
+        color: black;
+        font-size: 16px;
+    }
+
+    #signin-form{
+        margin-top: 25%;
+        margin-bottom: 0;
+        width: 80%;
+        height: 600px;
+        border-top-left-radius: 61px;
+        border-top-right-radius: 61px;
+    }
+
+    #sub{
+        margin-top: 20%;
+        font-size: 14px;
+    }
+
+    a{
+        text-decoration: underline;
+        margin-top: 10px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button{
+        padding: 15px;
+        padding-left: 20%;
+        padding-right: 20%;
+        background-color: black;
+        color: white;
+        border-radius: 10px;
+        margin-top: 30px;
+        font-size: 16px;
+    }
+
+    #hook{
+        margin-top: 1%;
+        margin-bottom: 0;
+        font-size: 18px;
+    }
+
+}

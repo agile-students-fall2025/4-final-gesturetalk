@@ -179,6 +179,7 @@ export default function Home() {
                 } else {
                   alert(`Joining meeting: ${joinCode}`);
                   setShowJoinModal(false);
+                  navigate("/meeting");
                 }
               }}
             >
