@@ -59,19 +59,19 @@
 .display-name {
   font-weight: 600;
   color: #555;
-  font-size: 1.3rem;
+  font-size: clamp(0.7rem, 1.2vw, 1.2rem);
 }
 
 .timestamp {
   font-weight: 500;
   color: #888;
-  font-size: 1.3rem;
+  font-size: clamp(0.5rem, 1vw, 1rem);
 }
 
 .entry-text {
   color: #333;
   line-height: 1.5;
-  font-size: 1.3rem;
+  font-size: clamp(0.7rem, 1.2vw, 1.2rem);
   margin-top: 4px;
   white-space: pre-line;
 }
@@ -81,20 +81,24 @@
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    border-radius: 91px;
+    border-radius: clamp(30px, 5vw, 91px);
+    opacity: 0.87;
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-top: 5%;
+    padding-bottom: 5%;
+    width: 70vw;
+    height: 60vh;
     background: white;
-    box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
-    padding-left: 10rem;
-    padding-right: 10rem;
-    padding-top: 6rem;
-    padding-bottom: 6rem;
-    width: 80%;
-    height: 90%;
 }
 
 .log-list-container {
     overflow-y: auto;
     max-height: 700px;
+    width: 100%;
+    height: 100%;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 
@@ -103,4 +107,5 @@
   align-items: center;
   justify-content: center;
   flex-direction: row;
+  
 }
