@@ -30,6 +30,9 @@ function Profile() {
       <p id="logo">shuwa</p>
 
       <div id="profile-card">
+        <button className="close-btn" onClick={() => navigate("/home")}>
+          ✕
+        </button>
         <h2 id="profile-title">My Profile</h2>
 
         <div id="profile-image-container">
