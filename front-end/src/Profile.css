@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Narnoor&family=MuseoModerno&display=swap');
+
+#profile-content {
+  width: 100vw;
+  height: 100vh;
+  background: conic-gradient(from 200deg at 68.75% 39.99%, #ABC4FF 3.663443550467491deg, #EDF2FB 60.1590621471405deg, #EDF1FB 130.93648552894592deg, #EA9CD9 199.03846979141235deg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#gradient-blob {
+  position: absolute;
+  width: 800px;
+  height: 700px;
+  right: 0;
+  top: 0;
+  filter: blur(150px);
+  flex-shrink: 0;
+  z-index: 0;
+}
+
+#logo {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  font-family: 'MuseoModerno', sans-serif;
+  font-weight: 400;
+  font-size: 48px;
+  color: #000;
+  z-index: 2;
+  margin: 0;
+}
+
+#profile-card {
+  position: relative;
+  width: 50%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.87);
+  border-radius: 91px;
+  box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+  padding: 40px 30px;
+}
+
+#profile-title {
+  font-family: 'Narnoor', serif;
+  font-weight: 400;
+  font-size: 48px;
+  color: #000;
+  margin: 0 0 30px 0;
+  line-height: normal;
+}
+
+#profile-image-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+#profile-image {
+  width: 149px;
+  height: 149px;
+  border-radius: 149px;
+  overflow: hidden;
+}
+
+#profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#edit-icon {
+  position: absolute;
+  right: -10px;
+  top: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #EEE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#edit-icon img {
+  width: 24px;
+  height: 24px;
+}
+
+#username {
+  font-family: 'Narnoor', serif;
+  font-weight: 400;
+  font-size: 36px;
+  color: #000;
+  text-align: center;
+  margin-bottom: 30px;
+  line-height: normal;
+}
+
+#profile-card input {
+  width: 80%;
+  padding-top: 20px;
+  padding-bottom: 25px;
+  padding-left: 10%;
+  padding-right: 10%;
+  margin-bottom: 20px;
+  border-radius: 17px;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(215, 220, 240, 0.00) 0%, rgba(255, 255, 255, 0.54) 100%);
+  box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
+  color: black;
+  font-family: 'Narnoor', serif;
+  vertical-align: middle;
+  font-size: 24px;
+}
+
+#profile-card input::placeholder {
+  color: black;
+  font-size: 24px;
+}
+
+#profile-card button {
+  padding: 15px;
+  padding-left: 20%;
+  padding-right: 20%;
+  background-color: black;
+  color: white;
+  border-radius: 17px;
+  margin-top: 30px;
+  font-size: 24px;
+  font-family: 'Narnoor', serif;
+}
+
+#profile-card button:hover {
+  background-color: rgb(145, 97, 218);
+}
+
+@media (max-width: 800px) {
+  #profile-card {
+    width: 80%;
+    border-radius: 61px;
+  }
+
+  #profile-title {
+    font-size: 36px;
+  }
+
+  #username {
+    font-size: 28px;
+  }
+
+  #profile-card input {
+    width: 70%;
+    font-size: 18px;
+  }
+
+  #profile-card input::placeholder {
+    font-size: 18px;
+  }
+
+  #profile-card button {
+    font-size: 18px;
+  }
+}
