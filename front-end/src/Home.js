@@ -46,7 +46,7 @@ export default function Home() {
     <div className="home-container">
       <header>
         <h1 className="logo">shuwa</h1>
-        <div className="profile">
+        <div className="profile" onClick={() => navigate("/profile")} style={{ cursor: "pointer" }}>
           <img src="/profile.svg" alt="Profile" />
           <span>Username</span>
         </div>
