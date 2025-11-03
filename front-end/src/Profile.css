@@ -48,6 +48,26 @@
   padding: 40px 30px;
 }
 
+#profile-card .close-btn {
+  position: absolute;
+  top: 40px;
+  right: 50px;
+  background: transparent;
+  border: none;
+  font-size: 48px;
+  cursor: pointer;
+  color: #000;
+  padding: 0;
+  margin: 0;
+  width: auto;
+  line-height: 1;
+}
+
+#profile-card .close-btn:hover {
+  background: transparent;
+  opacity: 0.7;
+}
+
 #profile-title {
   font-family: 'Narnoor', serif;
   font-weight: 400;
