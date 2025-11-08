@@ -1,82 +1,13 @@
-import express from 'express'
-const app = express()
-import path from 'path'
-import {fileURLToPath} from 'url'
+import server from './app.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const port = 3000 // change this later when deploy
 
-import multer from 'multer' 
-import axios from 'axios' 
-import dotenv from 'dotenv' 
-dotenv.config({ silent: true })
-import morgan from 'morgan'
-
-app.use(morgan('dev'))
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-
-
-// Sign In
-app.get('/', (req, res) => {
-  
+const listener = server.listen(port, function () {
+  console.log(`Server running on port: ${port}`)
 })
 
-app.post('/', (req, res) => {
+const close = () => {
+  listener.close()
+}
 
-})
-
-// Sign Up
-app.get('/signup', (req, res) => {
-  
-})
-
-app.post('/signup', (req, res) => {
-    
-})
-
-// Call History
-app.get('/call-history', (req, res) => {
-  
-})
-
-app.post('/call-history', (req, res) => {
-    
-})
-
-// Home
-app.get('/home', (req, res) => {
-  
-})
-
-app.post('/home', (req, res) => {
-    
-})
-
-// Proflile
-app.get('/profile', (req, res) => {
-  
-})
-
-app.post('/profile', (req, res) => {
-    
-})
-
-// Meeting
-// Translation log
-app.get('/meeting', (req, res) => {
-  
-})
-
-app.post('/meeting', (req, res) => {
-    
-})
-
-// Translation log
-app.get('/translation-log/:meetingId', (req, res) => {
-  
-})
-
-app.post('/translation-log/:meetingId', (req, res) => {
-    
-})
+export { close }
