@@ -1,22 +1,22 @@
 // Initializes Socket.IO
 
 import { Server } from "socket.io";
-import regWebRTCHandler from "./webrtcHandler";
+import regWebRTCHandlers from "./webrtcHandler.js";
 
 let io = null;
 
-const regSocketServer = (server) => {
+export function regSocketServer(server) {
     io = new Server(server, {
         cors: {
             origin: "http://localhost:3000", // this needs to be changed later to include our deployed URL
-            methods: [get, POST]
+            methods: ["GET", "POST"]
 
         }
     })
 
-    io.on("connnection" , (socket) => {
+    io.on("connection" , (socket) => {
         console.log(`connected user: ${socket.id}`)
-        regWebRTCHandler(socket, io)
+        regWebRTCHandlers(io, socket);
 
         socket.on("disconnect", ()=>{
             console.log(`user disconnect: ${socket.id}`)
@@ -24,7 +24,6 @@ const regSocketServer = (server) => {
     })
 }
 
-export default {
-    regSocketServer,
-    getIO: () => io
+export function getIO() {
+  return io;
 }

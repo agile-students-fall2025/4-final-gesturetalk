@@ -2,7 +2,7 @@
 
 const peers = {}
 
-const regWebRTCHandler = (socket, io) => {
+const regWebRTCHandlers = (io, socket) => {
     // join-room
     socket.on("join-room", (roomID) => {
         peers[socket.id] = roomID
@@ -56,4 +56,4 @@ const regWebRTCHandler = (socket, io) => {
 
 }
 
-export default regWebRTCHandler
+export default regWebRTCHandlers;

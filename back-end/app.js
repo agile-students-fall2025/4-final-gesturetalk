@@ -1,17 +1,18 @@
 import express from 'express'
-const app = express()
 import path from 'path'
 import {fileURLToPath} from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
 import multer from 'multer' 
 import axios from 'axios' 
 import dotenv from 'dotenv' 
-dotenv.config({ silent: true })
 import morgan from 'morgan'
 
+dotenv.config({ silent: true })
+
+const app = express()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// middleware
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -71,7 +72,6 @@ app.post('/profile', (req, res) => {
 // Meeting
 
 app.get('/meeting/:meetingId', (req, res) => {
-  
 })
 
 app.post('/meeting/:meetingId', (req, res) => {
@@ -91,4 +91,4 @@ app.post('/translation-log/:meetingId', (req, res) => {
 })
 
 
-export default app
+export default app;

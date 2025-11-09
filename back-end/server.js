@@ -1,9 +1,15 @@
-import server from './app.js'
+import app from './app.js'
+import http from "http";
+import { regSocketServer } from "./src/socket/index.js";
 
-const port = 3000 // change this later when deploy
+// attach socket to the server
+const server = http.createServer(app);
+regSocketServer(server);
 
-const listener = server.listen(port, function () {
-  console.log(`Server running on port: ${port}`)
+const PORT = process.env.PORT || 3000; // change this later when deploy
+
+const listener = server.listen(PORT, function () {
+  console.log(`Server running on port: ${PORT}`)
 })
 
 const close = () => {
