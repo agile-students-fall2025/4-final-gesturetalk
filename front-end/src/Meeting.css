@@ -261,20 +261,72 @@ body{
   align-items: center;
 }
 
-/* Buttons */
-.end-btn{
-  display:inline-flex; align-items:center; gap:10px;
-  background:var(--indigo); color:#fff;
-  border:none; cursor:pointer;
-  padding:10px 16px; border-radius:12px; font-weight:600;
-  box-shadow: 0 14px 26px -12px var(--ring);
+/* === Control Bar Buttons === */
+.controls-bar button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+  box-shadow: 0 8px 24px -10px var(--ring);
 }
-.end-btn:active{ transform: translateY(1px); }
-.end-btn svg{ width:18px; height:18px }
+
+/* Active states */
+.controls-bar button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.controls-bar button:active {
+  transform: translateY(1px);
+}
+
+/* Mic / Cam / Gesture default colors */
+.controls-bar button.on {
+  background: var(--indigo);
+  color: #fff;
+}
+
+.controls-bar button.off {
+  background: rgba(255,255,255,0.6);
+  color: var(--slate);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.35);
+}
+
+/* Danger (End Call) button */
+.controls-bar button.danger {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 10px 26px -12px rgba(239,68,68,0.45);
+}
+
+.controls-bar button.danger:hover {
+  filter: brightness(1.1);
+}
+
 
 /* ========== Responsive tweaks ========== */
 @media (max-width: 980px){
   .meeting-main{ flex-direction:column; }
   /* keep 2 columns even on small screens per your request */
   .video-grid{ grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+}
+
+.tile { position: relative; background: #000; overflow: hidden; border-radius: 10px; }
+.tile-media { position: relative; width: 100%; height: 100%; }
+.tile-video, .tile-overlay, .placeholder { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.placeholder { display:flex; align-items:center; justify-content:center; color:#999; background:#111; }
+.tile-controls { position: absolute; top: 8px; right: 8px; z-index: 2; display:flex; gap: 8px; }
+.tile-btn { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: none; cursor: pointer; }
+.tile-btn.on { background: #111827; color: #fff; }
+.tile-btn.off { background: #e5e7eb; color: #111; }
+.tile-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
 }
