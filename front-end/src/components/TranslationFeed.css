@@ -1,0 +1,106 @@
+.translation-log {
+  background-image: url('/public/callHistoryBg.png');
+  background-size: cover;
+  background-position: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+
+.back-button {
+  position: absolute;  
+  left: 20px;    
+  background: none;
+  margin-right: auto;
+  border: none;
+  cursor: pointer;
+  padding: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.back-button:hover {
+  transform: scale(1.1);
+}
+
+.back-button svg path {
+  fill: #000;
+  transition: fill 0.2s ease;
+}
+
+.back-button svg {
+    width: 4.5rem;
+    height: 4.5rem;
+}
+
+.log-entry {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.sender {
+  background: #fff6fa;
+}
+
+.receiver {
+  background: #f5f9ff;
+}
+
+.entry-header {
+  display: flex;
+  display: inline-flex;
+  gap: 2rem;
+  margin-bottom: 0.4rem;
+}
+
+.display-name {
+  font-weight: 600;
+  color: #555;
+  font-size: 1.3rem;
+}
+
+.timestamp {
+  font-weight: 500;
+  color: #888;
+  font-size: 1.3rem;
+}
+
+.entry-text {
+  color: #333;
+  line-height: 1.5;
+  font-size: 1.3rem;
+  margin-top: 4px;
+  white-space: pre-line;
+}
+
+
+.log-container {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    border-radius: 91px;
+    background: white;
+    box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
+    padding-left: 10rem;
+    padding-right: 10rem;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+    width: 80%;
+    height: 90%;
+}
+
+.log-list-container {
+    overflow-y: auto;
+    max-height: 700px;
+}
+
+
+.inner-translation-log {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+}

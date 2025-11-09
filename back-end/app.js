@@ -69,13 +69,16 @@ app.post('/profile', (req, res) => {
 })
 
 // Meeting
-// Translation log
-app.get('/meeting', (req, res) => {
+
+app.get('/meeting/:meetingId', (req, res) => {
   
 })
 
-app.post('/meeting', (req, res) => {
-    
+app.post('/meeting/:meetingId', (req, res) => {
+})
+
+app.post("end-meeting/:meetingId", (req, res) => {
+  
 })
 
 // Translation log
