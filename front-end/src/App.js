@@ -6,7 +6,6 @@ import TranslationLog from './TranslationLog';
 import Meeting from './Meeting';
 import Home from './Home';
 import Profile from './Profile';
-import DummyGestureCall from './DummyGestureCall';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
@@ -23,7 +22,6 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           {/* to add: unique meeting page routes to ID */}
-          <Route path="/dummy" element={<DummyGestureCall />} />
         </Routes>
       </Router>
     </>
