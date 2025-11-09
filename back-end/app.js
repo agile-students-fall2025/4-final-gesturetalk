@@ -91,4 +91,4 @@ app.post('/translation-log/:meetingId', (req, res) => {
 })
 
 
-export default app
+export default app;
