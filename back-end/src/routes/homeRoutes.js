@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { getHomeData } from "../controllers/homeController.js";
+import { createMeeting, joinMeeting } from "../controllers/homeController.js";
 
 const router = Router();
 
-router.get("/", getHomeData);
-// do we need post for Home?
-router.post("/", updateHomeData)
+router.post("/create", createMeeting)
+router.post("/join", joinMeeting)
 
 export default router;

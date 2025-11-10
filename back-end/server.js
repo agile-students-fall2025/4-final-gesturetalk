@@ -6,7 +6,7 @@ import { regSocketServer } from "./src/socket/index.js";
 const server = http.createServer(app);
 regSocketServer(server);
 
-const PORT = process.env.PORT || 3000; // change this later when deploy
+const PORT = process.env.PORT || 5000; // change this later when deploy
 
 const listener = server.listen(PORT, function () {
   console.log(`Server running on port: ${PORT}`)
