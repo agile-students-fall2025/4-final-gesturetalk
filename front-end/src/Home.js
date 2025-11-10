@@ -10,9 +10,8 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
-
-  
   //  Update time + date
   useEffect(() => {
     function updateClock() {
@@ -121,21 +120,25 @@ export default function Home() {
             </button>
             <h2 className="modal-title">Create Meeting</h2>
 
-            <input
-              type="text"
-              className="modal-input"
-              placeholder="Set Meeting Name"
-              value={meetingName}
-              onChange={(e) => setMeetingName(e.target.value)}
-            />
+            <form action="/home/create" method="POST">
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="Set Meeting Name"
+                name="meetingName"
+                value={meetingName}
+                onChange={(e) => setMeetingName(e.target.value)}
+              />
 
-            <p className="modal-label">Meeting Code</p>
-            <div className="code-box">
-              <input type="text" readOnly value={meetingCode} />
-              <button className="copy-btn" onClick={handleCopy}>
-              <img src="/copy.svg" alt="Copy" className="copy-icon" />
-              </button>
-            </div>
+              <p className="modal-label">Meeting Code</p>
+              <div className="code-box">
+                <input type="text" readOnly name="meetingCode" value={meetingCode} />
+                <button className="copy-btn" onClick={handleCopy}>
+                <img src="/copy.svg" alt="Copy" className="copy-icon" />
+                </button>
+              </div>
+
+            </form>
 
             <button
               className="create-btn"
@@ -163,13 +166,16 @@ export default function Home() {
             </button>
             <h2 className="modal-title">Join Meeting</h2>
 
-            <input
-              type="text"
-              className="modal-input"
-              placeholder="Enter Meeting Code"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value)}
-            />
+            <form action="/home/join" method="POST">
+              <input
+                type="text"
+                className="modal-input"
+                placeholder="Enter Meeting Code"
+                name="meetingCode"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value)}
+              />
+            </form>
 
             <button
               className="create-btn"

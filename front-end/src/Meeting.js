@@ -12,6 +12,7 @@ function Meeting() {
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [gestureOn, setGestureOn] = useState(false); // global toggle for all tiles
+  const [currentUser, setCurrentUser] = useState(null);
 
   // ---- Local media stream (goes to top-left tile) ----
   const [localStream, setLocalStream] = useState(null);
@@ -89,9 +90,25 @@ function Meeting() {
   const handleToggleCam = () => setCamOn((v) => !v);
   const handleToggleGesture = () => setGestureOn((g) => !g);
 
-  const handleEndCall = () => {
-    alert("Call ended!");
-    navigate("/home");
+  const handleEndCall = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/meeting/end-meeting/${meetingId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ peerId: currentUser.id }),
+        }
+      );
+
+      const data = await response.json();
+      console.log(data.message);
+
+      navigate("/home");
+    } catch (err) {
+      console.error("Error ending meeting:", err);
+    }
+
   };
 
   // ---- Gesture event handler (from VideoTile) ----

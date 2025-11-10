@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 function Profile() {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
 
   const handleSave = () => {
     console.log("Profile saved");
