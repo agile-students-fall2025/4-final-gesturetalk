@@ -18,9 +18,9 @@ exports.endMeeting = (req, res) => {
     // check which peer click end meeting
     // in DB remove specific peer if many in meeting
     // vvvv put below in try catch and in if 
-    res.json({ success: true, message: `Removed peer from ${meetingId}` })
+    res.json({ success: true, message: `Removed peer ${peerId} from ${meetId}` })
     // if peer last in meeting, delete entire meeting from DB
-    res.json({ success: true, message: `Ended entire meeting ${meetingId}` })
+    res.json({ success: true, message: `Ended entire meeting ${meetId}` })
 }
 
 // gets translation from database
