@@ -1,3 +1,4 @@
+import { getIO } from "../socket/index.js"
 
 exports.getMeetingInfo = (req, res) => {
     const meetId = req.params.meetingId
@@ -24,6 +25,13 @@ exports.endMeeting = (req, res) => {
 }
 
 // gets translation from database
-exports.getTranslation = (req, res) => {
-
+exports.sendTranslation = (req, res) => {
+    const meetId = req.params.meetingId;
+    // current implementation polls new translations, would ideally like to automatically 
+    // emit new translations when new translation comes in
+    // ^^ will need to implement after Thursday
+    const newTranslation = "new translation here" // get newest translation from DB (await)
+    const io = getIO();
+    io.to(meetId).emit("newest-translation", newTranslation);
+    res.json({success: true});
 }
