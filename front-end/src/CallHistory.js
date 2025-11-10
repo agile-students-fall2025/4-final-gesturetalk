@@ -8,6 +8,7 @@ const CallHistory = () => {
     // meeting info
     const [meetings, setMeetings] = useState([]);
     const navigate = useNavigate();
+    const [currentUser, setCurrentUser] = useState(null);
 
     // const [loading, setLoading] = useState(true);
     // const [error, setError] = useState(null);

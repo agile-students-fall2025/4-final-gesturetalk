@@ -8,6 +8,7 @@ const TranslationLog = () => {
     const navigate = useNavigate();
     const [meetingTitle, setMeetingTitle] = useState('');
     const [logData, setLogData] = useState([]);
+    const [currentUser, setCurrentUser] = useState(null);
 
     // use effect to fetch meeting infromation by meetingId
     useEffect(() => {

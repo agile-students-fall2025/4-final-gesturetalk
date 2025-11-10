@@ -10,9 +10,8 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
-
-  
   //  Update time + date
   useEffect(() => {
     function updateClock() {
