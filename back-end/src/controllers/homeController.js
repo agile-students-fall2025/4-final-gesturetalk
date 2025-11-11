@@ -25,7 +25,7 @@ exports.joinMeeting = (req, res) => {
         "abc123": { meetingId: "room123", meetingName: "Design Sync" },
         "xyz999": { meetingId: "room999", meetingName: "Daily Standup" }
     };
-
+    
     const meetingFromDB = mockMeetings[meetCode];
 
     if (!meetingFromDB) {
@@ -36,7 +36,7 @@ exports.joinMeeting = (req, res) => {
     }
 
     res.send(`Join meeting with code: ${data.meetCode}`)
-    
+
     return res.json({
         ok: true,
         ...meetingFromDB
