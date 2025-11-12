@@ -37,15 +37,16 @@
 #profile-card {
   position: relative;
   width: 50%;
-  max-width: 600px;
+  max-width: 550px;
   background: rgba(255, 255, 255, 0.87);
-  border-radius: 91px;
+  border-radius: 70px;
   box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 1;
-  padding: 40px 30px;
+  padding: 30px 25px;
+  transform: scale(0.85);
 }
 
 #profile-card .close-btn {
@@ -145,19 +146,31 @@
 }
 
 #profile-card button {
-  padding: 15px;
-  padding-left: 20%;
-  padding-right: 20%;
+  width: 276px;
+  height: 77px;
   background-color: black;
   color: white;
   border-radius: 17px;
-  margin-top: 30px;
   font-size: 24px;
   font-family: 'Narnoor', serif;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #profile-card button:hover {
   background-color: rgb(145, 97, 218);
+}
+
+#profile-card .save-btn {
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+#profile-card .logout-btn {
+  margin-top: 0;
+  margin-bottom: 15px;
 }
 
 @media (max-width: 800px) {
