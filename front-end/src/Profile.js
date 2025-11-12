@@ -10,6 +10,11 @@ function Profile() {
     console.log("Profile saved");
   };
 
+  const handleLogout = () => {
+    setCurrentUser(null);
+    navigate("/");
+  };
+
   return (
     <div id="profile-content">
       <svg id="gradient-blob" width="1130" height="1024" viewBox="0 0 1130 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -52,7 +57,8 @@ function Profile() {
         <input type="text" placeholder="Email" />
         <input type="password" placeholder="Password" />
 
-        <button onClick={handleSave}>Save</button>
+        <button className="save-btn" onClick={handleSave}>Save</button>
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
     </div>
   );
