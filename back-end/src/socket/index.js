@@ -8,7 +8,7 @@ let io = null;
 export function regSocketServer(server) {
     io = new Server(server, {
         cors: {
-            origin: "http://localhost:3000", // this needs to be changed later to include our deployed URL
+            origin: "http://localhost:5000", // this needs to be changed later to include our deployed URL
             methods: ["GET", "POST"]
 
         }

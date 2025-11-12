@@ -18,7 +18,7 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/call-history" element={<CallHistory/>} />
           <Route path="/translation-log/:meetingId" element={<TranslationLog/>} />
-          <Route path="/meeting" element={<Meeting />} />
+          <Route path="/meeting/:meetingId" element={<Meeting/>} />
           <Route path="/home" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           {/* to add: unique meeting page routes to ID */}

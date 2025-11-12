@@ -1,12 +1,23 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { useSocket } from "./hooks/useSocket";
+import { useWebRTC } from "./hooks/useWebRTC";
 import VideoTile from "./components/VideoTile";
 import ControlsBar from "./components/ControlsBar";
 import TranslationFeed from "./components/TranslationFeed";
 import "./Meeting.css";
-import { useNavigate } from "react-router-dom";
+
 
 function Meeting() {
   const navigate = useNavigate();
+
+  // set meeting ID
+  const { meetingId } = useParams();
+
+  // initialize socket & webRTC
+  const { socket } = useSocket();
+  const { pc, startMedia, connectToPeers } = useWebRTC(socket);
 
   // ---- Controls state ----
   const [micOn, setMicOn] = useState(true);
@@ -48,8 +59,14 @@ function Meeting() {
     ]);
   };
 
-  // ---- Start local camera at mount ----
+  
   useEffect(() => {
+    // ----webRTC & socket.io initialization----
+    // socket.emit("join-room", meetingId)
+    // startMedia()
+    // connectToPeers()
+
+    // ---- Start local camera at mount ----
     let streamRef = null;
 
     async function start() {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
+import { createMeeting, joinMeeting } from "./services/meetingServices";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -39,6 +40,24 @@ export default function Home() {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(meetingCode);
+  };
+
+  const handleJoin = async () => {
+    try{
+      const res = await joinMeeting(meetingCode);
+      if (!res.ok) {
+        throw new Error("Invalid meeting");
+      }
+      const data = await res.json();
+      const meetingId = data.meetingId; 
+      setShowJoinModal(false);
+      alert(`Joining meeting: ${meetingId}`);
+      navigate(`/meeting/${meetingId}`);
+
+    } catch (err){
+      console.error(err);
+      alert("Invalid meeting code");
+    }
   };
 
   return (
@@ -183,9 +202,7 @@ export default function Home() {
                 if (!joinCode.trim()) {
                   alert("Please enter a meeting code.");
                 } else {
-                  alert(`Joining meeting: ${joinCode}`);
-                  setShowJoinModal(false);
-                  navigate("/meeting");
+                  handleJoin();
                 }
               }}
             >
