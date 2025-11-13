@@ -43,6 +43,8 @@ body {
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
+    /* Match Profile avatar framing */
+    object-position: center 35%;
   }
   
   main {
