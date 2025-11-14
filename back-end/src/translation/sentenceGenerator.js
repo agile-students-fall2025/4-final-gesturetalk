@@ -25,7 +25,7 @@ const joinWords = (signedWords) => {
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL,
         messages: [
-          { role: "system", content: "You are an ASL-to-English translator. Given a list of glossed signs, output a natural, grammatically correct English sentence.", },
+          { role: "system", content: "You are an ASL-to-English translator. Given a list of glossed signs, output a natural, grammatically correct English sentence. Make sure to correct capitalization.", },
           { role: "user", content: joinWords(dummySignedWords) }
         ],
       }),
