@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import { createMeeting, joinMeeting } from "./services/meetingServices";
+import UserContext from './contexts/UserContext';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser } = useContext(UserContext);
 
   //  Update time + date
   useEffect(() => {
@@ -65,15 +66,15 @@ export default function Home() {
       <header>
         <h1 className="logo">shuwa</h1>
         <div className="profile" onClick={() => navigate("/profile")} style={{ cursor: "pointer" }}>
-          <img src="/profile.svg" alt="Profile" />
-          <span>Username</span>
+          <img src={currentUser?.picture || "/profile.svg"} alt="Profile" />
+          <span>{currentUser?.name || 'Username'}</span>
         </div>
       </header>
 
       <main>
         <div className="greeting">
           <p className="hello">
-            Hello <span className="user">User</span>,
+            Hello <span className="user">{currentUser?.name || 'User'}</span>,
           </p>
           <p className="subtext">Great to see you back!</p>
         </div>
