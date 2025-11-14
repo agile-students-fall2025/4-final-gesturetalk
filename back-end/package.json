@@ -1,6 +1,7 @@
 {
   "name": "back-end",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "server.js",
   "scripts": {
@@ -9,7 +10,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@mediapipe/tasks-genai": "^0.10.25",
     "@mediapipe/tasks-vision": "^0.10.22-rc.20250304",
