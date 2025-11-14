@@ -1,17 +1,64 @@
 import "./Profile.css";
 import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
+import UserContext from './contexts/UserContext';
 
 function Profile() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser, setCurrentUser } = useContext(UserContext);
+
+  // Local editable copies of profile fields
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    if (currentUser) {
+      setDisplayName(currentUser.name || '');
+      setEmail(currentUser.email || '');
+    } else {
+      setDisplayName('');
+      setEmail('');
+    }
+  }, [currentUser]);
 
   const handleSave = () => {
-    console.log("Profile saved");
+    // Update the app-level user object with edited fields (local only)
+    const updated = { ...(currentUser || {}), name: displayName, email };
+    setCurrentUser(updated);
+    try {
+      localStorage.setItem('currentUser', JSON.stringify(updated));
+    } catch (e) {}
+    console.log('Profile saved');
   };
 
   const handleLogout = () => {
+    // Clear app-level user state
     setCurrentUser(null);
+
+    // Clear any stored user info in localStorage (if used)
+    try {
+      localStorage.removeItem('currentUser');
+    } catch (e) {}
+
+    // If Google Identity Services is loaded, disable auto-select and revoke selection for this user
+    try {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        // Prevent automatic selection on future visits
+        if (typeof window.google.accounts.id.disableAutoSelect === 'function') {
+          window.google.accounts.id.disableAutoSelect();
+        }
+
+        // Attempt to revoke one-tap selection for this user's email (best-effort)
+        if (currentUser && currentUser.email && typeof window.google.accounts.id.revoke === 'function') {
+          window.google.accounts.id.revoke(currentUser.email, () => {
+            console.log('Google selection revoked for', currentUser.email);
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('Error calling Google API on logout', err);
+    }
+
     navigate("/");
   };
 
@@ -44,17 +91,17 @@ function Profile() {
 
         <div id="profile-image-container">
           <div id="profile-image">
-            <img src="/profile.svg" alt="Profile" />
+            <img src={currentUser?.picture || "/profile.svg"} alt="Profile" />
           </div>
           <div id="edit-icon">
             <img src="https://api.builder.io/api/v1/image/assets/TEMP/7ab26d711e5b1698c187297b382ad3436d9786b9" alt="Edit" />
           </div>
         </div>
 
-        <p id="username">Username</p>
+        <p id="username">{displayName || 'Username'}</p>
 
-        <input type="text" placeholder="Display Name" />
-        <input type="text" placeholder="Email" />
+        <input type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+        <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input type="password" placeholder="Password" />
 
         <button className="save-btn" onClick={handleSave}>Save</button>

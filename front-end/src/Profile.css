@@ -94,6 +94,11 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Adjust vertical position to better center human faces from external avatars
+    (Google). If this still clips too much at the top, try a smaller percent
+    (e.g. 30%) or switch to object-fit: contain. */
+  object-position: center 35%;
+  display: block;
 }
 
 #edit-icon {
