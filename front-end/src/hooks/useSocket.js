@@ -1,3 +1,4 @@
+// custom React hook 
 // connect to backend Socket.IO Server & define helper functions
 import { useEffect, useRef }  from "react";
 import { io } from "socket.io-client";
@@ -22,10 +23,10 @@ export const useSocket = () => {
 
     
     // -------------------------------
-    // Helper functions
+    //  Helper functions
     // -------------------------------
 
-    // Emitters
+    // ---- Emitters ----
 
     const joinRoom = (roomID) =>
         socket.emit("join-room", roomID);
@@ -42,7 +43,7 @@ export const useSocket = () => {
     const sendCaptions = (text) =>
         socket.emit("captions", text);
 
-    // Listeners
+    // ---- Listeners ----
 
     const onUserJoined = (cb) =>
         socket.on("user-joined", cb);

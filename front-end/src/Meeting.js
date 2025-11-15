@@ -61,8 +61,8 @@ function Meeting() {
 
   
   useEffect(() => {
-    // ----webRTC & socket.io initialization----
-    // socket.emit("join-room", meetingId)
+    // ---- webRTC & socket.io initialization ----
+    socket.joinRoom(meetingId)
     // startMedia()
     // connectToPeers()
 
