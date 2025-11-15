@@ -128,3 +128,8 @@ typings/
 **/.jekyll-cache
 **/_site/
 .config/
+
+## venv
+venv/
+**/venv/
+training/venv/
