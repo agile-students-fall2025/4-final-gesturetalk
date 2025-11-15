@@ -3,11 +3,9 @@ import VideoTile from "./components/VideoTile";
 import ControlsBar from "./components/ControlsBar";
 import TranslationFeed from "./components/TranslationFeed";
 import "./Meeting.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import UserContext from './contexts/UserContext';
 import { io } from "socket.io-client";
-
-import { FiVideo, FiVideoOff, FiMic, FiMicOff } from "react-icons/fi";
 
 const configuration = {
   iceServers: [
@@ -17,172 +15,28 @@ const configuration = {
   ],
   iceCandidatePoolSize: 10,
 };
-const socket = io("http://localhost:3000", { transports: ["websocket"] });
-
-let pc;
-let localStream;
-let startButton;
-let hangupButton;
-let muteAudButton;
-let remoteVideo;
-let localVideo;
-socket.on("message", (e) => {
-  if (!localStream) {
-    console.log("not ready yet");
-    return;
-  }
-  switch (e.type) {
-    case "offer":
-      handleOffer(e);
-      break;
-    case "answer":
-      handleAnswer(e);
-      break;
-    case "candidate":
-      handleCandidate(e);
-      break;
-    case "ready":
-      // A second tab joined. This tab will initiate a call unless in a call already.
-      if (pc) {
-        console.log("already in call, ignoring");
-        return;
-      }
-      makeCall();
-      break;
-    case "bye":
-      if (pc) {
-        hangup();
-      }
-      break;
-    default:
-      console.log("unhandled", e);
-      break;
-  }
-});
-
-async function makeCall() {
-  try {
-    pc = new RTCPeerConnection(configuration);
-    pc.onicecandidate = (e) => {
-      const message = {
-        type: "candidate",
-        candidate: null,
-      };
-      if (e.candidate) {
-        message.candidate = e.candidate.candidate;
-        message.sdpMid = e.candidate.sdpMid;
-        message.sdpMLineIndex = e.candidate.sdpMLineIndex;
-      }
-      socket.emit("message", message);
-    };
-    pc.ontrack = (e) => (remoteVideo.current.srcObject = e.streams[0]);
-    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-    const offer = await pc.createOffer();
-    socket.emit("message", { type: "offer", sdp: offer.sdp });
-    await pc.setLocalDescription(offer);
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-async function handleOffer(offer) {
-  if (pc) {
-    console.error("existing peerconnection");
-    return;
-  }
-  try {
-    pc = new RTCPeerConnection(configuration);
-    pc.onicecandidate = (e) => {
-      const message = {
-        type: "candidate",
-        candidate: null,
-      };
-      if (e.candidate) {
-        message.candidate = e.candidate.candidate;
-        message.sdpMid = e.candidate.sdpMid;
-        message.sdpMLineIndex = e.candidate.sdpMLineIndex;
-      }
-      socket.emit("message", message);
-    };
-    pc.ontrack = (e) => (remoteVideo.current.srcObject = e.streams[0]);
-    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-    await pc.setRemoteDescription(offer);
-
-    const answer = await pc.createAnswer();
-    socket.emit("message", { type: "answer", sdp: answer.sdp });
-    await pc.setLocalDescription(answer);
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-async function handleAnswer(answer) {
-  if (!pc) {
-    console.error("no peerconnection");
-    return;
-  }
-  try {
-    await pc.setRemoteDescription(answer);
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-async function handleCandidate(candidate) {
-  try {
-    if (!pc) {
-      console.error("no peerconnection");
-      return;
-    }
-    if (!candidate) {
-      await pc.addIceCandidate(null);
-    } else {
-      await pc.addIceCandidate(candidate);
-    }
-  } catch (e) {
-    console.log(e);
-  }
-}
-async function hangup() {
-  if (pc) {
-    pc.close();
-    pc = null;
-  }
-  localStream.getTracks().forEach((track) => track.stop());
-  localStream = null;
-}
-
-
-
 
 function Meeting() {
   const navigate = useNavigate();
-  const { currentUser, setCurrentUser } = useContext(UserContext);
+  const { meetingId } = useParams();
+  const { currentUser } = useContext(UserContext);
 
-  // ---- Controls state ----
+  // ---- Socket & WebRTC state (use refs for persistence) ----
+  const socketRef = useRef(null);
+  const peerConnectionsRef = useRef({}); // map of peerId -> RTCPeerConnection
+  const localStreamRef = useRef(null);
+
+  // ---- UI state ----
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
-  const [gestureOn, setGestureOn] = useState(false); // global toggle for all tiles
-
-  // ---- Local media stream (goes to top-left tile) ----
+  const [gestureOn, setGestureOn] = useState(false);
   const [localStream, setLocalStream] = useState(null);
+  const [participants, setParticipants] = useState([]);
 
-  // ---- Participants (placeholders for remote) ----
-  const participants = [
-    { id: "1", isLocal: true },
-    { id: "2", isLocal: false, stream: null },
-    // { id: "3", isLocal: false, stream: null },
-    // { id: "4", isLocal: false, stream: null },
-  ];
-
-  // ---- Translation log (with gesture messages appended) ----
+  // ---- Translation log ----
   const initialMessages = [
     { id: 1, who: "Display_Name__1", t: "00:01:57", text: "Hello.", color: "pink" },
-    { id: 2, who: "Display_Name__2", t: "00:03:27", text: "Hi! What’s your favorite color?", color: "indigo" },
-    { id: 3, who: "Display_Name__1", t: "00:05:27", text: "My favorite color is probably pink", color: "pink" },
-    { id: 4, who: "Display_Name__2", t: "00:06:21", text: "My favorite color is blue because it’s peaceful", color: "indigo" },
-    { id: 5, who: "Display_Name__1", t: "00:06:27", text: "My favorite color is blue", color: "pink" },
-    { id: 6, who: "Display_Name__1", t: "00:06:32", text: "Oh wow thanks for sharing.", color: "indigo" },
+    { id: 2, who: "Display_Name__2", t: "00:03:27", text: "Hi! What's your favorite color?", color: "indigo" },
   ];
   const [messages, setMessages] = useState(initialMessages);
   const appendMessage = (who, text, color = "indigo") => {
@@ -198,118 +52,257 @@ function Meeting() {
     ]);
   };
 
-  // ---- Start local camera at mount ----
+  // ---- Initialize socket & start media ----
   useEffect(() => {
-    let streamRef = null;
+    // Connect to back-end on port 3001
+    socketRef.current = io("http://localhost:3001", { transports: ["websocket"] });
+    const socket = socketRef.current;
 
-    async function start() {
+    // Start local media
+    async function startMedia() {
       try {
-        streamRef = await navigator.mediaDevices.getUserMedia({
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user", width: 640, height: 360 },
-          audio: false, // add audio later; see mic toggle below
+          audio: true,
         });
-        setLocalStream(streamRef);
-      } catch (e) {
-        console.error("getUserMedia failed", e);
+        localStreamRef.current = stream;
+        setLocalStream(stream);
+
+        // Add self as initial participant
+        setParticipants([{ id: socket.id, isLocal: true, stream }]);
+
+        // Join room via socket
+        const roomID = meetingId || "default-room";
+        socket.emit("join-room", roomID);
+      } catch (err) {
+        console.error("getUserMedia failed", err);
       }
     }
 
-    start();
+    startMedia();
+
+    // ---- Socket event handlers ----
+    socket.on("user-joined", async (peerId) => {
+      console.log(`Peer joined: ${peerId}`);
+      await makeCall(peerId);
+    });
+
+    socket.on("offer", async (data) => {
+      const { sdp, sender } = data;
+      await handleOffer(sdp, sender);
+    });
+
+    socket.on("answer", async (data) => {
+      const { sdp, sender } = data;
+      await handleAnswer(sdp, sender);
+    });
+
+    socket.on("ice-candidate", async (data) => {
+      const { candidate, sdpMid, sdpMLineIndex, sender } = data;
+      await handleCandidate(sender, candidate, sdpMid, sdpMLineIndex);
+    });
+
+    socket.on("user-disconnected", (peerId) => {
+      console.log(`Peer disconnected: ${peerId}`);
+      const pc = peerConnectionsRef.current[peerId];
+      if (pc) {
+        pc.close();
+        delete peerConnectionsRef.current[peerId];
+      }
+      setParticipants((prev) => prev.filter((p) => p.id !== peerId));
+    });
 
     return () => {
-      if (streamRef) streamRef.getTracks().forEach((t) => t.stop());
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+      if (socket) socket.disconnect();
+      Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+      peerConnectionsRef.current = {};
     };
-  }, []);
+  }, [meetingId]);
 
-  // ---- Camera toggle: enable/disable video track (don’t stop track) ----
+  // ---- WebRTC: Make Call to a peer ----
+  async function makeCall(peerId) {
+    try {
+      const pc = new RTCPeerConnection(configuration);
+      peerConnectionsRef.current[peerId] = pc;
+
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          socketRef.current.emit("ice-candidate", {
+            target: peerId,
+            candidate: e.candidate.candidate,
+            sdpMid: e.candidate.sdpMid,
+            sdpMLineIndex: e.candidate.sdpMLineIndex,
+          });
+        }
+      };
+
+      pc.ontrack = (e) => {
+        console.log("Remote track received from", peerId, e.streams[0]);
+        setParticipants((prev) => {
+          // Check if peer already exists
+          const exists = prev.find((p) => p.id === peerId);
+          if (exists) {
+            return prev.map((p) =>
+              p.id === peerId ? { ...p, stream: e.streams[0] } : p
+            );
+          }
+          return [...prev, { id: peerId, isLocal: false, stream: e.streams[0] }];
+        });
+      };
+
+      // Add local tracks
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => {
+          pc.addTrack(track, localStreamRef.current);
+        });
+      }
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socketRef.current.emit("offer", {
+        target: peerId,
+        sdp: offer.sdp,
+      });
+    } catch (err) {
+      console.error("makeCall error", err);
+    }
+  }
+
+  // ---- WebRTC: Handle Offer ----
+  async function handleOffer(sdp, peerId) {
+    try {
+      const pc = new RTCPeerConnection(configuration);
+      peerConnectionsRef.current[peerId] = pc;
+
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          socketRef.current.emit("ice-candidate", {
+            target: peerId,
+            candidate: e.candidate.candidate,
+            sdpMid: e.candidate.sdpMid,
+            sdpMLineIndex: e.candidate.sdpMLineIndex,
+          });
+        }
+      };
+
+      pc.ontrack = (e) => {
+        console.log("Remote track received from", peerId, e.streams[0]);
+        setParticipants((prev) => {
+          const exists = prev.find((p) => p.id === peerId);
+          if (exists) {
+            return prev.map((p) =>
+              p.id === peerId ? { ...p, stream: e.streams[0] } : p
+            );
+          }
+          return [...prev, { id: peerId, isLocal: false, stream: e.streams[0] }];
+        });
+      };
+
+      // Add local tracks
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => {
+          pc.addTrack(track, localStreamRef.current);
+        });
+      }
+
+      await pc.setRemoteDescription(new RTCSessionDescription({ type: "offer", sdp }));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      socketRef.current.emit("answer", {
+        target: peerId,
+        sdp: answer.sdp,
+      });
+    } catch (err) {
+      console.error("handleOffer error", err);
+    }
+  }
+
+  // ---- WebRTC: Handle Answer ----
+  async function handleAnswer(sdp, peerId) {
+    try {
+      const pc = peerConnectionsRef.current[peerId];
+      if (pc) {
+        await pc.setRemoteDescription(new RTCSessionDescription({ type: "answer", sdp }));
+      }
+    } catch (err) {
+      console.error("handleAnswer error", err);
+    }
+  }
+
+  // ---- WebRTC: Handle ICE Candidate ----
+  async function handleCandidate(peerId, candidate, sdpMid, sdpMLineIndex) {
+    try {
+      const pc = peerConnectionsRef.current[peerId];
+      if (pc && candidate) {
+        await pc.addIceCandidate(
+          new RTCIceCandidate({ candidate, sdpMid, sdpMLineIndex })
+        );
+      }
+    } catch (err) {
+      console.error("handleCandidate error", err);
+    }
+  }
+
+  // ---- Camera toggle ----
   useEffect(() => {
     if (!localStream) return;
     const vTracks = localStream.getVideoTracks();
-    for (let i = 0; i < vTracks.length; i++) vTracks[i].enabled = camOn;
+    vTracks.forEach((t) => (t.enabled = camOn));
   }, [camOn, localStream]);
 
-  // ---- Mic toggle: when audio is added, wire it here ----
+  // ---- Mic toggle ----
   useEffect(() => {
     if (!localStream) return;
-    const aTracks = localStream.getAudioTracks?.() || [];
-    for (let i = 0; i < aTracks.length; i++) aTracks[i].enabled = micOn;
+    const aTracks = localStream.getAudioTracks();
+    aTracks.forEach((t) => (t.enabled = micOn));
   }, [micOn, localStream]);
 
-  // ---- Controls handlers ----
+  // ---- Control handlers ----
   const handleToggleMic = () => setMicOn((v) => !v);
   const handleToggleCam = () => setCamOn((v) => !v);
   const handleToggleGesture = () => setGestureOn((g) => !g);
 
   const handleEndCall = () => {
-    if (pc) {
-      pc.close();
-      pc = null;
+    Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((t) => t.stop());
     }
-    alert("Call ended!");
     navigate("/home");
   };
 
-  // ---- Gesture event handler (from VideoTile) ----
-  // g = { label, score, handedness, landmarks, raw } | null
+  // ---- Gesture event handler ----
   const handleTileGesture = (g, meta) => {
-    if (!g) return; // nothing this frame
+    if (!g) return;
     const who = meta?.isLocal ? "You" : "Participant";
     appendMessage(
       who,
       `Gesture: ${g.label} (${Math.round(g.score * 100)}%)`,
       meta?.isLocal ? "pink" : "indigo"
     );
-    // If you have a WebRTC datachannel, you can send g to the remote here.
   };
 
   return (
     <div id="page-content">
       <div className="meeting-shell">
-        {/* Top row: left (video grid) + right (translation log) */}
         <div className="meeting-main">
           <section className="meeting-left">
             <div className="panel">
-              <div className="meeting-title-1">Meeting Name</div>
-
+              <div className="meeting-title-1">Meeting {meetingId}</div>
               <div className="video-grid">
-                {participants.map((p, idx) => {
-                  const isLocal = idx === 0;
-                  const stream = isLocal ? localStream : p.stream || null;
-                  const refs = isLocal? localVideo : remoteVideo;
-                  return (
-                    <VideoTile
-                      key={p.id}
-                      stream={stream}
-                      isLocal={isLocal}
-                      ref={refs}
-                      gestureOn={gestureOn}
-                      badgeText={isLocal ? "You" : `User ${idx + 1}`}
-                      // optional: pass a class to restyle badge color per tile
-                      badgeClass={isLocal ? "" : ""}
-                      onGesture={handleTileGesture}
-                    />
-                  );
-                })}
+                {participants.map((p) => (
+                  <VideoTile
+                    key={p.id}
+                    stream={p.stream}
+                    isLocal={p.isLocal}
+                    gestureOn={gestureOn}
+                    badgeText={p.isLocal ? "You" : "Participant"}
+                    onGesture={handleTileGesture}
+                  />
+                ))}
               </div>
-
-              {/* <div className="video-grid">
-                {participants.map((p, idx) => {
-                  const isLocal = idx === 0;
-                  const stream = isLocal ? localStream : p.stream || null;
-                  return (
-                    <VideoTile
-                      key={p.id}
-                      stream={stream}
-                      isLocal={isLocal}
-                      gestureOn={gestureOn}
-                      badgeText={isLocal ? "You" : `User ${idx + 1}`}
-                      // optional: pass a class to restyle badge color per tile
-                      badgeClass={isLocal ? "" : ""}
-                      onGesture={handleTileGesture}
-                    />
-                  );
-                })}
-              </div> */}
             </div>
           </section>
 
@@ -321,7 +314,6 @@ function Meeting() {
           </aside>
         </div>
 
-        {/* Bottom control bar (full width) */}
         <div className="controls-bar">
           <ControlsBar
             micOn={micOn}

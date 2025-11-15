@@ -17,20 +17,60 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3000",  // front-end runs on 3000
     methods: ["GET", "POST"]
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("Connected");
+// Track which room each peer is in
+const peers = {};
 
-  socket.on("message", (message) => {
-    socket.broadcast.emit("message", message);
+io.on("connection", (socket) => {
+  console.log("Connected:", socket.id);
+
+  // ---- Join a room ----
+  socket.on("join-room", (roomID) => {
+    peers[socket.id] = roomID;
+    socket.join(roomID);
+    console.log(`Socket ${socket.id} joined room ${roomID}`);
+    // Notify other peers in the room that a new user joined
+    socket.to(roomID).emit("user-joined", socket.id);
   });
 
+  // ---- Offer: route to specific target peer ----
+  socket.on("offer", (data) => {
+    const { target, sdp } = data;
+    console.log(`Offer from ${socket.id} to ${target}`);
+    io.to(target).emit("offer", { sdp, sender: socket.id });
+  });
+
+  // ---- Answer: route to specific target peer ----
+  socket.on("answer", (data) => {
+    const { target, sdp } = data;
+    console.log(`Answer from ${socket.id} to ${target}`);
+    io.to(target).emit("answer", { sdp, sender: socket.id });
+  });
+
+  // ---- ICE Candidate: route to specific target peer ----
+  socket.on("ice-candidate", (data) => {
+    const { target, candidate, sdpMid, sdpMLineIndex } = data;
+    console.log(`ICE candidate from ${socket.id} to ${target}`);
+    io.to(target).emit("ice-candidate", {
+      candidate,
+      sdpMid,
+      sdpMLineIndex,
+      sender: socket.id
+    });
+  });
+
+  // ---- Disconnect ----
   socket.on("disconnect", () => {
-    console.log("Disconnected");
+    console.log("Disconnected:", socket.id);
+    const roomID = peers[socket.id];
+    delete peers[socket.id];
+    if (roomID) {
+      socket.to(roomID).emit("user-disconnected", socket.id);
+    }
   });
 });
 
@@ -41,6 +81,6 @@ function error(err, req, res, next) {
 
 app.use(error);
 
-server.listen(5000, () => {
-  console.log(`Listening on Port 5000`);
+server.listen(3001, () => {
+  console.log(`Listening on Port 3001`);
 });
