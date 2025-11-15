@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom'; 
 import './TranslationLog.css'
+import UserContext from "./contexts/UserContext";
 
 const TranslationLog = () => {
     const { meetingIdOld } = useParams();
@@ -8,7 +9,8 @@ const TranslationLog = () => {
     const navigate = useNavigate();
     const [meetingTitle, setMeetingTitle] = useState('');
     const [logData, setLogData] = useState([]);
-    const [currentUser, setCurrentUser] = useState(null);
+    const { currentUser } = useContext(UserContext);
+
 
     // use effect to fetch meeting infromation by meetingId
     useEffect(() => {

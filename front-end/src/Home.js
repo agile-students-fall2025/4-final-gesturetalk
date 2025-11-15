@@ -44,21 +44,31 @@ export default function Home() {
   };
 
   const handleJoin = async () => {
-    try{
-      const res = await joinMeeting(meetingCode);
-      if (!res.ok) {
-        throw new Error("Invalid meeting");
+      try {
+        const data = await joinMeeting(joinCode); // joinCode = input from user
+        alert(`Joining meeting: ${joinCode}`);
+        navigate(`/meeting/${joinCode}`);
+      } catch (err) {
+        console.error(err);
+        alert("Invalid meeting code");
       }
-      const data = await res.json();
-      const meetingId = data.meetingId; 
-      setShowJoinModal(false);
-      alert(`Joining meeting: ${meetingId}`);
-      navigate(`/meeting/${meetingId}`);
 
-    } catch (err){
-      console.error(err);
-      alert("Invalid meeting code");
-    }
+
+    // try{
+    //   const res = await joinMeeting(joinCode);
+    //   if (!res.ok) {
+    //     throw new Error("Invalid meeting");
+    //   }
+    //   const data = await res.json();
+    //   const meetingId = data.meetingId; 
+    //   setShowJoinModal(false);
+    //   alert(`Joining meeting: ${meetingId}`);
+    //   navigate(`/meeting/${meetingId}`);
+
+    // } catch (err){
+    //   console.error(err);
+    //   alert("Invalid meeting code");
+    // }
   };
 
   return (

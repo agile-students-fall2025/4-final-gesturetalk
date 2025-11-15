@@ -1,32 +1,34 @@
 
-exports.createMeeting = (req, res) => {
+export const createMeeting = (req, res) => {
     const data = {
-        meetName: req.body.meetingName,
-        meetCode: req.body.meetingCode
+        meetingName: req.body.meetingName,
+        meetingCode: req.body.meetingCode
     }
-    console.log(`Name: ${data.meetName}, Code: ${data.meetCode}`)
+    console.log(`Name: ${data.meetingName}, Code: ${data.meetingCode}`)
 
     // TODO: send data to database
-    res.send(`Create meeting: ${data.meetName}`)
+    res.send(`Create meeting: ${data.meetingName}`)
 }
 
-exports.joinMeeting = (req, res) => {
-    const data = {
-        meetName: req.body.meetingName,
-        meetCode: req.body.meetingCode
-    }
-    console.log(`Code: ${data.meetCode}`)
 
+export const joinMeeting = (req, res) => {
+    console.log('reached join meeting')
+    const { meetingCode } = req.body;
+    console.log(`Code: ${meetingCode}`);
+
+    if (!meetingCode) {
+       return res.status(400).json({ ok: false, error: "meetingCode is required" });
+    }
     // TODO: validate meeting code exists in DB
     // for now use mock data
 
     // Mock lookup
     const mockMeetings = {
-        "abc123": { meetingId: "room123", meetingName: "Design Sync" },
-        "xyz999": { meetingId: "room999", meetingName: "Daily Standup" }
+        "abc123": { meetingId: "room123", meetingName: "Meeting 1", peers: [] },
+        "xyz999": { meetingId: "room999", meetingName: "Egg and Cheese Sandwich", peers: [] }
     };
     
-    const meetingFromDB = mockMeetings[meetCode];
+    const meetingFromDB = mockMeetings[meetingCode];
 
     if (!meetingFromDB) {
         return res.status(404).json({
@@ -35,12 +37,11 @@ exports.joinMeeting = (req, res) => {
         });
     }
 
-    res.send(`Join meeting with code: ${data.meetCode}`)
-
-    return res.json({
+    return res.status(200).json({
         ok: true,
         ...meetingFromDB
     });
 }
+
 
 

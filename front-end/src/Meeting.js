@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useSocket } from "./hooks/useSocket";
@@ -6,6 +6,7 @@ import { useWebRTC } from "./hooks/useWebRTC";
 import VideoTile from "./components/VideoTile";
 import ControlsBar from "./components/ControlsBar";
 import TranslationFeed from "./components/TranslationFeed";
+import UserContext from "./contexts/UserContext";
 import "./Meeting.css";
 
 
@@ -16,14 +17,38 @@ function Meeting() {
   const { meetingId } = useParams();
 
   // initialize socket & webRTC
-  const { socket } = useSocket();
-  const { pc, startMedia, connectToPeers } = useWebRTC(socket);
+  const {
+  socket,
+  joinRoom,
+  sendOffer,
+  sendAnswer,
+  sendICECandidate,
+  onUserJoined,
+  onOffer,
+  onAnswer,
+  onICECandidate,
+  onUserDisconnected,
+} = useSocket();
+
+
+  const { pc, startMedia, connectToPeers } = useWebRTC({
+  socket,
+  joinRoom,
+  sendOffer,
+  sendAnswer,
+  sendICECandidate,
+  onUserJoined,
+  onOffer,
+  onAnswer,
+  onICECandidate,
+  onUserDisconnected,
+});
 
   // ---- Controls state ----
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [gestureOn, setGestureOn] = useState(false); // global toggle for all tiles
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser } = useContext(UserContext);
 
   // ---- Local media stream (goes to top-left tile) ----
   const [localStream, setLocalStream] = useState(null);
@@ -59,34 +84,62 @@ function Meeting() {
     ]);
   };
 
-  
   useEffect(() => {
-    // ----webRTC & socket.io initialization----
-    // socket.emit("join-room", meetingId)
-    // startMedia()
-    // connectToPeers()
+  if (!socket || !pc) return;
 
-    // ---- Start local camera at mount ----
-    let streamRef = null;
+  joinRoom(meetingId);
+  startMedia();
+  connectToPeers();
 
-    async function start() {
-      try {
-        streamRef = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user", width: 640, height: 360 },
-          audio: false, // add audio later; see mic toggle below
-        });
-        setLocalStream(streamRef);
-      } catch (e) {
-        console.error("getUserMedia failed", e);
-      }
+  let streamRef = null;
+
+  async function startLocalCamera() {
+    try {
+      streamRef = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: 640, height: 360 },
+        audio: false,
+      });
+      setLocalStream(streamRef);
+    } catch (e) {
+      console.error(e);
     }
+  }
 
-    start();
+  startLocalCamera();
 
-    return () => {
-      if (streamRef) streamRef.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
+  return () => {
+    if (streamRef) streamRef.getTracks().forEach((t) => t.stop());
+    socket.disconnect();
+  };
+ }, [socket, pc, joinRoom, startMedia, connectToPeers, meetingId]);
+
+  // useEffect(() => {
+  //   // ----webRTC & socket.io initialization----
+  //   socket.emit("join-room", meetingId)
+  //   startMedia()
+  //   connectToPeers()
+
+  //   // ---- Start local camera at mount ----
+  //   let streamRef = null;
+
+  //   async function start() {
+  //     try {
+  //       streamRef = await navigator.mediaDevices.getUserMedia({
+  //         video: { facingMode: "user", width: 640, height: 360 },
+  //         audio: false, // add audio later; see mic toggle below
+  //       });
+  //       setLocalStream(streamRef);
+  //     } catch (e) {
+  //       console.error("getUserMedia failed", e);
+  //     }
+  //   }
+
+  //   start();
+
+  //   return () => {
+  //     if (streamRef) streamRef.getTracks().forEach((t) => t.stop());
+  //   };
+  // }, []);
 
   // ---- Camera toggle: enable/disable video track (don’t stop track) ----
   useEffect(() => {
@@ -108,13 +161,14 @@ function Meeting() {
   const handleToggleGesture = () => setGestureOn((g) => !g);
 
   const handleEndCall = async () => {
+    console.log(currentUser)
     try {
       const response = await fetch(
         `http://localhost:5000/meeting/end-meeting/${meetingId}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ peerId: currentUser.id }),
+          body: JSON.stringify({ peerId: currentUser }),
         }
       );
 

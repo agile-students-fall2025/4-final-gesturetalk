@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import morgan from 'morgan'
 import router from "./src/routes/index.js"
 import homeRouter from './src/routes/homeRoutes.js'
-
+import cors from "cors"
 
 dotenv.config({ silent: true })
 
@@ -15,10 +15,16 @@ app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+app.use(cors({
+  origin: "http://localhost:3000", // replace/ add deployed link
+  methods: ["GET", "POST"],
+  credentials: true, 
+}));
+
 // mount all API routes under "/api"
 app.use("/api", router)
 
-app.listen(5000, () => console.log('Server running on port 5000'));
+
 
 
 export default app;

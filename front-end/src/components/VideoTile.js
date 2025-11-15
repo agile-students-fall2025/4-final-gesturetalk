@@ -112,8 +112,8 @@ function useReadGestureFromVideo({ videoEl, canvasEl, enabled, onGesture, minSco
               drawer.drawConnectors(lm, GestureRecognizer.HAND_CONNECTIONS);
             }
           }
-        } else if (ctx && canvasEl) {
-          ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        } else  {
+          // ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
         }
 
         // Extract top gesture, smooth, emit
@@ -207,7 +207,7 @@ export default function VideoTile(props) {
   useReadGestureFromVideo({
     videoEl: videoRef.current,
     canvasEl: canvasRef.current,
-    enabled: !!props.gestureOn,
+    enabled: props.isLocal && props.gestureOn,
     minScore: 0.65,
     smoothWindow: 5,
     onGesture: function (g) {
@@ -266,8 +266,8 @@ export default function VideoTile(props) {
               ref={canvasRef}
               className="tile-overlay"
               style={{ opacity: props.gestureOn ? 1 : 0 }}
-              width={1280}
-              height={720}
+              // width={1280}
+              // height={720}
             />
           </>
         ) : (

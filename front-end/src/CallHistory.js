@@ -1,14 +1,15 @@
 // For CallHistory maybe add meeting searching function?
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import './CallHistory.css'
+import UserContext from "./contexts/UserContext";
 
 const CallHistory = () => {
     
     // meeting info
     const [meetings, setMeetings] = useState([]);
     const navigate = useNavigate();
-    const [currentUser, setCurrentUser] = useState(null);
+    const { currentUser } = useContext(UserContext);
 
     // const [loading, setLoading] = useState(true);
     // const [error, setError] = useState(null);

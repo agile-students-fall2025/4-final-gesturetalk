@@ -31,9 +31,6 @@ const regWebRTCHandlers = (io, socket) => {
     })
 
     // broadcasting translated captions
-    // !!! How are we determining when a user is done with signing?
-    // currently thinking of time delay when signed (maybe like 5 secs?), 
-    // then translation shows & get broadcast
     socket.on("captions", (text) => {
         const roomID = peers[socket.id]
         if (roomID){
