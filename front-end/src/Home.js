@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
-import { createMeeting, joinMeeting } from "./services/meetingServices";
+// import { createMeeting, joinMeeting } from "./services/meetingServices";
 import UserContext from './contexts/UserContext';
 
 export default function Home() {
@@ -45,12 +45,13 @@ export default function Home() {
 
   const handleJoin = async () => {
     try{
-      const res = await joinMeeting(meetingCode);
-      if (!res.ok) {
-        throw new Error("Invalid meeting");
-      }
-      const data = await res.json();
-      const meetingId = data.meetingId; 
+      // const res = await joinMeeting(meetingCode); // fix join meeting rq
+      // if (!res.ok) {
+      //   throw new Error("Invalid meeting");
+      // }
+      // const data = await res.json();
+      // const meetingId = data.meetingId; 
+      const meetingId = joinCode;
       setShowJoinModal(false);
       alert(`Joining meeting: ${meetingId}`);
       navigate(`/meeting/${meetingId}`);

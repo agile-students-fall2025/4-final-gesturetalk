@@ -1,29 +1,168 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-
-import { useSocket } from "./hooks/useSocket";
-import { useWebRTC } from "./hooks/useWebRTC";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import VideoTile from "./components/VideoTile";
 import ControlsBar from "./components/ControlsBar";
 import TranslationFeed from "./components/TranslationFeed";
 import "./Meeting.css";
+import { useNavigate } from "react-router-dom";
+import UserContext from './contexts/UserContext';
+import { io } from "socket.io-client";
+
+import { FiVideo, FiVideoOff, FiMic, FiMicOff } from "react-icons/fi";
+
+const configuration = {
+  iceServers: [
+    {
+      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
+    },
+  ],
+  iceCandidatePoolSize: 10,
+};
+const socket = io("http://localhost:3000", { transports: ["websocket"] });
+
+let pc;
+let localStream;
+let startButton;
+let hangupButton;
+let muteAudButton;
+let remoteVideo;
+let localVideo;
+socket.on("message", (e) => {
+  if (!localStream) {
+    console.log("not ready yet");
+    return;
+  }
+  switch (e.type) {
+    case "offer":
+      handleOffer(e);
+      break;
+    case "answer":
+      handleAnswer(e);
+      break;
+    case "candidate":
+      handleCandidate(e);
+      break;
+    case "ready":
+      // A second tab joined. This tab will initiate a call unless in a call already.
+      if (pc) {
+        console.log("already in call, ignoring");
+        return;
+      }
+      makeCall();
+      break;
+    case "bye":
+      if (pc) {
+        hangup();
+      }
+      break;
+    default:
+      console.log("unhandled", e);
+      break;
+  }
+});
+
+async function makeCall() {
+  try {
+    pc = new RTCPeerConnection(configuration);
+    pc.onicecandidate = (e) => {
+      const message = {
+        type: "candidate",
+        candidate: null,
+      };
+      if (e.candidate) {
+        message.candidate = e.candidate.candidate;
+        message.sdpMid = e.candidate.sdpMid;
+        message.sdpMLineIndex = e.candidate.sdpMLineIndex;
+      }
+      socket.emit("message", message);
+    };
+    pc.ontrack = (e) => (remoteVideo.current.srcObject = e.streams[0]);
+    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+    const offer = await pc.createOffer();
+    socket.emit("message", { type: "offer", sdp: offer.sdp });
+    await pc.setLocalDescription(offer);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function handleOffer(offer) {
+  if (pc) {
+    console.error("existing peerconnection");
+    return;
+  }
+  try {
+    pc = new RTCPeerConnection(configuration);
+    pc.onicecandidate = (e) => {
+      const message = {
+        type: "candidate",
+        candidate: null,
+      };
+      if (e.candidate) {
+        message.candidate = e.candidate.candidate;
+        message.sdpMid = e.candidate.sdpMid;
+        message.sdpMLineIndex = e.candidate.sdpMLineIndex;
+      }
+      socket.emit("message", message);
+    };
+    pc.ontrack = (e) => (remoteVideo.current.srcObject = e.streams[0]);
+    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+    await pc.setRemoteDescription(offer);
+
+    const answer = await pc.createAnswer();
+    socket.emit("message", { type: "answer", sdp: answer.sdp });
+    await pc.setLocalDescription(answer);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function handleAnswer(answer) {
+  if (!pc) {
+    console.error("no peerconnection");
+    return;
+  }
+  try {
+    await pc.setRemoteDescription(answer);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function handleCandidate(candidate) {
+  try {
+    if (!pc) {
+      console.error("no peerconnection");
+      return;
+    }
+    if (!candidate) {
+      await pc.addIceCandidate(null);
+    } else {
+      await pc.addIceCandidate(candidate);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+async function hangup() {
+  if (pc) {
+    pc.close();
+    pc = null;
+  }
+  localStream.getTracks().forEach((track) => track.stop());
+  localStream = null;
+}
+
+
 
 
 function Meeting() {
   const navigate = useNavigate();
-
-  // set meeting ID
-  const { meetingId } = useParams();
-
-  // initialize socket & webRTC
-  const { socket } = useSocket();
-  const { pc, startMedia, connectToPeers } = useWebRTC(socket);
+  const { currentUser, setCurrentUser } = useContext(UserContext);
 
   // ---- Controls state ----
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [gestureOn, setGestureOn] = useState(false); // global toggle for all tiles
-  const [currentUser, setCurrentUser] = useState(null);
 
   // ---- Local media stream (goes to top-left tile) ----
   const [localStream, setLocalStream] = useState(null);
@@ -32,8 +171,8 @@ function Meeting() {
   const participants = [
     { id: "1", isLocal: true },
     { id: "2", isLocal: false, stream: null },
-    { id: "3", isLocal: false, stream: null },
-    { id: "4", isLocal: false, stream: null },
+    // { id: "3", isLocal: false, stream: null },
+    // { id: "4", isLocal: false, stream: null },
   ];
 
   // ---- Translation log (with gesture messages appended) ----
@@ -59,14 +198,8 @@ function Meeting() {
     ]);
   };
 
-  
+  // ---- Start local camera at mount ----
   useEffect(() => {
-    // ----webRTC & socket.io initialization----
-    // socket.emit("join-room", meetingId)
-    // startMedia()
-    // connectToPeers()
-
-    // ---- Start local camera at mount ----
     let streamRef = null;
 
     async function start() {
@@ -107,25 +240,13 @@ function Meeting() {
   const handleToggleCam = () => setCamOn((v) => !v);
   const handleToggleGesture = () => setGestureOn((g) => !g);
 
-  const handleEndCall = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/meeting/end-meeting/${meetingId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ peerId: currentUser.id }),
-        }
-      );
-
-      const data = await response.json();
-      console.log(data.message);
-
-      navigate("/home");
-    } catch (err) {
-      console.error("Error ending meeting:", err);
+  const handleEndCall = () => {
+    if (pc) {
+      pc.close();
+      pc = null;
     }
-
+    alert("Call ended!");
+    navigate("/home");
   };
 
   // ---- Gesture event handler (from VideoTile) ----
@@ -154,6 +275,27 @@ function Meeting() {
                 {participants.map((p, idx) => {
                   const isLocal = idx === 0;
                   const stream = isLocal ? localStream : p.stream || null;
+                  const refs = isLocal? localVideo : remoteVideo;
+                  return (
+                    <VideoTile
+                      key={p.id}
+                      stream={stream}
+                      isLocal={isLocal}
+                      ref={refs}
+                      gestureOn={gestureOn}
+                      badgeText={isLocal ? "You" : `User ${idx + 1}`}
+                      // optional: pass a class to restyle badge color per tile
+                      badgeClass={isLocal ? "" : ""}
+                      onGesture={handleTileGesture}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* <div className="video-grid">
+                {participants.map((p, idx) => {
+                  const isLocal = idx === 0;
+                  const stream = isLocal ? localStream : p.stream || null;
                   return (
                     <VideoTile
                       key={p.id}
@@ -167,7 +309,7 @@ function Meeting() {
                     />
                   );
                 })}
-              </div>
+              </div> */}
             </div>
           </section>
 

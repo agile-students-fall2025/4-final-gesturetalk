@@ -1,4 +1,5 @@
 import React from "react";
+import { FiVideo, FiVideoOff, FiMic, FiMicOff } from "react-icons/fi";
 
 // simple control bar with mic, cam, gestures, end
 function ControlsBar(props) {
@@ -10,6 +11,7 @@ function ControlsBar(props) {
         title={props.micOn ? "Mute mic" : "Unmute mic"}
       >
         {props.micOn ? "Mic On" : "Mic Off"}
+        {props.micOn ? <FiMic/> : <FiMicOff/>}
       </button>
 
       <button
@@ -17,7 +19,9 @@ function ControlsBar(props) {
         onClick={props.onToggleCam}
         title={props.camOn ? "Turn camera off" : "Turn camera on"}
       >
+        
         {props.camOn ? "Cam On" : "Cam Off"}
+        {props.camOn ? <FiVideo /> : <FiVideoOff/>}
       </button>
 
       <button
