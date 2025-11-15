@@ -1,14 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Narnoor&family=MuseoModerno&display=swap');
 
+/* Match home screen background and base styling */
+/* ensure predictable box sizing */
+*, *::before, *::after { box-sizing: border-box; }
+
 #profile-content {
   width: 100vw;
-  height: 100vh;
-  background: conic-gradient(from 200deg at 68.75% 39.99%, #ABC4FF 3.663443550467491deg, #EDF2FB 60.1590621471405deg, #EDF1FB 130.93648552894592deg, #EA9CD9 199.03846979141235deg);
+  min-height: 100vh;
+  /* Use same background image as Home for consistency */
+  background-image: url("../public/background.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  /* use same base font as Home */
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+  padding: 20px; /* ensure content doesn't touch edges */
 }
 
 #gradient-blob {
@@ -34,19 +46,22 @@
   margin: 0;
 }
 
+/* Make profile card visually consistent with Home's card styles */
+/* responsive, same scale as Home cards */
 #profile-card {
   position: relative;
-  width: 50%;
-  max-width: 550px;
-  background: rgba(255, 255, 255, 0.87);
-  border-radius: 70px;
-  box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
+  width: min(720px, 92%); /* slightly narrower */
+  max-width: 720px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 28px 24px; /* reduced padding to save vertical space */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 1;
-  padding: 30px 25px;
-  transform: scale(0.85);
+  margin: 0 auto;
 }
 
 #profile-card .close-btn {
@@ -72,9 +87,10 @@
 #profile-title {
   font-family: 'Narnoor', serif;
   font-weight: 400;
-  font-size: 48px;
+  /* match Home modal/title scale (1.5rem) */
+  font-size: 1.5rem;
   color: #000;
-  margin: 0 0 30px 0;
+  margin: 0 0 18px 0;
   line-height: normal;
 }
 
@@ -84,20 +100,22 @@
 }
 
 #profile-image {
-  width: 149px;
-  height: 149px;
-  border-radius: 149px;
+  width: 110px;
+  height: 110px;
+  border-radius: 110px;
   overflow: hidden;
+  background: #f3f4f8; /* subtle fill so contain doesn't look like a hole */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #profile-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  /* Adjust vertical position to better center human faces from external avatars
-    (Google). If this still clips too much at the top, try a smaller percent
-    (e.g. 30%) or switch to object-fit: contain. */
-  object-position: center 35%;
+  /* Use contain so the full avatar is visible inside the circular frame. */
+  object-fit: contain;
+  object-position: center center;
   display: block;
 }
 
@@ -122,27 +140,25 @@
 #username {
   font-family: 'Narnoor', serif;
   font-weight: 400;
-  font-size: 36px;
+  /* slightly smaller than title; match Home greeting scale */
+  font-size: 1.125rem;
   color: #000;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 14px;
   line-height: normal;
 }
 
+/* Inputs: smaller padding/height to avoid overflow at 100% zoom */
 #profile-card input {
   width: 80%;
-  padding-top: 20px;
-  padding-bottom: 25px;
-  padding-left: 10%;
-  padding-right: 10%;
-  margin-bottom: 20px;
-  border-radius: 17px;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(215, 220, 240, 0.00) 0%, rgba(255, 255, 255, 0.54) 100%);
-  box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
-  color: black;
-  font-family: 'Narnoor', serif;
-  vertical-align: middle;
-  font-size: 24px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.6);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+  color: #111;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem; /* match Home modal-input */
 }
 
 #profile-card input::placeholder {
@@ -151,31 +167,34 @@
 }
 
 #profile-card button {
-  width: 276px;
-  height: 77px;
-  background-color: black;
-  color: white;
-  border-radius: 17px;
-  font-size: 24px;
-  font-family: 'Narnoor', serif;
-  padding: 0;
+  /* match input field sizing */
+  width: 80%;
+  padding: 10px 14px;
+  background-color: #000;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 1rem; /* match Home create-btn/modal button */
+  font-family: 'Poppins', sans-serif;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 #profile-card button:hover {
-  background-color: rgb(145, 97, 218);
+  background-color: #333;
 }
 
+/* button spacing reduced */
 #profile-card .save-btn {
-  margin-top: 30px;
-  margin-bottom: 15px;
+  margin-top: 18px;
+  margin-bottom: 10px;
 }
 
 #profile-card .logout-btn {
-  margin-top: 0;
-  margin-bottom: 15px;
+  margin-top: 6px;
+  margin-bottom: 6px;
 }
 
 @media (max-width: 800px) {
