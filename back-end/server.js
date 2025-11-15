@@ -1,19 +1,86 @@
-import app from './app.js'
+import express from "express";
+import axios from "axios";
+import dotenv from "dotenv";
+import morgan from "morgan";
+import cors from "cors";
 import http from "http";
-import { regSocketServer } from "./src/socket/index.js";
+import { Server } from "socket.io";
 
-// attach socket to the server
+dotenv.config(); 
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(morgan("dev"));
+
 const server = http.createServer(app);
-regSocketServer(server);
 
-const PORT = process.env.PORT || 5000; // change this later when deploy
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",  // front-end runs on 3000
+    methods: ["GET", "POST"]
+  },
+});
 
-const listener = server.listen(PORT, function () {
-  console.log(`Server running on port: ${PORT}`)
-})
+// Track which room each peer is in
+const peers = {};
 
-const close = () => {
-  listener.close()
+io.on("connection", (socket) => {
+  console.log("Connected:", socket.id);
+
+  // ---- Join a room ----
+  socket.on("join-room", (roomID) => {
+    peers[socket.id] = roomID;
+    socket.join(roomID);
+    console.log(`Socket ${socket.id} joined room ${roomID}`);
+    // Notify other peers in the room that a new user joined
+    socket.to(roomID).emit("user-joined", socket.id);
+  });
+
+  // ---- Offer: route to specific target peer ----
+  socket.on("offer", (data) => {
+    const { target, sdp } = data;
+    console.log(`Offer from ${socket.id} to ${target}`);
+    io.to(target).emit("offer", { sdp, sender: socket.id });
+  });
+
+  // ---- Answer: route to specific target peer ----
+  socket.on("answer", (data) => {
+    const { target, sdp } = data;
+    console.log(`Answer from ${socket.id} to ${target}`);
+    io.to(target).emit("answer", { sdp, sender: socket.id });
+  });
+
+  // ---- ICE Candidate: route to specific target peer ----
+  socket.on("ice-candidate", (data) => {
+    const { target, candidate, sdpMid, sdpMLineIndex } = data;
+    console.log(`ICE candidate from ${socket.id} to ${target}`);
+    io.to(target).emit("ice-candidate", {
+      candidate,
+      sdpMid,
+      sdpMLineIndex,
+      sender: socket.id
+    });
+  });
+
+  // ---- Disconnect ----
+  socket.on("disconnect", () => {
+    console.log("Disconnected:", socket.id);
+    const roomID = peers[socket.id];
+    delete peers[socket.id];
+    if (roomID) {
+      socket.to(roomID).emit("user-disconnected", socket.id);
+    }
+  });
+});
+
+function error(err, req, res, next) {
+  console.error(err.stack);
+  res.status(500).send("Internal Server Error");
 }
 
-export { close }
+app.use(error);
+
+server.listen(3001, () => {
+  console.log(`Listening on Port 3001`);
+});
