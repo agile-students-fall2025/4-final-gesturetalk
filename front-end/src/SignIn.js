@@ -1,5 +1,5 @@
 import './SignIn.css';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
 import UserContext from './contexts/UserContext';
@@ -7,20 +7,49 @@ import UserContext from './contexts/UserContext';
 function SignIn(){
         const navigate = useNavigate();
         const { setCurrentUser } = useContext(UserContext);
+        const [email, setEmail] = useState('');
+        const [password, setPassword] = useState('');
+        const [error, setError] = useState('');
+        const [loading, setLoading] = useState(false);
 
         const toSignUp = () => {
                 navigate("/signup"); 
         };
 
-        const toHome = () => {
-                navigate("/home"); 
-        };
-
-        const checkPass = () => {
-             // need to check email and password from db!!!
-             // if no match, err message is "no account associated with email"
-             // if pass no match email, err msg is "incorrect password"
-             // ^ on that note must make err msg element & edit Sign in btn onClick checkPass
+        // Sign in with email/password from database
+        const handleEmailSignIn = async () => {
+                if (!email || !password) {
+                        setError('Please enter email and password');
+                        return;
+                }
+                
+                setLoading(true);
+                setError('');
+                
+                try {
+                        const response = await fetch('http://localhost:5000/api/auth/signin', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email, password }),
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (!data.ok) {
+                                setError(data.error || 'Sign in failed');
+                                setLoading(false);
+                                return;
+                        }
+                        
+                        // Set user in context and localStorage
+                        setCurrentUser(data.user);
+                        localStorage.setItem('currentUser', JSON.stringify(data.user));
+                        navigate('/home');
+                } catch (err) {
+                        console.error('Sign in error:', err);
+                        setError('Network error or server unavailable');
+                        setLoading(false);
+                }
         };
 
         // on success from @react-oauth/google
@@ -56,9 +85,24 @@ function SignIn(){
                         <img src='./shuwa.png'/>
                         <p id="hook">get started by signing in</p>
                         <div id="signin-form">
-                                <input id='usernameInput' type='username' placeholder='email'/>
-                                <input type='password' placeholder='password'/>
-                                <button onClick={toHome}>Sign in</button>
+                                <input 
+                                        id='emailInput' 
+                                        type='email' 
+                                        placeholder='email'
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                />
+                                <input 
+                                        id='passwordInput'
+                                        type='password' 
+                                        placeholder='password'
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                />
+                                {error && <p style={{ color: 'red', fontSize: '12px' }}>{error}</p>}
+                                <button onClick={handleEmailSignIn} disabled={loading}>
+                                        {loading ? 'Signing in...' : 'Sign in'}
+                                </button>
                                 <a onClick={toSignUp}>Getting started? Sign Up Here</a>
 
                                 <div style={{ marginTop: 12 }}>
