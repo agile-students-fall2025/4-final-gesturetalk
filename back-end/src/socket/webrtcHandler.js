@@ -4,12 +4,12 @@ const peers = {}
 
 const regWebRTCHandlers = (io, socket) => {
     // join-room
-    socket.on("join-room", (roomID) => {
-        peers[socket.id] = roomID
-        socket.join(roomID)
-        console.log(`Socket: ${socket.id} joined Room: ${roomID}`)
+    socket.on("join-room", (roomId) => {
+        peers[socket.id] = roomId
+        socket.join(roomId)
+        console.log(`Socket: ${socket.id} joined Room: ${roomId}`)
         // emit to peers
-        socket.to(roomID).emit("user-joined", socket.id)
+        socket.to(roomId).emit("user-joined", socket.id)
     })
 
     // offer

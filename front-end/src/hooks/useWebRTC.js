@@ -5,173 +5,220 @@ import { useSocket } from "./useSocket";
 import { rtcConfig } from "../utils/rtcConfig";
 
 export const useWebRTC = (roomID) => {
-  const {
-    joinRoom,
-    sendOffer,
-    sendAnswer,
-    sendICECandidate,
-    onUserJoined,
-    onOffer,
-    onAnswer,
-    onICECandidate,
-    onUserDisconnected
-  } = useSocket();
+    const {
+        socket,
+        joinRoom,
+        sendOffer,
+        sendAnswer,
+        sendICECandidate,
+        onUserJoined,
+        onOffer,
+        onAnswer,
+        onICECandidate,
+        onUserDisconnected
+    } = useSocket();
 
-  const pcRef = useRef(null);             // RTCPeerConnection
-  const localStreamRef = useRef(null);    // MediaStream from getUserMedia
-  const [remoteStream, setRemoteStream] = useState(null);
-  const [inCall, setInCall] = useState(false);
+    // Stores multiple peer connections: { socketId: RTCPeerConnection }
+    const peerConnections = useRef({});
+    const localStreamRef = useRef(null);    // MediaStream from getUserMedia
+    // Stores multiple remote streams: { socketId: MediaStream }
+    const [remoteStreams, setRemoteStreams] = useState({});
+    const [inCall, setInCall] = useState(false);
 
-  // initialize RTCPeerConnection + local media (videa & audio)
-  useEffect(() => {
-    let isMounted = true;
+    // initialize RTCPeerConnection + local media (videa & audio)
+    // run once on mount
 
-    const setup = async () => {
-      // get local media
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
+    useEffect(() => {
+        let isMounted = true;
 
-      if (!isMounted) return;
+        const setup = async () => {
+            // get camera & mic
+            const localStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
 
-      localStreamRef.current = localStream;
+            if (!isMounted) return;
 
-      // create peer connection
-      const pc = new RTCPeerConnection(rtcConfig);
-      pcRef.current = pc;
+            localStreamRef.current = localStream;
 
-      // add local tracks to connection
-      localStream.getTracks().forEach(track => {
-        pc.addTrack(track, localStream);
-      });
+            // join the room
+            if (roomID) joinRoom(roomID);
+        };
 
-      // when we get remote tracks -> update state
-      pc.ontrack = (event) => {
-        const [stream] = event.streams;
-        setRemoteStream(stream);
-        setInCall(true);
-      };
+        // call setup()
+        setup();
 
-      // when we discover ICE candidates -> send them via signaling
-      pc.onicecandidate = (event) => {
-        if (event.candidate && remoteSocketIdRef.current) {
-          sendICECandidate(remoteSocketIdRef.current, event.candidate);
+        // clean up when component unmounts
+        return () => {
+            isMounted = false;
+
+            // close all peer connections
+            Object.values(peerConnections.current).forEach(pc => pc.close());
+            peerConnections.current = {};
+
+            // stop camera & mic
+            if (localStreamRef.current) {
+                localStreamRef.current.getTracks().forEach(t => t.stop());
+            }
+
+            setRemoteStreams({});
+            setInCall(false);
+        };
+    }, [roomID, joinRoom]);
+
+    // peer connection per socketId
+    const createPeerConnection = (socketId) => {
+        console.log("Creating new RTCPeerConnection for:", socketId);
+
+        const pc = new RTCPeerConnection(rtcConfig);
+        peerConnections.current[socketId] = pc;
+
+        // add local tracks to curr pc
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => {
+                pc.addTrack(track, localStreamRef.current);
+            });
+        } else {
+            console.warn("Local stream not ready yet when creating PC:", socketId);
         }
-      };
+
+        // receive remote stream
+        pc.ontrack = (event) => {
+            const [stream] = event.streams;
+
+            setRemoteStreams(prev => ({
+                ...prev,
+                [socketId]: stream
+            }));
+
+            setInCall(true);
+        };
+
+        // when discover ICE → send to specific peer
+        pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                sendICECandidate(socketId, event.candidate);
+            }
+        };
+
+        return pc;
     };
 
-    setup();
+    // when someone joins -> send them an offer
+    useEffect(() => {
+        const handleUserJoined = async (newUserId) => {
+            console.log("User joined:", newUserId);
 
-    return () => {
-      isMounted = false;
-      if (pcRef.current) {
-        pcRef.current.close();
-        pcRef.current = null;
-      }
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(t => t.stop());
-        localStreamRef.current = null;
-      }
-      setRemoteStream(null);
-      setInCall(false);
+            const pc = createPeerConnection(newUserId);
+
+            // caller sends offer
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            sendOffer(newUserId, offer);
+        };
+
+        onUserJoined(handleUserJoined);
+
+        return () => {
+            socket.off("user-joined", handleUserJoined);
+        };
+    }, []);
+
+    // when receive an offer -> create answer
+    useEffect(() => {
+        const handleOffer = async ({ sdp, sender }) => {
+            console.log("Received OFFER from:", sender);
+
+            // create or retrieve pc
+            const pc =
+                peerConnections.current[sender] ||
+                createPeerConnection(sender);
+
+            await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            sendAnswer(sender, answer);
+        };
+
+        onOffer(handleOffer);
+
+        return () => {
+            socket.off("offer", handleOffer);
+        };
+    }, []);
+
+    // when receive an answer -> sets remoteDescription = answer
+    useEffect(() => {
+        const handleAnswer = async ({ sdp, sender }) => {
+            console.log("Received ANSWER from:", sender);
+
+            const pc = peerConnections.current[sender];
+            if (!pc) return;
+
+            await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        };
+
+        onAnswer(handleAnswer);
+
+        return () => {
+            socket.off("answer", handleAnswer);
+        };
+    }, []);
+
+    // when receive ICE
+    useEffect(() => {
+        const handleICE = async ({ sdp, sender }) => {
+            console.log("Received ICE from:", sender);
+
+            const pc = peerConnections.current[sender];
+            if (!pc) return;
+
+            try {
+                await pc.addIceCandidate(new RTCIceCandidate(sdp));
+            } catch (e) {
+                console.error("Error adding ICE:", e);
+            }
+        };
+
+        onICECandidate(handleICE);
+
+        return () => {
+            socket.off("ice-candidate", handleICE);
+        };
+    }, []);
+
+    // handle user disconnect
+    useEffect(() => {
+        const handleUserDisconnected = (socketId) => {
+            console.log("Peer disconnected:", socketId);
+
+            if (peerConnections.current[socketId]) {
+                peerConnections.current[socketId].close();
+                delete peerConnections.current[socketId];
+            }
+
+            setRemoteStreams(prev => {
+                const copy = { ...prev };
+                delete copy[socketId];
+                return copy;
+            });
+        };
+
+        onUserDisconnected(handleUserDisconnected);
+
+        return () => {
+            socket.off("user-disconnected", handleUserDisconnected);
+        };
+    }, []);
+
+    // return what UI needs
+    return {
+        localStream: localStreamRef.current,
+        remoteStreams,   // dictionary of remote media streams
+        inCall
     };
-  }, []); // run once
-
-  // keep track of who we’re talking to
-  const remoteSocketIdRef = useRef(null);
-
-  // join room via signaling
-  useEffect(() => {
-    if (!roomID) return;
-    joinRoom(roomID);
-  }, [roomID, joinRoom]);
-
-  // signaling (what happens when someone joins our room)
-  useEffect(() => {
-    // when another user joins -> existing user becomes the caller
-    const handleUserJoined = async (newUserId) => {
-      remoteSocketIdRef.current = newUserId;
-
-      const pc = pcRef.current;
-      if (!pc) return;
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      // send SDP offer via socket
-      sendOffer(newUserId, offer);
-    };
-
-    onUserJoined(handleUserJoined);
-  }, [onUserJoined, sendOffer]);
-
-  // signaling (when we receive an offer) -> send answer
-  useEffect(() => {
-    const handleOffer = async ({ sdp, sender }) => {
-      remoteSocketIdRef.current = sender;
-
-      const pc = pcRef.current;
-      if (!pc) return;
-
-      await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-
-      sendAnswer(sender, answer);
-    };
-
-    onOffer(handleOffer);
-  }, [onOffer, sendAnswer]);
-
-  // signaling (when we receive an answer)
-  useEffect(() => {
-    const handleAnswer = async ({ sdp }) => {
-      const pc = pcRef.current;
-      if (!pc) return;
-
-      await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-    };
-
-    onAnswer(handleAnswer);
-  }, [onAnswer]);
-
-  // signaling (when we receive an ICE candidate)
-  useEffect(() => {
-    const handleICE = async ({ sdp }) => {
-      const pc = pcRef.current;
-      if (!pc) return;
-
-      try {
-        await pc.addIceCandidate(new RTCIceCandidate(sdp));
-      } catch (err) {
-        console.error("Error adding ICE candidate", err);
-      }
-    };
-
-    onICECandidate(handleICE);
-  }, [onICECandidate]);
-
-  // handle remote user disconnect
-  useEffect(() => {
-    const handleUserDisconnected = (socketId) => {
-      if (remoteSocketIdRef.current === socketId) {
-        remoteSocketIdRef.current = null;
-        setRemoteStream(null);
-        setInCall(false);
-        if (pcRef.current) {
-          pcRef.current.close();
-          pcRef.current = null;
-        }
-      }
-    };
-
-    onUserDisconnected(handleUserDisconnected);
-  }, [onUserDisconnected]);
-
-  return {
-    localStream: localStreamRef.current,
-    remoteStream,
-    inCall,
-  };
 };

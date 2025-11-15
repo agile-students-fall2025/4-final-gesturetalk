@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { useSocket } from "./hooks/useSocket";
 import { useWebRTC } from "./hooks/useWebRTC";
 import VideoTile from "./components/VideoTile";
 import ControlsBar from "./components/ControlsBar";
@@ -16,8 +15,7 @@ function Meeting() {
   const { meetingId } = useParams();
 
   // initialize socket & webRTC
-  const { socket } = useSocket();
-  const { pc, startMedia, connectToPeers } = useWebRTC(socket);
+  const { localStream, remoteStreams } = useWebRTC(meetingId);
 
   // ---- Controls state ----
   const [micOn, setMicOn] = useState(true);
@@ -25,9 +23,7 @@ function Meeting() {
   const [gestureOn, setGestureOn] = useState(false); // global toggle for all tiles
   const [currentUser, setCurrentUser] = useState(null);
 
-  // ---- Local media stream (goes to top-left tile) ----
-  const [localStream, setLocalStream] = useState(null);
-
+  /*
   // ---- Participants (placeholders for remote) ----
   const participants = [
     { id: "1", isLocal: true },
@@ -45,7 +41,19 @@ function Meeting() {
     { id: 5, who: "Display_Name__1", t: "00:06:27", text: "My favorite color is blue", color: "pink" },
     { id: 6, who: "Display_Name__1", t: "00:06:32", text: "Oh wow thanks for sharing.", color: "indigo" },
   ];
-  const [messages, setMessages] = useState(initialMessages);
+  */
+
+  const tiles = [
+    { id: "local", isLocal: true, stream: localStream },
+    ...Object.entries(remoteStreams).map(([socketId, stream]) => ({
+      id: socketId,
+      isLocal: false,
+      stream
+    }))
+  ];
+
+  const [messages, setMessages] = useState([]);
+
   const appendMessage = (who, text, color = "indigo") => {
     setMessages((prev) => [
       ...prev,
@@ -59,12 +67,8 @@ function Meeting() {
     ]);
   };
 
-  
+  /*
   useEffect(() => {
-    // ---- webRTC & socket.io initialization ----
-    socket.joinRoom(meetingId)
-    // startMedia()
-    // connectToPeers()
 
     // ---- Start local camera at mount ----
     let streamRef = null;
@@ -87,6 +91,7 @@ function Meeting() {
       if (streamRef) streamRef.getTracks().forEach((t) => t.stop());
     };
   }, []);
+  */
 
   // ---- Camera toggle: enable/disable video track (don’t stop track) ----
   useEffect(() => {
@@ -151,22 +156,18 @@ function Meeting() {
               <div className="meeting-title-1">Meeting Name</div>
 
               <div className="video-grid">
-                {participants.map((p, idx) => {
-                  const isLocal = idx === 0;
-                  const stream = isLocal ? localStream : p.stream || null;
-                  return (
+                {tiles.map( t => (
                     <VideoTile
-                      key={p.id}
-                      stream={stream}
-                      isLocal={isLocal}
+                      key={t.id}
+                      stream={t.stream || null}
+                      isLocal={t.isLocal}
                       gestureOn={gestureOn}
-                      badgeText={isLocal ? "You" : `User ${idx + 1}`}
+                      badgeText={t.isLocal ? "You" : t.id}
                       // optional: pass a class to restyle badge color per tile
-                      badgeClass={isLocal ? "" : ""}
+                      badgeClass={t.isLocal ? "" : ""}
                       onGesture={handleTileGesture}
                     />
-                  );
-                })}
+                ))}
               </div>
             </div>
           </section>

@@ -19,7 +19,7 @@ export const useSocket = () => {
         return () => {
             socket.disconnect();
         };
-    }, [socket]);
+    }, []);
 
     
     // -------------------------------
@@ -28,8 +28,8 @@ export const useSocket = () => {
 
     // ---- Emitters ----
 
-    const joinRoom = (roomID) =>
-        socket.emit("join-room", roomID);
+    const joinRoom = (roomId) =>
+        socket.emit("join-room", roomId);
 
     const sendOffer = (target, sdp) =>
         socket.emit("offer", { target, sdp });
@@ -62,6 +62,8 @@ export const useSocket = () => {
 
     const onUserDisconnected = (cb) =>
         socket.on("user-disconnected", cb);
+
+
 
 
     // return socket instance + helpers + event hooks
