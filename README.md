@@ -44,6 +44,14 @@ Go to back-end dir
  run npm install to install all dependencies:
 
 ``` npm install ```
+
+Before running back-end, please make a .env in the back-end folder with the following:
+~~~
+OPENROUTER_MODEL=openai/gpt-oss-20b:free
+OPENROUTER_API_KEY=[api key]
+MONGODB_URI=mongodb+srv://[username]:[db-password]@cluster0.qok6wpj.mongodb.net/?appName=Cluster0
+PORT=5000
+~~~
  
  run npm start to run the Express.js server & MongoDB
 
