@@ -73,7 +73,7 @@ async function loadASLModel() {
       const labels = await labelsResp.json();
       ASLModel = model;
       ASLLabels = labels;
-      console.log("✅ ASL model + labels loaded", labels);
+      console.log(" ASL model + labels loaded", labels);
     })();
   }
   return aslLoadingPromise;
