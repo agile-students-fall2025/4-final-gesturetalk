@@ -5,6 +5,8 @@ import morgan from "morgan";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
+import mongoose from 'mongoose';
+import authRoutes from './src/routes/authRoutes.js';
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -18,6 +20,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
+
+// Mount auth routes
+app.use('/api/auth', authRoutes);
+
+// Connect to MongoDB if URI provided
+const MONGODB_URI = process.env.MONGODB_URI;
+if (MONGODB_URI) {
+  mongoose.connect(MONGODB_URI).then(() => console.log('MongoDB connected')).catch((err) => console.error('MongoDB connection error:', err));
+} else {
+  console.warn('MONGODB_URI not set; auth endpoints will fail until configured');
+}
 
 
 
