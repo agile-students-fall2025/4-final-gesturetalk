@@ -2,25 +2,65 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as tf from "@tensorflow/tfjs";
 
-// ========= MediaPipe globals (lazy-loaded) =========
-let FilesetResolver;
-let GestureRecognizer;
-let DrawingUtils;
-let mpLoadingPromise = null;
+// =========================
+//  MediaPipe loader (CDN)
+// =========================
+const MP_SCRIPTS = [
+  "https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js",
+  "https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js",
+  "https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js",
+];
 
-async function loadTasksVision() {
-  if (!mpLoadingPromise) {
-    mpLoadingPromise = import("@mediapipe/tasks-vision").then((mod) => {
-      FilesetResolver = mod.FilesetResolver;
-      GestureRecognizer = mod.GestureRecognizer;
-      DrawingUtils = mod.DrawingUtils;
-      return mod;
+// inject scripts once, then reuse
+function loadMediapipeFromCDN() {
+  if (!window.__mpHandsPromise) {
+    window.__mpHandsPromise = Promise.all(
+      MP_SCRIPTS.map(
+        (src) =>
+          new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src = src;
+            s.async = true;
+            s.onload = () => resolve();
+            s.onerror = (e) => reject(e);
+            document.body.appendChild(s);
+          })
+      )
+    ).then(() => {
+      const Hands = window.Hands;
+      const Camera = window.Camera;
+      const { drawConnectors, drawLandmarks } = window;
+
+      if (!Hands || !Camera || !drawConnectors || !drawLandmarks) {
+        throw new Error("MediaPipe Hands globals not found after loading.");
+      }
+      return { Hands, Camera, drawConnectors, drawLandmarks };
     });
   }
-  return mpLoadingPromise;
+  return window.__mpHandsPromise;
 }
 
-// ========= ASL model globals (lazy-loaded) =========
+// keep ONE Hands instance (one WebGL context) globally
+function getGlobalHands(HandsCtor) {
+  if (!window.__aslHandsInstance) {
+    const hands = new HandsCtor({
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`,
+    });
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6,
+    });
+    window.__aslHandsInstance = hands;
+  }
+  return window.__aslHandsInstance;
+}
+
+// =========================
+//  ASL model globals
+// =========================
 let ASLModel = null;
 let ASLLabels = null;
 let aslLoadingPromise = null;
@@ -39,48 +79,22 @@ async function loadASLModel() {
   return aslLoadingPromise;
 }
 
-// ========= Small helpers =========
-function flattenLandmarks21(lms) {
-  // lms: array of 21 {x,y,z}
-  const out = new Array(63).fill(0);
-  if (!lms || !lms.length) return out;
-  const n = Math.min(21, lms.length);
-  for (let i = 0; i < n; i++) {
-    const p = lms[i];
-    const base = i * 3;
-    out[base] = p.x;
-    out[base + 1] = p.y;
-    out[base + 2] = p.z ?? 0;
-  }
-  return out;
-}
+// =========================
+//  Hook: ASL from video
+// =========================
+const SEQ_LENGTH = 30;
+const HAND_DIM = 126; // 63 left + 63 right
 
-// ========== Hook: read gestures from <video>, draw on <canvas>, call onGesture() ==========
-function useReadGestureFromVideo({
-  videoEl,
-  canvasEl,
-  enabled,
-  onGesture,
-  googleMinScore = 0.75,
-  aslMinScore = 0.80,
-  smoothWindow = 5,
-}) {
-  const recRef = useRef(null);
-  const frameRef = useRef(null);
+function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
   const ctxRef = useRef(null);
-  const drawerRef = useRef(null);
+  const seqRef = useRef([]); // [N, 126]
+  const historyRef = useRef([]); // smoothing
+  const cameraRef = useRef(null);
 
-  // For smoothing whichever final label we output
-  const historyRef = useRef([]);
-
-  // For ASL: 30-frame ring buffer of 126-dim features
-  const seqRef = useRef([]);
-
-  // Majority vote + average score over last N frames
-  function pushAndSmooth(label, score) {
+  function pushAndSmooth(label, score, windowSize = 5) {
     const buf = historyRef.current;
     buf.push({ label, score });
-    if (buf.length > smoothWindow) buf.shift();
+    if (buf.length > windowSize) buf.shift();
 
     const counts = new Map();
     for (const item of buf) {
@@ -88,16 +102,17 @@ function useReadGestureFromVideo({
     }
     let bestLabel = null;
     let bestCount = -1;
-    counts.forEach((c, k) => {
+    for (const [k, c] of counts.entries()) {
       if (c > bestCount) {
         bestCount = c;
         bestLabel = k;
       }
-    });
+    }
     const subset = buf.filter((x) => x.label === bestLabel);
     const avgScore =
       subset.reduce((acc, x) => acc + x.score, 0) /
       Math.max(1, subset.length);
+
     return { label: bestLabel, score: avgScore };
   }
 
@@ -107,188 +122,163 @@ function useReadGestureFromVideo({
     async function init() {
       if (!enabled || !videoEl) return;
 
-      await Promise.all([loadTasksVision(), loadASLModel()]);
+      await Promise.all([loadMediapipeFromCDN(), loadASLModel()]);
+      if (cancelled) return;
 
-      const fileset = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-      );
+      const { Hands, Camera, drawConnectors, drawLandmarks } =
+        await loadMediapipeFromCDN();
 
-      const recognizer = await GestureRecognizer.createFromOptions(fileset, {
-        baseOptions: {
-          delegate: "GPU",
-          modelAssetPath:
-            "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
-        },
-        runningMode: "VIDEO",
-        numHands: 2,
-      });
-
-      if (cancelled) {
-        recognizer.close();
-        return;
-      }
-
-      recRef.current = recognizer;
-
-      // Canvas / drawing
+      // canvas context
       if (canvasEl) {
-        const ctx = canvasEl.getContext("2d");
-        ctxRef.current = ctx;
-        drawerRef.current = ctx ? new DrawingUtils(ctx) : null;
+        ctxRef.current = canvasEl.getContext("2d");
       }
 
-      const schedule = (next) => {
-        if (videoEl.requestVideoFrameCallback) {
-          frameRef.current = videoEl.requestVideoFrameCallback(() => next());
-        } else {
-          frameRef.current = requestAnimationFrame(next);
+      // *** reuse ONE global Hands instance ***
+      const hands = getGlobalHands(Hands);
+
+      // feature extractor with flipped L/R to match training
+      function extractHandFeatures(results) {
+        let left = Array(63).fill(0);
+        let right = Array(63).fill(0);
+
+        const handsLms = results.multiHandLandmarks;
+        const handedness = results.multiHandedness;
+
+        if (handsLms && handedness) {
+          handsLms.forEach((hand, idx) => {
+            const side = handedness[idx].label; // "Left" / "Right"
+            const flat = hand.flatMap((lm) => [lm.x, lm.y, lm.z]); // 21*3
+
+            // flip slots to match your training
+            if (side === "Left") {
+              right = flat;
+            } else if (side === "Right") {
+              left = flat;
+            }
+          });
         }
-      };
 
-      const loop = () => {
-        if (cancelled || !recRef.current || !videoEl) return;
+        return left.concat(right).map((v) => (Number.isFinite(v) ? v : 0)); // 126
+      }
 
-        if (videoEl.readyState < 2) {
-          schedule(loop);
+      // onResults is replaced each time we call it, so sharing Hands is fine
+      hands.onResults((results) => {
+        if (cancelled) return;
+        const ctx = ctxRef.current;
+        if (!ctx || !canvasEl) return;
+
+        const w = videoEl.videoWidth || 640;
+        const h = videoEl.videoHeight || 480;
+        if (canvasEl.width !== w) canvasEl.width = w;
+        if (canvasEl.height !== h) canvasEl.height = h;
+
+        // draw video frame
+        ctx.save();
+        ctx.clearRect(0, 0, w, h);
+        if (results.image) {
+          ctx.drawImage(results.image, 0, 0, w, h);
+        }
+
+        // draw landmarks
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length) {
+          for (const lm of results.multiHandLandmarks) {
+            drawConnectors(ctx, lm, window.HAND_CONNECTIONS, {
+              color: "#00FF00",
+              lineWidth: 3,
+            });
+            drawLandmarks(ctx, lm, {
+              color: "#FF0000",
+              lineWidth: 1,
+            });
+          }
+        }
+        ctx.restore();
+
+        const hasHands =
+          results.multiHandLandmarks &&
+          results.multiHandLandmarks.length > 0;
+
+        // if no hands → slowly forget sequence and skip prediction
+        if (!hasHands) {
+          const seq = seqRef.current;
+          if (seq.length > 0) seq.shift();
           return;
         }
 
-        const ctx = ctxRef.current;
-        const drawer = drawerRef.current;
+        // build feature sequence
+        const features = extractHandFeatures(results); // 126
+        const seq = seqRef.current;
+        seq.push(features);
+        if (seq.length > SEQ_LENGTH) seq.shift();
 
-        // Resize canvas to match video pixels
-        if (canvasEl && ctx) {
-          const w = videoEl.videoWidth || 1280;
-          const h = videoEl.videoHeight || 720;
-          if (canvasEl.width !== w) canvasEl.width = w;
-          if (canvasEl.height !== h) canvasEl.height = h;
+        if (!ASLModel || !ASLLabels || seq.length < SEQ_LENGTH) {
+          return;
         }
 
-        // ---- Run MediaPipe recognizer ----
-        const ts = performance.now();
-        const result = recRef.current.recognizeForVideo(videoEl, ts);
+        // ========= prediction =========
+        const flat = seq.flat();
+        const input = tf.tensor3d(flat, [1, SEQ_LENGTH, HAND_DIM]);
 
-        // ---- Draw landmarks ----
-        if (
-          drawer &&
-          ctx &&
-          result &&
-          Array.isArray(result.landmarks) &&
-          result.landmarks.length > 0
-        ) {
-          ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-          for (const lm of result.landmarks) {
-            drawer.drawLandmarks(lm);
-            if (GestureRecognizer.HAND_CONNECTIONS) {
-              drawer.drawConnectors(lm, GestureRecognizer.HAND_CONNECTIONS);
-            }
-          }
-        } else if (ctx && canvasEl) {
-          ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-        }
+        let bestIdx = 0;
+        let bestScore = 0;
 
-        // ---- GOOGLE GESTURE (built-in) ----
-        let googleGesture = null;
-        if (result && Array.isArray(result.gestures) && result.gestures.length) {
-          const g0 = result.gestures[0];
-          const top = Array.isArray(g0)
-            ? g0[0]
-            : g0?.categories?.[0] ?? null;
+        try {
+          const logits = ASLModel.predict(input);
+          const probs = logits.dataSync(); // Float32Array
 
-          if (top && typeof top.categoryName === "string") {
-            googleGesture = {
-              label: top.categoryName,
-              score: typeof top.score === "number" ? top.score : 0,
-              source: "google",
-            };
-          }
-        }
-
-        // ---- ASL FEATURES (2 hands → 126 dims) ----
-        let aslGesture = null;
-        if (result && ASLModel && ASLLabels) {
-          const handsLm = result.landmarks || [];
-          const handed = result.handednesses || [];
-
-          let left63 = new Array(63).fill(0);
-          let right63 = new Array(63).fill(0);
-
-          for (let i = 0; i < handsLm.length; i++) {
-            const lm = handsLm[i];
-            const info = handed[i]?.[0];
-            const which =
-              info?.displayName || info?.categoryName || "Unknown";
-
-            const flat = flattenLandmarks21(lm);
-            if (which === "Right") {
-              right63 = flat;
-            } else if (which === "Left") {
-              left63 = flat;
-            } else {
-              // If unknown, just put first hand into right, second into left
-              if (i === 0) right63 = flat;
-              else left63 = flat;
-            }
-          }
-
-          const frameFeat = left63.concat(right63); // 126
-          const seq = seqRef.current;
-          seq.push(frameFeat);
-          if (seq.length > 30) seq.shift();
-
-          if (seq.length === 30) {
-            // [1, 30, 126]
-            tf.tidy(() => {
-              const input = tf.tensor([seq]);
-              const logits = ASLModel.predict(input);
-              const probs = logits.dataSync(); // Float32Array
-              let bestIdx = 0;
-              let bestScore = probs[0];
-              for (let i = 1; i < probs.length; i++) {
-                if (probs[i] > bestScore) {
-                  bestScore = probs[i];
-                  bestIdx = i;
-                }
+          if (probs && probs.length > 0) {
+            bestIdx = 0;
+            bestScore = probs[0];
+            for (let i = 1; i < probs.length; i++) {
+              if (probs[i] > bestScore) {
+                bestScore = probs[i];
+                bestIdx = i;
               }
-              const label = ASLLabels[bestIdx] || `class_${bestIdx}`;
-              aslGesture = {
-                label,
-                score: bestScore,
-                source: "asl",
-              };
-            });
+            }
           }
+
+          logits.dispose();
+        } catch (e) {
+          console.error("ASL predict error:", e);
+        } finally {
+          input.dispose();
         }
 
-        // ---- Combine according to priority: Google > ASL ----
-        let finalGesture = null;
-
-        if (googleGesture && googleGesture.score >= googleMinScore) {
-          finalGesture = googleGesture;
-        } else if (aslGesture && aslGesture.score >= aslMinScore) {
-          finalGesture = aslGesture;
-        }
+        const label = ASLLabels[bestIdx] || `class_${bestIdx}`;
+        const smoothed = pushAndSmooth(label, bestScore, 5);
 
         if (typeof onGesture === "function") {
-          if (finalGesture) {
-            const smoothed = pushAndSmooth(
-              finalGesture.label,
-              finalGesture.score
-            );
-            onGesture({
-              ...finalGesture,
-              label: smoothed.label,
-              score: smoothed.score,
-            });
-          } else {
-            onGesture(null);
-          }
+          onGesture({
+            label: smoothed.label,
+            score: smoothed.score,
+            source: "asl",
+          });
         }
 
-        schedule(loop);
-      };
+        // draw HUD text
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, 350, 45);
+        ctx.fillStyle = "white";
+        ctx.font = "28px Arial";
+        ctx.fillText(
+          `Prediction: ${smoothed.label} ${(smoothed.score * 100).toFixed(0)}%`,
+          10,
+          32
+        );
+      });
 
-      loop();
+      // Camera is per-tile, but uses shared Hands
+      const camera = new Camera(videoEl, {
+        onFrame: async () => {
+          if (cancelled) return;
+          await hands.send({ image: videoEl });
+        },
+        width: 640,
+        height: 480,
+      });
+
+      cameraRef.current = camera;
+      camera.start();
     }
 
     if (enabled) {
@@ -297,18 +287,22 @@ function useReadGestureFromVideo({
 
     return () => {
       cancelled = true;
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
-      frameRef.current = null;
-      if (recRef.current && typeof recRef.current.close === "function") {
-        recRef.current.close();
-      }
-      recRef.current = null;
-      ctxRef.current = null;
-      drawerRef.current = null;
       historyRef.current = [];
       seqRef.current = [];
+      if (cameraRef.current && cameraRef.current.stop) {
+        try {
+          cameraRef.current.stop();
+        } catch (e) {
+          console.warn("Camera stop error:", e);
+        }
+      }
+      cameraRef.current = null;
+      ctxRef.current = null;
+      // we **do not** close the global Hands instance here,
+      // so WebGL context stays alive and we don't hit the
+      // "Too many active WebGL contexts" limit.
     };
-  }, [enabled, videoEl, canvasEl, googleMinScore, aslMinScore, onGesture, smoothWindow]);
+  }, [enabled, videoEl, canvasEl, onGesture]);
 }
 
 // ========= Simple placeholder icon =========
@@ -333,21 +327,16 @@ export default function VideoTile(props) {
     const hasStream = props.stream instanceof MediaStream;
     if (hasStream) {
       videoRef.current.srcObject = props.stream;
-      videoRef.current
-        .play()
-        .catch(() => {});
+      videoRef.current.play().catch(() => {});
     } else {
       videoRef.current.srcObject = null;
     }
   }, [props.stream]);
 
-  useReadGestureFromVideo({
+  useASLFromVideo({
     videoEl: videoRef.current,
     canvasEl: canvasRef.current,
     enabled: !!props.gestureOn,
-    googleMinScore: 0.75,
-    aslMinScore: 0.8,
-    smoothWindow: 5,
     onGesture: (g) => {
       setGesture(g);
       if (typeof props.onGesture === "function") {
@@ -384,8 +373,7 @@ export default function VideoTile(props) {
             fontWeight: 600,
           }}
         >
-          {gesture.source === "asl" ? "ASL:" : "Gest:"} {gesture.label}{" "}
-          {(gesture.score * 100).toFixed(0)}%
+          ASL: {gesture.label} {(gesture.score * 100).toFixed(0)}%
         </div>
       )}
 
@@ -403,8 +391,8 @@ export default function VideoTile(props) {
               ref={canvasRef}
               className="tile-overlay"
               style={{ opacity: props.gestureOn ? 1 : 0 }}
-              width={1280}
-              height={720}
+              width={640}
+              height={480}
             />
           </>
         ) : (
