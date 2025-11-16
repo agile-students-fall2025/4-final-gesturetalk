@@ -4,11 +4,13 @@
 - Shuwa is a live video conference app designed to translate sign language into summarized text during a meeting, recognizing short and simple signs through a web cam and display translated short summary captions.
 
 # Team Members
-- [Iva Park](https://github.com/ivapark) (*Product Owner* Sprint 1)
-- [Jasmine Fan](https://github.com/jasmine7310) (*Product Owner* Sprint 0)
-- [Terry Cao](https://github.com/cao-exe) (*Scrum Master* Sprint 0) (*Product Owner* Sprint 2)
-- [Walker Tupman](https://github.com/bestole) (*Scrum Master* Sprint 1)
-- [Venetia Liu](https://github.com/venetialiu) (*Scrum Master* Sprint 2)
+| Name | Sprint 0 | Sprint 1 |  Sprint 2 | Sprint 3 |  Sprint 4 |
+| :------- | :------: | -------: | -------: | -------: |  -------: |
+| [Iva Park](https://github.com/ivapark)  | --- | Product Owner |  ---  | ---  | --- |
+| [Jasmine Fan](https://github.com/jasmine7310)  | Product Owner  | ---  |  ---  | ---  | --- |
+| [Terry Cao](https://github.com/cao-exe)  | Scrum Master  |   ---  | Product Owner  | --- | --- |
+| [Walker Tupman](https://github.com/bestole)  | ---  | Scrum Master |  ---  | ---  | --- |
+| [Venetia Liu](https://github.com/venetialiu)  | ---  | ---  | Scrum Master  | ---  | --- |
 
 # Project History
 - Shuwa came to be through the Agile Software Development & DevOps class for Fall 2025. Our team completed a project proposal to work on for the entire semester, the outcome of that being Shuwa. We also wanted to build a sign language interpreter for the sake of accessibility. A person who understands sign language and can readily translate it is not always available. So, by usingShuwa, anyone can translate sign language to text.
@@ -20,14 +22,32 @@
  Copy the repository onto your local computer
 
  Open the terminal and change into the front-end folder with the command:
-> cd front-end
+
+``` cd front-end ```
 
  run npm install to install all dependencies:
-> npm install
- 
- run npm start to run the React.js server
-> npm start
 
+``` npm install ```
+ 
+ run npm start to run the React.js server:
+
+``` npm start ```
+
+Go back to project dir
+
+``` cd .. ```
+
+Go to back-end dir
+
+``` cd back-end ```
+
+ run npm install to install all dependencies:
+
+``` npm install ```
+ 
+ run npm start to run the Express.js server & MongoDB
+
+``` npm start ```
 
 # Additional Information
 - [UX-DESIGN.md](./UX-DESIGN.md)
