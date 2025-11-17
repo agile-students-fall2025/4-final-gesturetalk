@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import authRoutes from './src/routes/authRoutes.js';
 import path from "path";
 import { fileURLToPath } from "url";
+import MeetingRoom from "./src/models/MeetingRoom.js";
 
 dotenv.config(); 
 
@@ -23,6 +24,25 @@ app.use(morgan("dev"));
 
 // Mount auth routes
 app.use('/api/auth', authRoutes);
+// Mount meeting verification route
+app.get('/api/meetings/verify/:meetingId', async (req, res) => {
+  const { meetingId } = req.params
+  try{ 
+    const doesExist = await MeetingRoom.exists({ meetingId });
+    if (doesExist) {
+      res.status(409).json({ ok: false, error: 'Meeting ID already in use' });
+    } else {
+      const meetingRoom = new MeetingRoom({ meetingId });
+      console.log(meetingRoom);
+      await meetingRoom.save();
+      res.status(200).json({ ok: true });
+    }
+  } catch(err) {
+    console.error('Meeting creation err', err);
+  }
+  
+});
+
 
 // Connect to MongoDB if URI provided
 const MONGODB_URI = process.env.MONGODB_URI;

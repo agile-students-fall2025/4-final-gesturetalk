@@ -21,6 +21,11 @@ function Meeting() {
   const { meetingId } = useParams();
   const { currentUser } = useContext(UserContext);
 
+  if (!currentUser) {
+    alert("Please sign in.");
+    navigate("/");
+  }
+
   // ---- Socket & WebRTC state (use refs for persistence) ----
   const socketRef = useRef(null);
   const peerConnectionsRef = useRef({}); // map of peerId -> RTCPeerConnection
