@@ -1,6 +1,7 @@
 import './SignUp.css';
 import { useNavigate } from "react-router-dom";
 import { useContext, useState } from 'react';
+import { jwtDecode } from "jwt-decode";
 import UserContext from './contexts/UserContext';
 
 function SignUp(){
@@ -27,6 +28,13 @@ function SignUp(){
             });
             const data = await res.json();
             if (!data.ok) { setError(data.error || 'Signup failed'); setLoading(false); return; }
+            
+            // store jwt token
+            const token = data.token;
+            if (token) {
+                localStorage.setItem('authToken', token);
+            }
+
             setCurrentUser(data.user);
             localStorage.setItem('currentUser', JSON.stringify(data.user));
             navigate('/home');

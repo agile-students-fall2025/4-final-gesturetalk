@@ -1,4 +1,5 @@
 import express from "express";
+import bodyParser from 'body-parser';
 import axios from "axios";
 import dotenv from "dotenv";
 import morgan from "morgan";
@@ -7,6 +8,8 @@ import http from "http";
 import { Server } from "socket.io";
 import mongoose from 'mongoose';
 import authRoutes from './src/routes/authRoutes.js';
+import callHistoryRoutes from './src/routes/callHistoryRoutes.js';
+import translationLogRoutes from './src/routes/translationLogRoutes.js';
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -17,12 +20,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
+// jwt token
+app.use(bodyParser.json({limit: "30mb", extended: true}));
+app.use(bodyParser.urlencoded({limit: "30mb", extended: true}));
+
+app.use(cors());
+
 // Mount auth routes
 app.use('/api/auth', authRoutes);
+// Call history routes
+app.use('/api/call-history', callHistoryRoutes);
+// Translation Log routes
+app.use('api/translation-log', translationLogRoutes);
 
 // Connect to MongoDB if URI provided
 const MONGODB_URI = process.env.MONGODB_URI;
