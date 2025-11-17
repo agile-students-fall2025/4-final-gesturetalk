@@ -73,3 +73,49 @@ export const signIn = async (req, res) => {
     res.status(500).json({ ok: false, error: 'Server error' });
   }
 };
+
+
+export const googleSignIn = async (req, res) => {
+  try {
+    const { googleToken } = req.body;
+    if (!googleToken) {
+      return res.status(400).json({ ok: false, error: "Missing Google token" });
+    }
+
+    const payload = JSON.parse(
+      Buffer.from(googleToken.split(".")[1], "base64").toString()
+    );
+
+    let user = await User.findOne({ email: payload.email });
+
+    if (!user) {
+      user = new User({
+        email: payload.email,
+        name: payload.name,
+        picture: payload.picture,
+      });
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      ok: true,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        picture: user.picture
+      },
+      token
+    });
+
+  } catch (err) {
+    console.error("googleSignIn error", err);
+    res.status(500).json({ ok: false, error: "Server error" });
+  }
+};
