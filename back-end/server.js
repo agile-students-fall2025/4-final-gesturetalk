@@ -15,6 +15,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { generateSentenceFromSigns } from "./src/translation/sentenceGenerator.js";
 import fs from 'fs';
+import MeetingRoom from "./src/models/MeetingRoom.js";
 
 dotenv.config(); 
 
@@ -69,6 +70,23 @@ app.post("/api/translate", async (req, res) => {
     console.error("Translation error:", err);
     res.status(500).json({ error: "Translation failed" });
   }
+// Mount meeting verification route
+app.get('/api/meetings/verify/:meetingId', async (req, res) => {
+  const { meetingId } = req.params
+  try{ 
+    const doesExist = await MeetingRoom.exists({ meetingId });
+    if (doesExist) {
+      res.status(409).json({ ok: false, error: 'Meeting ID already in use' });
+    } else {
+      const meetingRoom = new MeetingRoom({ meetingId });
+      console.log(meetingRoom);
+      await meetingRoom.save();
+      res.status(200).json({ ok: true });
+    }
+  } catch(err) {
+    console.error('Meeting creation err', err);
+  }
+  
 });
 
 
@@ -153,4 +171,6 @@ app.use(error);
 
 server.listen(3001, () => {
   console.log(`Listening on Port 3001`);
+})
+
 });

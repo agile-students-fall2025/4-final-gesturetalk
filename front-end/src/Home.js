@@ -13,6 +13,11 @@ export default function Home() {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const { currentUser } = useContext(UserContext);
 
+  if (!currentUser) {
+    alert("Please sign in.");
+    navigate("/");
+  }
+
   //  Update time + date
   useEffect(() => {
     function updateClock() {
@@ -45,6 +50,19 @@ export default function Home() {
 
   const handleJoin = async () => {
     try{
+      // fetch to backend to verify meeting code
+      const res = await fetch(`http://localhost:3001/api/meetings/verify/${joinCode}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },  
+        meetingCode: joinCode,
+        meetingName: meetingName,
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error('Invalid meeting code');
+      
+      // if valid, navigate to meeting page
+      // else, alert invalid code
+    
       const meetingId = joinCode;
       setShowJoinModal(false);
       alert(`Joining meeting: ${meetingId}`);
@@ -54,6 +72,8 @@ export default function Home() {
       alert("Invalid meeting code");
     }
   };
+
+
 
   function generateRandomString(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-!@#$%^&*()_+=?!`~';

@@ -22,6 +22,12 @@ function Meeting() {
   const { currentUser } = useContext(UserContext);
 
   // ---- Refs ----
+  if (!currentUser) {
+    alert("Please sign in.");
+    navigate("/");
+  }
+
+  // ---- Socket & WebRTC state (use refs for persistence) ----
   const socketRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const localStreamRef = useRef(null);
@@ -260,7 +266,7 @@ function Meeting() {
     navigate("/home");
   };
 
-  // ✅ NEW: Callback to receive translated sentence from VideoTile
+  // Callback to receive translated sentence from VideoTile
   const handleTranslatedSentence = (sentence) => {
     appendMessage("You", sentence, "pink");
   };

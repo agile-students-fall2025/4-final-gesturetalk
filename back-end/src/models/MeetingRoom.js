@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import User from './User.js';
 
 const meetingRoomSchema = new mongoose.Schema(
   {
