@@ -347,6 +347,12 @@ export default function VideoTile(props) {
       }
 
       setTranslatedSentence(data.sentence);
+      if (typeof props.onTranslatedSentence === 'function') {
+        props.onTranslatedSentence(data.sentence);
+      }
+      //  Clear signed words after successful translation
+      setSignedWords([]);
+      lastLockedWordRef.current = null;
     } catch (err) {
       console.error(err);
       setTranslateError('Failed to translate sentence.');
@@ -431,9 +437,11 @@ export default function VideoTile(props) {
         setSignedWords((prev) => [...prev, g.label]);
       }
 
+      /* Sends labels to translation feed for testing 
       if (typeof props.onGesture === "function") {
         props.onGesture(g, { isLocal: !!props.isLocal });
       }
+        */
     },
   });
 
