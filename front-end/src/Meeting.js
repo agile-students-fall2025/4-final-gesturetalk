@@ -296,6 +296,7 @@ function Meeting() {
                     isLocal={p.isLocal}
                     gestureOn={gestureOn}
                     cameraOn={camOn}
+                    picture={p.picture}
                     badgeText={p.isLocal ? "You" : "Participant"}
                     onTranslatedSentence={handleTranslatedSentence} // Pass callback
                   />
