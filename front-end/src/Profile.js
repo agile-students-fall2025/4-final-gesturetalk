@@ -7,6 +7,10 @@ function Profile() {
   const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useContext(UserContext);
 
+  if (!currentUser) {
+    navigate("/");
+  } // user not signed in, redirect to sign in
+
   // Local editable copies of profile fields
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');

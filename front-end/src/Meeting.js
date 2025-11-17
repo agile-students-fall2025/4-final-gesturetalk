@@ -21,7 +21,11 @@ function Meeting() {
   const { meetingId } = useParams();
   const { currentUser } = useContext(UserContext);
 
-  // ---- Refs ----
+  if (!currentUser) {
+    navigate("/");
+  } // user not signed in, redirect to sign in
+
+  // ---- Socket & WebRTC state (use refs for persistence) ----
   const socketRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const localStreamRef = useRef(null);
@@ -49,7 +53,7 @@ function Meeting() {
     ]);
   };
 
-  // ---- Update local participant picture when currentUser changes ----
+   // ---- Update local participant picture when currentUser changes ----
   useEffect(() => {
     const userPicture = currentUser?.picture || "/profile.svg";
     setParticipants((prev) =>
@@ -271,7 +275,7 @@ function Meeting() {
     navigate("/home");
   };
 
-  // ✅ NEW: Callback to receive translated sentence from VideoTile
+  // Callback to receive translated sentence from VideoTile
   const handleTranslatedSentence = (sentence) => {
     appendMessage("You", sentence, "pink");
   };
@@ -288,6 +292,7 @@ function Meeting() {
                   <VideoTile
                     key={p.id}
                     stream={p.stream}
+                    picture={p.picture}
                     isLocal={p.isLocal}
                     gestureOn={gestureOn}
                     cameraOn={camOn}

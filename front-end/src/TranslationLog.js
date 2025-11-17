@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom'; 
 import './TranslationLog.css'
 
@@ -8,7 +8,11 @@ const TranslationLog = () => {
     const navigate = useNavigate();
     const [meetingTitle, setMeetingTitle] = useState('');
     const [logData, setLogData] = useState([]);
-    const [currentUser, setCurrentUser] = useState(null);
+    const { currentUser } = useContext(UserContext);
+
+     if (!currentUser) {
+    navigate("/");
+  } // user not signed in, redirect to sign in
 
     // use effect to fetch meeting infromation by meetingId
     useEffect(() => {
