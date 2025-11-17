@@ -56,22 +56,32 @@ function SignIn(){
         };
 
         // on success from @react-oauth/google
-        const handleGoogleSuccess = (credentialResponse) => {
+        const handleGoogleSuccess = async (credentialResponse) => {
             try {
-                const jwt = credentialResponse?.credential;
-                if (!jwt) return console.warn('No credential returned from Google');
-                const payload = jwtDecode(jwt);
-                const user = {
-                    id: payload.sub,
-                    name: payload.name,
-                    email: payload.email,
-                    picture: payload.picture,
-                };
-                    setCurrentUser(user);
-                    // persist a minimal user object so profile can survive reloads (optional)
-                    try {
-                        localStorage.setItem('currentUser', JSON.stringify(user));
-                    } catch (e) {}
+                const googleToken = credentialResponse?.credential;
+                if (!googleToken) return console.warn('No credential returned from Google');
+                
+                // send Google token to your backend
+                const res = await fetch("http://localhost:3001/api/auth/google", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ googleToken })
+                });
+                
+                const data = await res.json();
+                if (!data.ok) {
+                    console.error("Google backend login failed:", data.error);
+                    setError("Google login failed");
+                    return;
+                }
+
+                const { user, token } = data;
+
+                setCurrentUser(user);
+                // persist a minimal user object so profile can survive reloads (optional)
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                localStorage.setItem("token", token);
+                
                 navigate('/home');
             } catch (err) {
                 console.error('Failed to decode Google credential', err);
