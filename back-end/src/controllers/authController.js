@@ -1,4 +1,17 @@
+import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+
+function signToken(user) {
+  return jwt.sign(
+    {
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+  );
+}
 
 export const signUp = async (req, res) => {
   try {
@@ -11,7 +24,16 @@ export const signUp = async (req, res) => {
     const user = new User({ email, password, name: name || '' });
     await user.save();
 
-    res.status(201).json({ ok: true, user: { id: user._id.toString(), email: user.email, name: user.name, picture: user.picture } });
+    res.status(201).json({
+      ok: true,
+      token,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+      },
+    });
   } catch (err) {
     console.error('signUp error', err);
     res.status(500).json({ ok: false, error: 'Server error' });
@@ -29,7 +51,18 @@ export const signIn = async (req, res) => {
     const match = await user.comparePassword(password);
     if (!match) return res.status(401).json({ ok: false, error: 'Invalid email or password' });
 
-    res.json({ ok: true, user: { id: user._id.toString(), email: user.email, name: user.name, picture: user.picture } });
+    const token = signToken(user);
+    
+    res.json({
+      ok: true,
+      token,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+      },
+    });
   } catch (err) {
     console.error('signIn error', err);
     res.status(500).json({ ok: false, error: 'Server error' });
