@@ -321,6 +321,48 @@ export default function VideoTile(props) {
   const canvasRef = useRef(null);
   const [gesture, setGesture] = useState(null); // {label, score, source}
 
+  const [signedWords, setSignedWords] = useState([]); // e.g. ["HELLO","MY","NAME","IVA"]
+  const [translatedSentence, setTranslatedSentence] = useState('');
+  const [translating, setTranslating] = useState(false);
+  const [translateError, setTranslateError] = useState('');
+  const lastLockedWordRef = useRef(null);
+
+  const handleTranslate = async () => {
+    if (!signedWords.length) return;
+
+    setTranslating(true);
+    setTranslateError('');
+    setTranslatedSentence('');
+
+    try {
+      const res = await fetch('http://localhost:3001/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signedWords }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Translation failed');
+      }
+
+      setTranslatedSentence(data.sentence);
+    } catch (err) {
+      console.error(err);
+      setTranslateError('Failed to translate sentence.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const handleClearWords = () => {
+    setSignedWords([]);
+    setTranslatedSentence('');
+    setTranslateError('');
+    lastLockedWordRef.current = null;
+  };
+
+
   // Attach MediaStream
   useEffect(() => {
     if (!videoRef.current) return;
@@ -339,68 +381,116 @@ export default function VideoTile(props) {
     enabled: !!props.gestureOn,
     onGesture: (g) => {
       setGesture(g);
+
+      // lock in a word when it’s confidently detected
+      if (g.score > 0.80 && g.label !== lastLockedWordRef.current) {
+        lastLockedWordRef.current = g.label;
+        setSignedWords((prev) => [...prev, g.label]);
+      }
+
       if (typeof props.onGesture === "function") {
         props.onGesture(g, { isLocal: !!props.isLocal });
       }
     },
   });
 
+
   const hasStream = props.stream instanceof MediaStream;
   const showBadge =
     typeof props.badgeText === "string" && props.badgeText.trim().length > 0;
 
-  return (
-    <div className="tile">
-      {showBadge && (
-        <div className={"tile-badge " + (props.badgeClass || "")}>
-          {props.badgeText}
-        </div>
-      )}
-
-      {gesture && props.gestureOn && (
+    return (
+      <div className="tile" style={{ position: "relative" }}>
+        {/* NEW: sentence builder panel */}
         <div
-          className="tile-gesture-hud"
           style={{
             position: "absolute",
-            right: 8,
-            bottom: 8,
-            zIndex: 3,
-            background: "rgba(0,0,0,.55)",
+            left: 8,
+            top: 8,
+            zIndex: 5,
+            background: "rgba(0,0,0,0.55)",
             color: "#fff",
             padding: "6px 10px",
             borderRadius: 10,
             fontSize: 12,
-            fontWeight: 600,
+            maxWidth: "60%",
           }}
         >
-          ASL: {gesture.label} {(gesture.score * 100).toFixed(0)}%
+          <div>
+            <strong>Signed words:</strong>{" "}
+            {signedWords.length ? signedWords.join(" ") : "—"}
+          </div>
+          <div style={{ marginTop: 4, display: "flex", gap: 6 }}>
+            <button
+              onClick={handleTranslate}
+              disabled={translating || !signedWords.length}
+            >
+              {translating ? "Translating…" : "Generate Sentence"}
+            </button>
+            <button onClick={handleClearWords}>Clear</button>
+          </div>
+          {translatedSentence && (
+            <div style={{ marginTop: 4 }}>
+              <strong>Sentence:</strong> {translatedSentence}
+            </div>
+          )}
+          {translateError && (
+            <div style={{ marginTop: 4, color: "#ffaaaa" }}>
+              {translateError}
+            </div>
+          )}
         </div>
-      )}
-
-      <div className="tile-media">
-        {hasStream ? (
-          <>
-            <video
-              ref={videoRef}
-              playsInline
-              autoPlay
-              muted={!!props.isLocal}
-              className="tile-video"
-            />
-            <canvas
-              ref={canvasRef}
-              className="tile-overlay"
-              style={{ opacity: props.gestureOn ? 1 : 0 }}
-              width={640}
-              height={480}
-            />
-          </>
-        ) : (
-          <div className="placeholder">
-            <IconUser />
+  
+        {showBadge && (
+          <div className={"tile-badge " + (props.badgeClass || "")}>
+            {props.badgeText}
           </div>
         )}
+  
+        {gesture && props.gestureOn && (
+          <div
+            className="tile-gesture-hud"
+            style={{
+              position: "absolute",
+              right: 8,
+              bottom: 8,
+              zIndex: 3,
+              background: "rgba(0,0,0,.55)",
+              color: "#fff",
+              padding: "6px 10px",
+              borderRadius: 10,
+              fontSize: 12,
+              fontWeight: 600,
+            }}
+          >
+            ASL: {gesture.label} {(gesture.score * 100).toFixed(0)}%
+          </div>
+        )}
+  
+        <div className="tile-media">
+          {hasStream ? (
+            <>
+              <video
+                ref={videoRef}
+                playsInline
+                autoPlay
+                muted={!!props.isLocal}
+                className="tile-video"
+              />
+              <canvas
+                ref={canvasRef}
+                className="tile-overlay"
+                style={{ opacity: props.gestureOn ? 1 : 0 }}
+                width={640}
+                height={480}
+              />
+            </>
+          ) : (
+            <div className="placeholder">
+              <IconUser />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }

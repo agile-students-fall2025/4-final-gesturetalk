@@ -12,6 +12,7 @@ import callHistoryRoutes from './src/routes/callHistoryRoutes.js';
 import translationLogRoutes from './src/routes/translationLogRoutes.js';
 import path from "path";
 import { fileURLToPath } from "url";
+import { generateSentenceFromSigns } from "./src/translation/sentenceGenerator.js";
 
 dotenv.config(); 
 
@@ -35,6 +36,26 @@ app.use('/api/auth', authRoutes);
 app.use('/api/call-history', callHistoryRoutes);
 // Translation Log routes
 app.use('api/translation-log', translationLogRoutes);
+
+// --- Sentence translation route ---
+app.post("/api/translate", async (req, res) => {
+  try {
+    const { signedWords } = req.body;
+
+    if (!Array.isArray(signedWords) || signedWords.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "signedWords must be a non-empty array of strings" });
+    }
+
+    const sentence = await generateSentenceFromSigns(signedWords);
+    res.json({ sentence });
+  } catch (err) {
+    console.error("Translation error:", err);
+    res.status(500).json({ error: "Translation failed" });
+  }
+});
+
 
 // Connect to MongoDB if URI provided
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -107,12 +128,13 @@ io.on("connection", (socket) => {
   });
 });
 
-function error(err, req, res, next) {
+function error(err, req, res, next) {b
   console.error(err.stack);
   res.status(500).send("Internal Server Error");
 }
 
 app.use(error);
+
 
 server.listen(3001, () => {
   console.log(`Listening on Port 3001`);
