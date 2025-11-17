@@ -363,44 +363,60 @@ export default function VideoTile(props) {
   };
 
 
-  // Attach MediaStream
-  useEffect(() => {
-    if (!videoRef.current) return;
-    const hasStream = props.stream instanceof MediaStream;
-    if (hasStream) {
-      videoRef.current.srcObject = props.stream;
-      videoRef.current.play().catch(() => {});
-    } else {
-      videoRef.current.srcObject = null;
-    }
-  }, [props.stream]);
-
-  // Check if camera is on
+  // Check if camera is on (declare state FIRST)
   const [cameraOn, setCameraOn] = useState(true);
+  
+  // Sync cameraOn from prop (for local user) - FIRST effect
   useEffect(() => {
+    if (props.cameraOn !== undefined) {
+      console.log(`[VideoTile ${props.badgeText}] Prop cameraOn changed to:`, props.cameraOn);
+      setCameraOn(props.cameraOn);
+    }
+  }, [props.cameraOn]);
+  
+  // Detect camera state from stream (for remote users) - SECOND effect
+  useEffect(() => {
+    // Skip if using prop-based camera state (local user)
+    if (props.cameraOn !== undefined) {
+      return;
+    }
+    
+    // For remote users, detect from stream
     if (!props.stream || !(props.stream instanceof MediaStream)) {
-      setCameraOn(false);
       return;
     }
     
     const videoTrack = props.stream.getVideoTracks()[0];
-    if (videoTrack) {
-      setCameraOn(videoTrack.enabled);
-      
-      const handleEnabledChange = () => {
-        setCameraOn(videoTrack.enabled);
-      };
-      
-      // Monitor track enable/disable
-      const checkInterval = setInterval(() => {
-        setCameraOn(videoTrack.enabled);
-      }, 500);
-      
-      return () => clearInterval(checkInterval);
-    } else {
-      setCameraOn(false);
+    if (!videoTrack) {
+      return;
     }
-  }, [props.stream]);
+    
+    // Set initial state immediately
+    setCameraOn(videoTrack.enabled);
+    
+    // Poll to catch track.enabled changes
+    const checkInterval = setInterval(() => {
+      setCameraOn(videoTrack.enabled);
+    }, 200);
+    
+    return () => clearInterval(checkInterval);
+  }, [props.cameraOn, props.stream]);
+
+  // Attach MediaStream to video element - THIRD effect
+  useEffect(() => {
+    if (!videoRef.current) return;
+    const hasStream = props.stream instanceof MediaStream;
+    
+    if (hasStream) {
+      // Only re-attach if srcObject is not already set to this stream
+      if (videoRef.current.srcObject !== props.stream) {
+        console.log(`[VideoTile ${props.badgeText}] Attaching stream`);
+        videoRef.current.srcObject = props.stream;
+      }
+    } else {
+      videoRef.current.srcObject = null;
+    }
+  }, [props.stream, cameraOn, props.badgeText]);
 
   useASLFromVideo({
     videoEl: videoRef.current,
@@ -409,7 +425,7 @@ export default function VideoTile(props) {
     onGesture: (g) => {
       setGesture(g);
 
-      // lock in a word when it’s confidently detected
+      // lock in a word when it's confidently detected
       if (g.score > 0.80 && g.label !== lastLockedWordRef.current) {
         lastLockedWordRef.current = g.label;
         setSignedWords((prev) => [...prev, g.label]);
