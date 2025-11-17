@@ -15,3 +15,5 @@ meetingRoomSchema.pre('save', async function (next) {
 
 const MeetingRoom = mongoose.model('MeetingRoom', meetingRoomSchema);
 export default MeetingRoom;
+
+
