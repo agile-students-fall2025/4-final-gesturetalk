@@ -2,6 +2,9 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 function signToken(user) {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET not configured in environment');
+  }
   return jwt.sign(
     {
       id: user._id.toString(),
@@ -23,6 +26,8 @@ export const signUp = async (req, res) => {
 
     const user = new User({ email, password, name: name || '' });
     await user.save();
+
+    const token = signToken(user);
 
     res.status(201).json({
       ok: true,

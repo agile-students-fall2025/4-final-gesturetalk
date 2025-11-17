@@ -8,11 +8,13 @@ import http from "http";
 import { Server } from "socket.io";
 import mongoose from 'mongoose';
 import authRoutes from './src/routes/authRoutes.js';
+import profileRoutes from './src/routes/profileRoutes.js';
 import callHistoryRoutes from './src/routes/callHistoryRoutes.js';
 import translationLogRoutes from './src/routes/translationLogRoutes.js';
 import path from "path";
 import { fileURLToPath } from "url";
 import { generateSentenceFromSigns } from "./src/translation/sentenceGenerator.js";
+import fs from 'fs';
 
 dotenv.config(); 
 
@@ -32,10 +34,23 @@ app.use(cors());
 
 // Mount auth routes
 app.use('/api/auth', authRoutes);
+// Mount profile routes
+app.use('/api/profile', profileRoutes);
 // Call history routes
 app.use('/api/call-history', callHistoryRoutes);
 // Translation Log routes
 app.use('api/translation-log', translationLogRoutes);
+
+// Serve static files from uploads directory
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+const profilesDir = path.join(uploadsDir, 'profiles');
+if (!fs.existsSync(profilesDir)) {
+  fs.mkdirSync(profilesDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadsDir));
 
 // --- Sentence translation route ---
 app.post("/api/translate", async (req, res) => {
