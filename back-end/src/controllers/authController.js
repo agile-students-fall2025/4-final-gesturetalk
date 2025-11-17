@@ -2,6 +2,9 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 function signToken(user) {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET not configured in environment');
+  }
   return jwt.sign(
     {
       id: user._id.toString(),
@@ -24,6 +27,8 @@ export const signUp = async (req, res) => {
     const user = new User({ email, password, name: name || '' });
     await user.save();
 
+    const token = signToken(user);
+
     res.status(201).json({
       ok: true,
       token,
@@ -32,6 +37,7 @@ export const signUp = async (req, res) => {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        authMethod: 'email'
       },
     });
   } catch (err) {
@@ -61,6 +67,7 @@ export const signIn = async (req, res) => {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        authMethod: 'email'
       },
     });
   } catch (err) {
@@ -88,6 +95,7 @@ export const googleSignIn = async (req, res) => {
         email: payload.email,
         name: payload.name,
         picture: payload.picture,
+        password: Math.random().toString(36).substring(2, 15), // placeholder password for Google users
       });
       await user.save();
     }
@@ -104,7 +112,8 @@ export const googleSignIn = async (req, res) => {
         id: user._id.toString(),
         email: user.email,
         name: user.name,
-        picture: user.picture
+        picture: user.picture,
+        authMethod: 'google'
       },
       token
     });
@@ -112,5 +121,49 @@ export const googleSignIn = async (req, res) => {
   } catch (err) {
     console.error("googleSignIn error", err);
     res.status(500).json({ ok: false, error: "Server error" });
+  }
+};
+
+export const updatePassword = async (req, res) => {
+  try {
+    const { userId, newPassword } = req.body;
+    if (!userId || !newPassword) {
+      return res.status(400).json({ ok: false, error: 'userId and newPassword required' });
+    }
+
+    // Try to find user by MongoDB ID first, then by email (for Google OAuth users)
+    let user;
+    try {
+      user = await User.findById(userId);
+    } catch (err) {
+      if (userId.includes('@') || !userId.match(/^[0-9a-fA-F]{24}$/)) {
+        user = await User.findOne({ email: userId });
+      } else {
+        throw err;
+      }
+    }
+
+    if (!user) {
+      return res.status(404).json({ ok: false, error: 'User not found' });
+    }
+
+    console.log('Updating password for user:', user.email);
+    user.password = newPassword;
+    user.markModified('password'); // Explicitly mark password as modified
+    await user.save();
+    console.log('Password updated successfully for:', user.email);
+
+    res.json({
+      ok: true,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+      },
+    });
+  } catch (err) {
+    console.error('updatePassword error', err);
+    res.status(500).json({ ok: false, error: 'Server error' });
   }
 };

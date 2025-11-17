@@ -10,6 +10,10 @@ function Profile() {
   // Local editable copies of profile fields
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     if (currentUser) {
@@ -21,13 +25,42 @@ function Profile() {
     }
   }, [currentUser]);
 
-  const handleSave = () => {
-    // Update the app-level user object with edited fields (local only)
+  const handleSave = async () => {
+    // Update the app-level user object with edited fields
     const updated = { ...(currentUser || {}), name: displayName, email };
     setCurrentUser(updated);
     try {
       localStorage.setItem('currentUser', JSON.stringify(updated));
     } catch (e) {}
+    
+    // If password was changed, send update to backend
+    if (password) {
+      try {
+        const res = await fetch('http://localhost:3001/api/auth/update-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUser.id || currentUser.email,
+            newPassword: password,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          // Clear password field after successful update
+          setPassword('');
+          console.log('Password updated successfully');
+          // Optional: show success message to user
+          alert('Password updated successfully');
+        } else {
+          console.error('Password update failed:', data.error);
+          alert('Password update failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Password update error:', err);
+        alert('Network error updating password');
+      }
+    }
+    
     console.log('Profile saved');
   };
 
@@ -62,6 +95,51 @@ function Profile() {
     navigate("/");
   };
 
+  const handleEditPictureClick = () => {
+    setShowUploadModal(true);
+  };
+
+  const handleFileUpload = async (file) => {
+    if (!file) return;
+    if (!currentUser || (!currentUser.id && !currentUser.email)) {
+      setUploadError('User not authenticated');
+      return;
+    }
+
+    setUploadLoading(true);
+    setUploadError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('picture', file);
+      // Send either MongoDB ID or email (for Google OAuth users)
+      formData.append('userId', currentUser.id || currentUser.email);
+
+      const res = await fetch('http://localhost:3001/api/profile/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!data.ok) {
+        setUploadError(data.error || 'Upload failed');
+        setUploadLoading(false);
+        return;
+      }
+
+      // Update currentUser with new picture
+      const updated = { ...currentUser, picture: data.user.picture };
+      setCurrentUser(updated);
+      localStorage.setItem('currentUser', JSON.stringify(updated));
+      setShowUploadModal(false);
+      console.log('Profile picture uploaded successfully');
+    } catch (err) {
+      console.error(err);
+      setUploadError('Network error');
+    }
+    setUploadLoading(false);
+  };
+
   return (
     <div id="profile-content">
       <svg id="gradient-blob" width="1130" height="1024" viewBox="0 0 1130 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -93,7 +171,7 @@ function Profile() {
           <div id="profile-image">
             <img src={currentUser?.picture || "/profile.svg"} alt="Profile" />
           </div>
-          <div id="edit-icon">
+          <div id="edit-icon" onClick={handleEditPictureClick} style={{ cursor: 'pointer' }}>
             <img src="https://api.builder.io/api/v1/image/assets/TEMP/7ab26d711e5b1698c187297b382ad3436d9786b9" alt="Edit" />
           </div>
         </div>
@@ -102,11 +180,50 @@ function Profile() {
 
         <input type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
         <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input type="password" placeholder="Password" />
+        {currentUser?.authMethod !== 'google' && (
+          <input 
+            type="password" 
+            placeholder="Password" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        )}
 
         <button className="save-btn" onClick={handleSave}>Save</button>
         <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowUploadModal(false)}>✕</button>
+            <h2 className="modal-title">Upload Profile Picture</h2>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                if (e.target.files[0]) {
+                  handleFileUpload(e.target.files[0]);
+                }
+              }}
+              disabled={uploadLoading}
+              id="file-upload-input"
+              style={{ display: 'none' }}
+            />
+            {uploadError && <div style={{ color: '#d32f2f', fontSize: '0.85rem', marginBottom: '12px' }}>{uploadError}</div>}
+            {uploadLoading && <div style={{ color: '#1976d2', fontSize: '0.85rem', marginBottom: '12px' }}>Uploading...</div>}
+            <button 
+              className="create-btn" 
+              onClick={() => document.getElementById('file-upload-input').click()}
+              disabled={uploadLoading}
+              style={{ marginTop: '20px' }}
+            >
+              {uploadLoading ? 'Uploading...' : 'Select File'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -52,6 +52,16 @@ function Meeting() {
     ]);
   };
 
+  // ---- Update local participant picture when currentUser changes ----
+  useEffect(() => {
+    const userPicture = currentUser?.picture || "/profile.svg";
+    setParticipants((prev) =>
+      prev.map((p) =>
+        p.isLocal ? { ...p, picture: userPicture } : p
+      )
+    );
+  }, [currentUser]);
+
   // ---- Initialize socket & start media ----
   useEffect(() => {
     // Connect to back-end on port 3001
@@ -69,7 +79,8 @@ function Meeting() {
         setLocalStream(stream);
 
         // Add self as initial participant
-        setParticipants([{ id: socket.id, isLocal: true, stream }]);
+        const userPicture = currentUser?.picture || "/profile.svg"; // Use default if no picture
+        setParticipants([{ id: socket.id, isLocal: true, stream, picture: userPicture }]);
 
         // Join room via socket
         const roomID = meetingId || "default-room";
@@ -299,6 +310,8 @@ function Meeting() {
                     isLocal={p.isLocal}
                     gestureOn={gestureOn}
                     badgeText={p.isLocal ? "You" : "Participant"}
+                    picture={p.picture}
+                    cameraOn={p.isLocal ? camOn : undefined}
                     onGesture={handleTileGesture}
                   />
                 ))}
