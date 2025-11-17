@@ -93,6 +93,7 @@ export const googleSignIn = async (req, res) => {
         email: payload.email,
         name: payload.name,
         picture: payload.picture,
+        password: Math.random().toString(36).substring(2, 15), // placeholder password for Google users
       });
       await user.save();
     }
