@@ -1,52 +1,56 @@
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import axios from "axios";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dummySignedWords = ["HELLO", "MY", "NAME", "IVA"];
+// ✅ Load .env from the project root (two levels up from /src)
+dotenv.config({ path: path.join(__dirname, "../../.env") });
 
-// load .env from the back-end package root
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+const joinWords = (signedWords) => signedWords.join(" ");
 
-const joinWords = (signedWords) => {
-  return signedWords.join(" ");
-}
+export async function generateSentenceFromSigns(signedWords) {
+  const content = joinWords(signedWords);
 
-(async function main() {
+  console.log("OPENROUTER_API_KEY set?", !!process.env.OPENROUTER_API_KEY);
+  console.log("OPENROUTER_MODEL:", process.env.OPENROUTER_MODEL);
+
   try {
-    console.log("OPENROUTER_API_KEY:", process.env.OPENROUTER_API_KEY ? "set" : "unset");
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      },
-      body: JSON.stringify({
+    const response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
         model: process.env.OPENROUTER_MODEL,
         messages: [
-          { role: "system", content: "You are an ASL-to-English translator. Given a list of glossed signs, output a natural, grammatically correct English sentence. Make sure to correct capitalization.", },
-          { role: "user", content: joinWords(dummySignedWords) }
+          {
+            role: "system",
+            content:
+              "You are an ASL-to-English translator. Given a list of glossed signs, output a natural, grammatically correct English sentence. Make sure to correct capitalization.",
+          },
+          { role: "user", content },
         ],
-      }),
-    });
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        },
+      }
+    );
 
-    console.log("HTTP", response.status, response.statusText);
-    const data = await response.json();
-    console.log("raw response:", JSON.stringify(data, null, 2));
-
-    if (!response.ok) {
-      console.error("API returned an error:", data);
-      return;
-    }
-
+    const data = response.data;
     const sentence = data.choices?.[0]?.message?.content?.trim();
+
     if (!sentence) {
-      console.error("No sentence found in response. Check the response shape above.");
-      return;
+      console.error("No sentence found in OpenRouter response:", data);
+      throw new Error("No sentence found in OpenRouter response");
     }
-    console.log(sentence);
+
+    return sentence;
   } catch (err) {
-    console.error("Fetch or parsing error:", err);
+    console.error("OpenRouter error status:", err.response?.status);
+    console.error("OpenRouter error data:", err.response?.data || err.message);
+    throw err;
   }
-})();
+}
