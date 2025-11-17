@@ -13,9 +13,18 @@
   },
   "c8": {
     "all": true,
-    "src": ["src", "."],
-    "include": ["server.js", "src/**/*.js"],
-    "exclude": ["tests/**", "node_modules/**"]
+    "src": [
+      "src",
+      "."
+    ],
+    "include": [
+      "server.js",
+      "src/**/*.js"
+    ],
+    "exclude": [
+      "tests/**",
+      "node_modules/**"
+    ]
   },
   "keywords": [],
   "author": "",
