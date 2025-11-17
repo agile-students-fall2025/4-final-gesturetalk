@@ -49,6 +49,16 @@ function Meeting() {
     ]);
   };
 
+  // ---- Update local participant picture when currentUser changes ----
+  useEffect(() => {
+    const userPicture = currentUser?.picture || "/profile.svg";
+    setParticipants((prev) =>
+      prev.map((p) =>
+        p.isLocal ? { ...p, picture: userPicture } : p
+      )
+    );
+  }, [currentUser]);
+
   // ---- Initialize socket & media ----
   useEffect(() => {
     socketRef.current = io("http://localhost:3001", { transports: ["websocket"] });
@@ -63,7 +73,8 @@ function Meeting() {
         localStreamRef.current = stream;
         setLocalStream(stream);
 
-        setParticipants([{ id: socket.id, isLocal: true, stream }]);
+        const userPicture = currentUser?.picture || "/profile.svg";
+        setParticipants([{ id: socket.id, isLocal: true, stream, picture: userPicture }]);
 
         const roomID = meetingId || "default-room";
         socket.emit("join-room", { meetingId: roomID, userId: currentUser?.id });
@@ -280,6 +291,7 @@ function Meeting() {
                     isLocal={p.isLocal}
                     gestureOn={gestureOn}
                     cameraOn={camOn}
+                    picture={p.picture}
                     badgeText={p.isLocal ? "You" : "Participant"}
                     onTranslatedSentence={handleTranslatedSentence} // Pass callback
                   />
