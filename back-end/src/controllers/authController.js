@@ -120,3 +120,47 @@ export const googleSignIn = async (req, res) => {
     res.status(500).json({ ok: false, error: "Server error" });
   }
 };
+
+export const updatePassword = async (req, res) => {
+  try {
+    const { userId, newPassword } = req.body;
+    if (!userId || !newPassword) {
+      return res.status(400).json({ ok: false, error: 'userId and newPassword required' });
+    }
+
+    // Try to find user by MongoDB ID first, then by email (for Google OAuth users)
+    let user;
+    try {
+      user = await User.findById(userId);
+    } catch (err) {
+      if (userId.includes('@') || !userId.match(/^[0-9a-fA-F]{24}$/)) {
+        user = await User.findOne({ email: userId });
+      } else {
+        throw err;
+      }
+    }
+
+    if (!user) {
+      return res.status(404).json({ ok: false, error: 'User not found' });
+    }
+
+    console.log('Updating password for user:', user.email);
+    user.password = newPassword;
+    user.markModified('password'); // Explicitly mark password as modified
+    await user.save();
+    console.log('Password updated successfully for:', user.email);
+
+    res.json({
+      ok: true,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+      },
+    });
+  } catch (err) {
+    console.error('updatePassword error', err);
+    res.status(500).json({ ok: false, error: 'Server error' });
+  }
+};

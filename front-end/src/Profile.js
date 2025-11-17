@@ -10,6 +10,7 @@ function Profile() {
   // Local editable copies of profile fields
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -24,13 +25,42 @@ function Profile() {
     }
   }, [currentUser]);
 
-  const handleSave = () => {
-    // Update the app-level user object with edited fields (local only)
+  const handleSave = async () => {
+    // Update the app-level user object with edited fields
     const updated = { ...(currentUser || {}), name: displayName, email };
     setCurrentUser(updated);
     try {
       localStorage.setItem('currentUser', JSON.stringify(updated));
     } catch (e) {}
+    
+    // If password was changed, send update to backend
+    if (password) {
+      try {
+        const res = await fetch('http://localhost:3001/api/auth/update-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUser.id || currentUser.email,
+            newPassword: password,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          // Clear password field after successful update
+          setPassword('');
+          console.log('Password updated successfully');
+          // Optional: show success message to user
+          alert('Password updated successfully');
+        } else {
+          console.error('Password update failed:', data.error);
+          alert('Password update failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Password update error:', err);
+        alert('Network error updating password');
+      }
+    }
+    
     console.log('Profile saved');
   };
 
@@ -150,7 +180,12 @@ function Profile() {
 
         <input type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
         <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input type="password" placeholder="Password" />
+        <input 
+          type="password" 
+          placeholder="Password" 
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
         <button className="save-btn" onClick={handleSave}>Save</button>
         <button className="logout-btn" onClick={handleLogout}>Logout</button>
