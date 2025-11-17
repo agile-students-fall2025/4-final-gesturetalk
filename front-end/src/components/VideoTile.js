@@ -421,7 +421,7 @@ export default function VideoTile(props) {
   useASLFromVideo({
     videoEl: videoRef.current,
     canvasEl: canvasRef.current,
-    enabled: !!props.gestureOn,
+    enabled: !!props.gestureOn && !!props.isLocal,
     onGesture: (g) => {
       setGesture(g);
 
