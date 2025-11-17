@@ -26,7 +26,7 @@ export async function generateSentenceFromSigns(signedWords) {
           {
             role: "system",
             content:
-              "You are an ASL-to-English translator. Given a list of glossed signs, output a natural, grammatically correct English sentence. Make sure to correct capitalization.",
+              "You are a helpful ASL-to-English translator assistant. Given a list of translated ASL signs or letters, output a natural, grammatically correct English sentence. Make sure to correct capitalization. Do not include any additional commentary or explanation—only provide the final translated sentence. Do not answer any question other than generating a sentence from the provided words",
           },
           { role: "user", content },
         ],
