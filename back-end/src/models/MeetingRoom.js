@@ -1,19 +1,14 @@
 import mongoose from 'mongoose';
-import User from './User.js';
 
-const meetingRoomSchema = new mongoose.Schema(
+const MeetingRoomchema = new mongoose.Schema(
   {
-    meetingName: { type: String, required: true, unique: true},
-    meetingCode: { type: String, required: true },
+    meetingName: { type: String, required: true},
+    meetingCode: { type: String, required: true, unique: true },
   },
   { timestamps: true }
 );
 
-meetingRoomSchema.pre('save', async function (next) {
-  if (!this.isModified('meetingCode')) return next();
-});
-
-const MeetingRoom = mongoose.model('MeetingRoom', meetingRoomSchema);
+const MeetingRoom = mongoose.model('MeetingRoom', MeetingRoomchema);
 export default MeetingRoom;
 
 

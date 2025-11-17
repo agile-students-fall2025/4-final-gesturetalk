@@ -21,11 +21,9 @@ function Meeting() {
   const { meetingId } = useParams();
   const { currentUser } = useContext(UserContext);
 
-  // ---- Refs ----
   if (!currentUser) {
-    alert("Please sign in.");
     navigate("/");
-  }
+  } // user not signed in, redirect to sign in
 
   // ---- Socket & WebRTC state (use refs for persistence) ----
   const socketRef = useRef(null);

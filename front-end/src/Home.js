@@ -49,31 +49,65 @@ export default function Home() {
   };
 
   const handleJoin = async () => {
-    try{
-      // fetch to backend to verify meeting code
-      const res = await fetch(`http://localhost:3001/api/meetings/verify/${joinCode}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },  
-        meetingCode: joinCode,
-        meetingName: meetingName,
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error('Invalid meeting code');
-      
-      // if valid, navigate to meeting page
-      // else, alert invalid code
-    
-      const meetingId = joinCode;
-      setShowJoinModal(false);
-      alert(`Joining meeting: ${meetingId}`);
-      navigate(`/meeting/${meetingId}`);
-    } catch (err){
-      console.error(err);
-      alert("Invalid meeting code");
+  try {
+    const res = await fetch(
+      `http://localhost:3001/api/meetings/join/${joinCode}`,
+      {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      }
+    );
+
+    if (!res.ok) throw new Error("Invalid meeting code");
+
+    const data = await res.json().catch(() => null);
+    if (!data || data.ok === false) throw new Error("Invalid meeting code");
+
+    // Success
+    setShowJoinModal(false);
+    alert(`Joining meeting: ${joinCode}`);
+    navigate(`/meeting/${joinCode}`);
+  } catch (err) {
+    console.error(err);
+    alert("Invalid meeting code");
+  }
+};
+
+
+ const handleCreate = async (meetingName, meetingCode) => {
+  if (!meetingName){
+    alert("Meeting name cannot be empty");
+    return;
+  }
+  try {
+    const res = await fetch("http://localhost:3001/api/meetings/create", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ meetingName, meetingCode })
+    });
+
+    if (res.status === 409) {
+      alert("Meeting code already exists");
+      return;
     }
-  };
 
+    if (!res.ok) {
+      alert("Something went wrong");
+      return;
+    }
 
+    // SUCCESS
+    setShowCreateModal(false);
+    alert(`Meeting "${meetingName}" created! Code: ${meetingCode}`);
+    navigate(`/meeting/${meetingCode}`);
+  } catch (err) {
+    console.error(err);
+    alert("Server error");
+  }
+};
 
   function generateRandomString(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-!@#$%^&*()_+=?!`~';
@@ -177,7 +211,7 @@ export default function Home() {
 
               <p className="modal-label">Meeting Code</p>
               <div className="code-box">
-                <input type="text" readOnly name="meetingCode" value={meetingCode} />
+                <input type="text" readOnly name="meetingCode" value={meetingCode} onChange={(e) => setMeetingCode(e.target.value)} />
                 <button type="button" className="copy-btn" onClick={handleCopy}>
                 <img src="/copy.svg" alt="Copy" className="copy-icon" />
                 </button>
@@ -193,11 +227,7 @@ export default function Home() {
                   alert("Please enter a meeting name.");
                   return;
                 }
-                // save meeting name and code to backend with peer
-                
-                alert(`Meeting "${meetingName}" created!, code: ${meetingCode}`);
-                navigate(`/meeting/${meetingCode}`);
-                setShowModal(false);
+                handleCreate(meetingName, meetingCode);
               }}
             >
               Create Meeting

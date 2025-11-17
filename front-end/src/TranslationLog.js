@@ -10,10 +10,9 @@ const TranslationLog = () => {
     const [logData, setLogData] = useState([]);
     const { currentUser } = useContext(UserContext);
 
-    if (!currentUser) {
-        alert("Please sign in.");
-        navigate("/");
-    }
+     if (!currentUser) {
+    navigate("/");
+  } // user not signed in, redirect to sign in
 
     // use effect to fetch meeting infromation by meetingId
     useEffect(() => {
