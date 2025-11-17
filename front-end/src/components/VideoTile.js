@@ -11,7 +11,6 @@ const MP_SCRIPTS = [
   "https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js",
 ];
 
-// inject scripts once, then reuse
 function loadMediapipeFromCDN() {
   if (!window.__mpHandsPromise) {
     window.__mpHandsPromise = Promise.all(
@@ -40,7 +39,6 @@ function loadMediapipeFromCDN() {
   return window.__mpHandsPromise;
 }
 
-// keep ONE Hands instance (one WebGL context) globally
 function getGlobalHands(HandsCtor) {
   if (!window.__aslHandsInstance) {
     const hands = new HandsCtor({
@@ -73,7 +71,7 @@ async function loadASLModel() {
       const labels = await labelsResp.json();
       ASLModel = model;
       ASLLabels = labels;
-      console.log(" ASL model + labels loaded", labels);
+      console.log("✅ ASL model + labels loaded", labels);
     })();
   }
   return aslLoadingPromise;
@@ -83,13 +81,14 @@ async function loadASLModel() {
 //  Hook: ASL from video
 // =========================
 const SEQ_LENGTH = 30;
-const HAND_DIM = 126; // 63 left + 63 right
+const HAND_DIM = 126;
 
-function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
+function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetected }) {
   const ctxRef = useRef(null);
-  const seqRef = useRef([]); // [N, 126]
-  const historyRef = useRef([]); // smoothing
+  const seqRef = useRef([]);
+  const historyRef = useRef([]);
   const cameraRef = useRef(null);
+  const noHandsTimerRef = useRef(null);
 
   function pushAndSmooth(label, score, windowSize = 5) {
     const buf = historyRef.current;
@@ -128,15 +127,12 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
       const { Hands, Camera, drawConnectors, drawLandmarks } =
         await loadMediapipeFromCDN();
 
-      // canvas context
       if (canvasEl) {
         ctxRef.current = canvasEl.getContext("2d");
       }
 
-      // *** reuse ONE global Hands instance ***
       const hands = getGlobalHands(Hands);
 
-      // feature extractor with flipped L/R to match training
       function extractHandFeatures(results) {
         let left = Array(63).fill(0);
         let right = Array(63).fill(0);
@@ -146,10 +142,9 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
 
         if (handsLms && handedness) {
           handsLms.forEach((hand, idx) => {
-            const side = handedness[idx].label; // "Left" / "Right"
-            const flat = hand.flatMap((lm) => [lm.x, lm.y, lm.z]); // 21*3
+            const side = handedness[idx].label;
+            const flat = hand.flatMap((lm) => [lm.x, lm.y, lm.z]);
 
-            // flip slots to match your training
             if (side === "Left") {
               right = flat;
             } else if (side === "Right") {
@@ -158,10 +153,9 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
           });
         }
 
-        return left.concat(right).map((v) => (Number.isFinite(v) ? v : 0)); // 126
+        return left.concat(right).map((v) => (Number.isFinite(v) ? v : 0));
       }
 
-      // onResults is replaced each time we call it, so sharing Hands is fine
       hands.onResults((results) => {
         if (cancelled) return;
         const ctx = ctxRef.current;
@@ -172,14 +166,12 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
         if (canvasEl.width !== w) canvasEl.width = w;
         if (canvasEl.height !== h) canvasEl.height = h;
 
-        // draw video frame
         ctx.save();
         ctx.clearRect(0, 0, w, h);
         if (results.image) {
           ctx.drawImage(results.image, 0, 0, w, h);
         }
 
-        // draw landmarks
         if (results.multiHandLandmarks && results.multiHandLandmarks.length) {
           for (const lm of results.multiHandLandmarks) {
             drawConnectors(ctx, lm, window.HAND_CONNECTIONS, {
@@ -198,15 +190,29 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
           results.multiHandLandmarks &&
           results.multiHandLandmarks.length > 0;
 
-        // if no hands → slowly forget sequence and skip prediction
         if (!hasHands) {
           const seq = seqRef.current;
           if (seq.length > 0) seq.shift();
+
+          // ✅ Start timer when no hands detected
+          if (!noHandsTimerRef.current) {
+            noHandsTimerRef.current = setTimeout(() => {
+              if (typeof onNoHandsDetected === 'function') {
+                onNoHandsDetected();
+              }
+              noHandsTimerRef.current = null;
+            }, 2000); // 2 seconds
+          }
           return;
         }
 
-        // build feature sequence
-        const features = extractHandFeatures(results); // 126
+        // ✅ Clear timer when hands are detected again
+        if (noHandsTimerRef.current) {
+          clearTimeout(noHandsTimerRef.current);
+          noHandsTimerRef.current = null;
+        }
+
+        const features = extractHandFeatures(results);
         const seq = seqRef.current;
         seq.push(features);
         if (seq.length > SEQ_LENGTH) seq.shift();
@@ -215,7 +221,6 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
           return;
         }
 
-        // ========= prediction =========
         const flat = seq.flat();
         const input = tf.tensor3d(flat, [1, SEQ_LENGTH, HAND_DIM]);
 
@@ -224,7 +229,7 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
 
         try {
           const logits = ASLModel.predict(input);
-          const probs = logits.dataSync(); // Float32Array
+          const probs = logits.dataSync();
 
           if (probs && probs.length > 0) {
             bestIdx = 0;
@@ -255,7 +260,6 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
           });
         }
 
-        // draw HUD text
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, 350, 45);
         ctx.fillStyle = "white";
@@ -267,7 +271,6 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
         );
       });
 
-      // Camera is per-tile, but uses shared Hands
       const camera = new Camera(videoEl, {
         onFrame: async () => {
           if (cancelled) return;
@@ -289,6 +292,13 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
       cancelled = true;
       historyRef.current = [];
       seqRef.current = [];
+      
+      // ✅ Clear timer on cleanup
+      if (noHandsTimerRef.current) {
+        clearTimeout(noHandsTimerRef.current);
+        noHandsTimerRef.current = null;
+      }
+
       if (cameraRef.current && cameraRef.current.stop) {
         try {
           cameraRef.current.stop();
@@ -298,11 +308,8 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture }) {
       }
       cameraRef.current = null;
       ctxRef.current = null;
-      // we **do not** close the global Hands instance here,
-      // so WebGL context stays alive and we don't hit the
-      // "Too many active WebGL contexts" limit.
     };
-  }, [enabled, videoEl, canvasEl, onGesture]);
+  }, [enabled, videoEl, canvasEl, onGesture, onNoHandsDetected]);
 }
 
 // ========= Simple placeholder icon =========
@@ -319,19 +326,20 @@ function IconUser() {
 export default function VideoTile(props) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const [gesture, setGesture] = useState(null); // {label, score, source}
+  const [gesture, setGesture] = useState(null);
 
-  const [signedWords, setSignedWords] = useState([]); // e.g. ["HELLO","MY","NAME","IVA"]
+  const [signedWords, setSignedWords] = useState([]);
   const [translatedSentence, setTranslatedSentence] = useState('');
   const [translating, setTranslating] = useState(false);
-  const [translateError, setTranslateError] = useState('');
   const lastLockedWordRef = useRef(null);
 
-  const handleTranslate = async () => {
-    if (!signedWords.length) return;
+  // ✅ Auto-translate when no hands detected
+  const handleNoHandsDetected = async () => {
+    if (!signedWords.length || translating) return;
+
+    console.log('⏱️ No hands detected for 2s, auto-translating:', signedWords);
 
     setTranslating(true);
-    setTranslateError('');
     setTranslatedSentence('');
 
     try {
@@ -347,47 +355,41 @@ export default function VideoTile(props) {
       }
 
       setTranslatedSentence(data.sentence);
+      
+      // Send to translation feed
       if (typeof props.onTranslatedSentence === 'function') {
         props.onTranslatedSentence(data.sentence);
       }
-      //  Clear signed words after successful translation
+
+      // Clear for next sentence
       setSignedWords([]);
       lastLockedWordRef.current = null;
+
+      // Clear sentence display after 3 seconds
+      setTimeout(() => {
+        setTranslatedSentence('');
+      }, 3000);
+
     } catch (err) {
-      console.error(err);
-      setTranslateError('Failed to translate sentence.');
+      console.error('Translation error:', err);
     } finally {
       setTranslating(false);
     }
   };
 
-  const handleClearWords = () => {
-    setSignedWords([]);
-    setTranslatedSentence('');
-    setTranslateError('');
-    lastLockedWordRef.current = null;
-  };
-
-
-  // Check if camera is on (declare state FIRST)
   const [cameraOn, setCameraOn] = useState(true);
   
-  // Sync cameraOn from prop (for local user) - FIRST effect
   useEffect(() => {
     if (props.cameraOn !== undefined) {
-      console.log(`[VideoTile ${props.badgeText}] Prop cameraOn changed to:`, props.cameraOn);
       setCameraOn(props.cameraOn);
     }
   }, [props.cameraOn]);
   
-  // Detect camera state from stream (for remote users) - SECOND effect
   useEffect(() => {
-    // Skip if using prop-based camera state (local user)
     if (props.cameraOn !== undefined) {
       return;
     }
     
-    // For remote users, detect from stream
     if (!props.stream || !(props.stream instanceof MediaStream)) {
       return;
     }
@@ -397,10 +399,8 @@ export default function VideoTile(props) {
       return;
     }
     
-    // Set initial state immediately
     setCameraOn(videoTrack.enabled);
     
-    // Poll to catch track.enabled changes
     const checkInterval = setInterval(() => {
       setCameraOn(videoTrack.enabled);
     }, 200);
@@ -408,15 +408,12 @@ export default function VideoTile(props) {
     return () => clearInterval(checkInterval);
   }, [props.cameraOn, props.stream]);
 
-  // Attach MediaStream to video element - THIRD effect
   useEffect(() => {
     if (!videoRef.current) return;
     const hasStream = props.stream instanceof MediaStream;
     
     if (hasStream) {
-      // Only re-attach if srcObject is not already set to this stream
       if (videoRef.current.srcObject !== props.stream) {
-        console.log(`[VideoTile ${props.badgeText}] Attaching stream`);
         videoRef.current.srcObject = props.stream;
       }
     } else {
@@ -431,28 +428,22 @@ export default function VideoTile(props) {
     onGesture: (g) => {
       setGesture(g);
 
-      // lock in a word when it's confidently detected
       if (g.score > 0.80 && g.label !== lastLockedWordRef.current) {
         lastLockedWordRef.current = g.label;
         setSignedWords((prev) => [...prev, g.label]);
       }
-
-      /* Sends labels to translation feed for testing 
-      if (typeof props.onGesture === "function") {
-        props.onGesture(g, { isLocal: !!props.isLocal });
-      }
-        */
     },
+    onNoHandsDetected: handleNoHandsDetected, // ✅ Pass callback
   });
-
 
   const hasStream = props.stream instanceof MediaStream;
   const showBadge =
     typeof props.badgeText === "string" && props.badgeText.trim().length > 0;
 
-    return (
-      <div className="tile" style={{ position: "relative" }}>
-        {/* NEW: sentence builder panel */}
+  return (
+    <div className="tile" style={{ position: "relative" }}>
+      {/* ✅ Simplified panel - no buttons */}
+      {props.isLocal && (
         <div
           style={{
             position: "absolute",
@@ -471,79 +462,79 @@ export default function VideoTile(props) {
             <strong>Signed words:</strong>{" "}
             {signedWords.length ? signedWords.join(" ") : "—"}
           </div>
-          <div style={{ marginTop: 4, display: "flex", gap: 6 }}>
-            <button
-              onClick={handleTranslate}
-              disabled={translating || !signedWords.length}
-            >
-              {translating ? "Translating…" : "Generate Sentence"}
-            </button>
-            <button onClick={handleClearWords}>Clear</button>
-          </div>
+          {translating && (
+            <div style={{ marginTop: 4, color: "#ffdd00" }}>
+              Translating...
+            </div>
+          )}
           {translatedSentence && (
             <div style={{ marginTop: 4 }}>
               <strong>Sentence:</strong> {translatedSentence}
             </div>
           )}
-          {translateError && (
-            <div style={{ marginTop: 4, color: "#ffaaaa" }}>
-              {translateError}
-            </div>
-          )}
         </div>
-  
-        {showBadge && (
-          <div className={"tile-badge " + (props.badgeClass || "")}>
-            {props.badgeText}
-          </div>
-        )}
-  
-        {gesture && props.gestureOn && (
+      )}
+
+      {showBadge && (
+        <div className={"tile-badge " + (props.badgeClass || "")}>
+          {props.badgeText}
+        </div>
+      )}
+
+      {gesture && props.gestureOn && (
+        <div
+          className="tile-gesture-hud"
+          style={{
+            position: "absolute",
+            right: 8,
+            bottom: 8,
+            zIndex: 3,
+            background: "rgba(0,0,0,.55)",
+            color: "#fff",
+            padding: "6px 10px",
+            borderRadius: 10,
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          ASL: {gesture.label} {(gesture.score * 100).toFixed(0)}%
+        </div>
+      )}
+
+      <div className="tile-media">
+        {hasStream && cameraOn ? (
+          <>
+            <video
+              ref={videoRef}
+              playsInline
+              autoPlay
+              muted={!!props.isLocal}
+              className="tile-video"
+            />
+            <canvas
+              ref={canvasRef}
+              className="tile-overlay"
+              style={{ opacity: props.gestureOn ? 1 : 0 }}
+              width={640}
+              height={480}
+            />
+          </>
+        ) : hasStream && !cameraOn && props.picture ? (
           <div
-            className="tile-gesture-hud"
+            className="placeholder"
             style={{
-              position: "absolute",
-              right: 8,
-              bottom: 8,
-              zIndex: 3,
-              background: "rgba(0,0,0,.55)",
-              color: "#fff",
-              padding: "6px 10px",
-              borderRadius: 10,
-              fontSize: 12,
-              fontWeight: 600,
+              background: '#f0f0f0',
+              backgroundImage: `url(${props.picture})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
             }}
-          >
-            ASL: {gesture.label} {(gesture.score * 100).toFixed(0)}%
+          />
+        ) : (
+          <div className="placeholder">
+            <IconUser />
           </div>
         )}
-  
-        <div className="tile-media">
-          {hasStream && cameraOn ? (
-            <>
-              <video
-                ref={videoRef}
-                playsInline
-                autoPlay
-                muted={!!props.isLocal}
-                className="tile-video"
-              />
-              <canvas
-                ref={canvasRef}
-                className="tile-overlay"
-                style={{ opacity: props.gestureOn ? 1 : 0 }}
-                width={640}
-                height={480}
-              />
-            </>
-          ) : hasStream && !cameraOn && props.picture ? (
-            <div className="placeholder" style={{ background: '#f0f0f0', backgroundImage: `url(${props.picture})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-          ) : (
-            <div className="placeholder">
-              <IconUser />
-            </div>
-          )}
-        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
