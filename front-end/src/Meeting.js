@@ -69,7 +69,7 @@ function Meeting() {
         setLocalStream(stream);
 
         // Add self as initial participant
-        setParticipants([{ id: socket.id, isLocal: true, stream }]);
+        setParticipants([{ id: socket.id, isLocal: true, stream, picture: currentUser?.picture }]);
 
         // Join room via socket
         const roomID = meetingId || "default-room";
@@ -299,6 +299,7 @@ function Meeting() {
                     isLocal={p.isLocal}
                     gestureOn={gestureOn}
                     badgeText={p.isLocal ? "You" : "Participant"}
+                    picture={p.picture}
                     onGesture={handleTileGesture}
                   />
                 ))}

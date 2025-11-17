@@ -375,6 +375,33 @@ export default function VideoTile(props) {
     }
   }, [props.stream]);
 
+  // Check if camera is on
+  const [cameraOn, setCameraOn] = useState(true);
+  useEffect(() => {
+    if (!props.stream || !(props.stream instanceof MediaStream)) {
+      setCameraOn(false);
+      return;
+    }
+    
+    const videoTrack = props.stream.getVideoTracks()[0];
+    if (videoTrack) {
+      setCameraOn(videoTrack.enabled);
+      
+      const handleEnabledChange = () => {
+        setCameraOn(videoTrack.enabled);
+      };
+      
+      // Monitor track enable/disable
+      const checkInterval = setInterval(() => {
+        setCameraOn(videoTrack.enabled);
+      }, 500);
+      
+      return () => clearInterval(checkInterval);
+    } else {
+      setCameraOn(false);
+    }
+  }, [props.stream]);
+
   useASLFromVideo({
     videoEl: videoRef.current,
     canvasEl: canvasRef.current,
@@ -468,7 +495,7 @@ export default function VideoTile(props) {
         )}
   
         <div className="tile-media">
-          {hasStream ? (
+          {hasStream && cameraOn ? (
             <>
               <video
                 ref={videoRef}
@@ -485,6 +512,8 @@ export default function VideoTile(props) {
                 height={480}
               />
             </>
+          ) : hasStream && !cameraOn && props.picture ? (
+            <div className="placeholder" style={{ background: '#f0f0f0', backgroundImage: `url(${props.picture})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
           ) : (
             <div className="placeholder">
               <IconUser />
