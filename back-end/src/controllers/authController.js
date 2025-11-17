@@ -37,6 +37,7 @@ export const signUp = async (req, res) => {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        authMethod: 'email'
       },
     });
   } catch (err) {
@@ -66,6 +67,7 @@ export const signIn = async (req, res) => {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        authMethod: 'email'
       },
     });
   } catch (err) {
@@ -110,7 +112,8 @@ export const googleSignIn = async (req, res) => {
         id: user._id.toString(),
         email: user.email,
         name: user.name,
-        picture: user.picture
+        picture: user.picture,
+        authMethod: 'google'
       },
       token
     });

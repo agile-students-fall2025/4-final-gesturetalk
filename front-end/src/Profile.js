@@ -180,12 +180,14 @@ function Profile() {
 
         <input type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
         <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {currentUser?.authMethod !== 'google' && (
+          <input 
+            type="password" 
+            placeholder="Password" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        )}
 
         <button className="save-btn" onClick={handleSave}>Save</button>
         <button className="logout-btn" onClick={handleLogout}>Logout</button>
