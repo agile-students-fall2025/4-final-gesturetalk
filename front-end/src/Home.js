@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
-// import { createMeeting, joinMeeting } from "./services/meetingServices";
 import UserContext from './contexts/UserContext';
 
 export default function Home() {
@@ -41,26 +40,30 @@ export default function Home() {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(meetingCode);
+    alert("Meeting code copied to clipboard!");
   };
 
   const handleJoin = async () => {
     try{
-      // const res = await joinMeeting(meetingCode); // fix join meeting rq
-      // if (!res.ok) {
-      //   throw new Error("Invalid meeting");
-      // }
-      // const data = await res.json();
-      // const meetingId = data.meetingId; 
       const meetingId = joinCode;
       setShowJoinModal(false);
       alert(`Joining meeting: ${meetingId}`);
       navigate(`/meeting/${meetingId}`);
-
     } catch (err){
       console.error(err);
       alert("Invalid meeting code");
     }
   };
+
+  function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-!@#$%^&*()_+=?!`~';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+  return result;
+}
 
   return (
     <div className="home-container">
@@ -84,9 +87,10 @@ export default function Home() {
           {/* Left card */}
           <div className="card meeting-card">
             <div className="meeting-option" 
-                onClick={() => setShowModal(true)}
+                onClick={() => {setShowModal(true)
+                    setMeetingCode(generateRandomString(12));
+                }}
             >
-
               <img
                 src="/createmeeting.svg"
                 alt="Create Meeting"
@@ -154,7 +158,7 @@ export default function Home() {
               <p className="modal-label">Meeting Code</p>
               <div className="code-box">
                 <input type="text" readOnly name="meetingCode" value={meetingCode} />
-                <button className="copy-btn" onClick={handleCopy}>
+                <button type="button" className="copy-btn" onClick={handleCopy}>
                 <img src="/copy.svg" alt="Copy" className="copy-icon" />
                 </button>
               </div>
@@ -164,7 +168,15 @@ export default function Home() {
             <button
               className="create-btn"
               onClick={() => {
-                alert(`Meeting "${meetingName}" created!`);
+                // check if meeting name not empty
+                if (!meetingName.trim()) {
+                  alert("Please enter a meeting name.");
+                  return;
+                }
+                // save meeting name and code to backend with peer
+                
+                alert(`Meeting "${meetingName}" created!, code: ${meetingCode}`);
+                navigate(`/meeting/${meetingCode}`);
                 setShowModal(false);
               }}
             >
