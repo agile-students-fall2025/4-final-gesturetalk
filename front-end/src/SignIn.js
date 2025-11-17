@@ -2,6 +2,7 @@ import './SignIn.css';
 import React, { useContext, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from "jwt-decode";
 import UserContext from './contexts/UserContext';
 
 function SignIn(){
@@ -30,10 +31,21 @@ function SignIn(){
                 });
                 const data = await res.json();
                 if (!data.ok) { setError(data.error || 'Sign in failed'); setLoading(false); return; }
+                
+                // store jwt token
+                const token = data.token;
+                if (token) {
+                    localStorage.setItem('authToken', token); 
+                }
+                
                 setCurrentUser(data.user);
                 localStorage.setItem('currentUser', JSON.stringify(data.user));
                 navigate('/home');
-            } catch (e) { console.error(e); setError('Network error'); setLoading(false); }
+            } catch (e) {
+                console.error(e);
+                setError('Network error');
+                setLoading(false); 
+            }
         };
 
         const checkPass = () => {
@@ -48,7 +60,7 @@ function SignIn(){
             try {
                 const jwt = credentialResponse?.credential;
                 if (!jwt) return console.warn('No credential returned from Google');
-                const payload = JSON.parse(atob(jwt.split('.')[1]));
+                const payload = jwtDecode(jwt);
                 const user = {
                     id: payload.sub,
                     name: payload.name,

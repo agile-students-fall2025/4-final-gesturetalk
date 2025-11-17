@@ -5,7 +5,26 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_ENV=test mocha tests/**/*.test.js --require dotenv/config --reporter spec",
+    "test:watch": "NODE_ENV=test mocha tests/**/*.test.js --watch --require dotenv/config --reporter spec",
+    "coverage": "NODE_ENV=test c8 npm test",
+    "coverage:report": "NODE_ENV=test c8 -r text -r text-summary -r html -r lcov npm test",
+    "coverage:check": "NODE_ENV=test c8 --check-coverage --branches=50 --functions=50 --lines=50 --statements=50 npm test"
+  },
+  "c8": {
+    "all": true,
+    "src": [
+      "src",
+      "."
+    ],
+    "include": [
+      "server.js",
+      "src/**/*.js"
+    ],
+    "exclude": [
+      "tests/**",
+      "node_modules/**"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -18,9 +37,15 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.3",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "c8": "^10.1.3",
+    "chai": "^6.2.1",
+    "mocha": "^11.7.5"
   }
 }
