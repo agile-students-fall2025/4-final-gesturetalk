@@ -1,18 +1,18 @@
-import User from '../models/User.js';
+import User from "../models/User.js";
 
 export const uploadProfilePicture = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ ok: false, error: 'No file uploaded' });
+      return res.status(400).json({ ok: false, error: "No file uploaded" });
     }
 
-    const userId = req.body.userId;
+    const { userId } = req.body;
     if (!userId) {
-      return res.status(400).json({ ok: false, error: 'userId required' });
+      return res.status(400).json({ ok: false, error: "userId required" });
     }
 
     // Construct full picture URL (include server URL for browser to access)
-    const serverUrl = process.env.SERVER_URL || 'http://localhost:3001';
+    const serverUrl = process.env.SERVER_URL || "http://localhost:3001";
     const pictureUrl = `${serverUrl}/uploads/profiles/${req.file.filename}`;
 
     // Try to find user by MongoDB ObjectId first (for DB-created users)
@@ -22,16 +22,16 @@ export const uploadProfilePicture = async (req, res) => {
       user = await User.findByIdAndUpdate(
         userId,
         { picture: pictureUrl },
-        { new: true }
+        { new: true },
       );
     } catch (err) {
       // If userId is not a valid ObjectId, try finding by email
       // (for Google OAuth users, userId is the email)
-      if (userId.includes('@') || !userId.match(/^[0-9a-fA-F]{24}$/)) {
+      if (userId.includes("@") || !userId.match(/^[0-9a-fA-F]{24}$/)) {
         user = await User.findOneAndUpdate(
           { email: userId },
           { picture: pictureUrl },
-          { new: true }
+          { new: true },
         );
       } else {
         throw err;
@@ -39,7 +39,7 @@ export const uploadProfilePicture = async (req, res) => {
     }
 
     if (!user) {
-      return res.status(404).json({ ok: false, error: 'User not found' });
+      return res.status(404).json({ ok: false, error: "User not found" });
     }
 
     res.json({
@@ -52,7 +52,7 @@ export const uploadProfilePicture = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('uploadProfilePicture error', err);
-    res.status(500).json({ ok: false, error: 'Server error' });
+    console.error("uploadProfilePicture error", err);
+    res.status(500).json({ ok: false, error: "Server error" });
   }
 };

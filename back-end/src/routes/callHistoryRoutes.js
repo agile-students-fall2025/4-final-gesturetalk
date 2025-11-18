@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import { getCallHistory } from '../controllers/callHistoryController.js';
+import { Router } from "express";
+import { getCallHistory } from "../controllers/callHistoryController.js";
 
 const router = Router();
 
-router.post('/', getCallHistory);
+router.post("/", getCallHistory);
 
 export default router;

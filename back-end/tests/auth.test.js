@@ -5,8 +5,14 @@ function mockRes() {
   const res = {};
   res.statusCode = 200;
   res.body = null;
-  res.status = (code) => { res.statusCode = code; return res; };
-  res.json = (obj) => { res.body = obj; return res; };
+  res.status = (code) => {
+    res.statusCode = code;
+    return res;
+  };
+  res.json = (obj) => {
+    res.body = obj;
+    return res;
+  };
   return res;
 }
 
