@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom'; 
 import './TranslationLog.css'
+import UserContext from './contexts/UserContext';
 
 const TranslationLog = () => {
     const { meetingIdOld } = useParams();

@@ -1,7 +1,6 @@
 import './SignUp.css';
 import { useNavigate } from "react-router-dom";
 import { useContext, useState } from 'react';
-import { jwtDecode } from "jwt-decode";
 import UserContext from './contexts/UserContext';
 
 function SignUp(){
@@ -43,7 +42,7 @@ function SignUp(){
 
     return(
         <div id="signup-content">
-            <img src="./shuwaWsub.png"/>
+            <img alt="logo" src="./shuwaWsub.png"/>
             <form id="signup-form" onSubmit={handleSubmit}>
                 <h1>Sign Up</h1>
                 <input id='dNameInput' type='text' placeholder='display name' value={name} onChange={e=>setName(e.target.value)} />

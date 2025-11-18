@@ -1,6 +1,5 @@
 import express from "express";
 import bodyParser from "body-parser";
-import axios from "axios";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
@@ -66,6 +65,7 @@ app.post("/api/translate", async (req, res) => {
 
     const sentence = await generateSentenceFromSigns(signedWords);
     res.json({ sentence });
+    return;
   } catch (err) {
     console.error("Translation error:", err);
     res.status(500).json({ error: "Translation failed" });

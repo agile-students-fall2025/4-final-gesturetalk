@@ -2,7 +2,6 @@ import './SignIn.css';
 import React, { useContext, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from "jwt-decode";
 import UserContext from './contexts/UserContext';
 
 function SignIn(){
@@ -15,10 +14,6 @@ function SignIn(){
 
         const toSignUp = () => {
                 navigate("/signup"); 
-        };
-
-        const toHome = () => {
-                navigate("/home"); 
         };
 
         const handleEmailSignIn = async () => {
@@ -46,13 +41,6 @@ function SignIn(){
                 setError('Network error');
                 setLoading(false); 
             }
-        };
-
-        const checkPass = () => {
-             // need to check email and password from db!!!
-             // if no match, err message is "no account associated with email"
-             // if pass no match email, err msg is "incorrect password"
-             // ^ on that note must make err msg element & edit Sign in btn onClick checkPass
         };
 
         // on success from @react-oauth/google
@@ -95,7 +83,7 @@ function SignIn(){
         return(
                 <div id="signin-content">
                         <p id="sub">the sign language to text converter meeting app</p>
-                        <img src='./shuwa.png'/>
+                        <img alt="logo" src='./shuwa.png'/>
                         <p id="hook">get started by signing in</p>
                         <div id="signin-form">
                                 <input id='usernameInput' type='email' placeholder='email' value={email} onChange={e=>setEmail(e.target.value)} />

@@ -46,7 +46,7 @@ describe("Sentence Generator", () => {
     });
   });
 
-  describe("Core API Integration", function () {
+  describe("Core API Integration", function d() {
     this.timeout(testTimeout);
 
     (hasApiKey ? it : it.skip)(
@@ -86,7 +86,7 @@ describe("Sentence Generator", () => {
     });
   });
 
-  describe("Error Handling", function () {
+  describe("Error Handling", function d() {
     this.timeout(testTimeout);
 
     it("should throw error for invalid API key", async () => {

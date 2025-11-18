@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function u(next) {
   if (!this.isModified("password")) return next();
   try {
     const salt = await bcrypt.genSalt(10);
@@ -29,7 +29,7 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-userSchema.methods.comparePassword = async function (candidate) {
+userSchema.methods.comparePassword = async function c(candidate) {
   if (!this.password) return false;
   return bcrypt.compare(candidate, this.password);
 };

@@ -46,6 +46,7 @@ export const signUp = async (req, res) => {
         authMethod: "email",
       },
     });
+    return;
   } catch (err) {
     console.error("signUp error", err);
     res.status(500).json({ ok: false, error: "Server error" });
@@ -85,6 +86,7 @@ export const signIn = async (req, res) => {
         authMethod: "email",
       },
     });
+    return;
   } catch (err) {
     console.error("signIn error", err);
     res.status(500).json({ ok: false, error: "Server error" });
@@ -129,6 +131,7 @@ export const googleSignIn = async (req, res) => {
       },
       token,
     });
+    return;
   } catch (err) {
     console.error("googleSignIn error", err);
     res.status(500).json({ ok: false, error: "Server error" });
@@ -175,6 +178,7 @@ export const updatePassword = async (req, res) => {
         picture: user.picture,
       },
     });
+    return;
   } catch (err) {
     console.error("updatePassword error", err);
     res.status(500).json({ ok: false, error: "Server error" });
