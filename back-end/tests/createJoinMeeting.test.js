@@ -1,9 +1,10 @@
-import { expect } from "chai"
+import { expect } from "chai";
 import * as controller from "../src/controllers/meetingController.js";
 import MeetingRoom from "../src/models/MeetingRoom.js";
 
 describe("Testing meeting controller for join and create", () => {
-  let req, res;
+  let req;
+  let res;
 
   beforeEach(() => {
     req = { body: {}, params: {} };
@@ -19,7 +20,7 @@ describe("Testing meeting controller for join and create", () => {
 
       json(data) {
         this.jsonData = data;
-      }
+      },
     };
   });
 
@@ -49,38 +50,36 @@ describe("Testing meeting controller for join and create", () => {
       expect(res.jsonData.error).to.equal("Meeting code already exists");
     });
 
-   it("creates meeting and returns 201", async () => {
-    req.body = { meetingName: "Test", meetingCode: "DEF" };
+    it("creates meeting and returns 201", async () => {
+      req.body = { meetingName: "Test", meetingCode: "DEF" };
 
-    MeetingRoom.findOne = async (query) => {
-        if (query.meetingCode === "DEF") return null; 
+      MeetingRoom.findOne = async (query) => {
+        if (query.meetingCode === "DEF") return null;
         return null;
-    };
+      };
 
-    MeetingRoom.create = async (data) => ({
-        ...data
-    });
+      MeetingRoom.create = async (data) => ({
+        ...data,
+      });
 
-
-    const res = {
+      const res = {
         statusCode: null,
         jsonData: null,
         status(code) {
-        this.statusCode = code;
-        return this;
+          this.statusCode = code;
+          return this;
         },
         json(data) {
-        this.jsonData = data;
-        }
-    };
+          this.jsonData = data;
+        },
+      };
 
-    await controller.createMeetingRoom(req, res);
+      await controller.createMeetingRoom(req, res);
 
-    expect(res.statusCode).to.equal(201);
-    expect(res.jsonData.ok).to.be.true;
-    expect(res.jsonData.meeting.meetingCode).to.equal("DEF");
+      expect(res.statusCode).to.equal(201);
+      expect(res.jsonData.ok).to.be.true;
+      expect(res.jsonData.meeting.meetingCode).to.equal("DEF");
     });
-
   });
 
   describe("joinMeetingRoom", () => {

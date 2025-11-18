@@ -1,13 +1,13 @@
-import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Set up storage location and filename
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads/profiles');
+    const uploadDir = path.join(__dirname, "../../uploads/profiles");
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
@@ -20,11 +20,11 @@ const storage = multer.diskStorage({
 
 // Filter to accept only image files
 const fileFilter = (req, file, cb) => {
-  const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedMimes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
   if (allowedMimes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed'));
+    cb(new Error("Only image files are allowed"));
   }
 };
 

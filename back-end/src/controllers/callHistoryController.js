@@ -1,5 +1,1 @@
-
-
-export const getCallHistory = async (req, res) => {
-    
-}
+export const getCallHistory = async (req, res) => {};

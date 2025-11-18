@@ -36,10 +36,10 @@ export async function generateSentenceFromSigns(signedWords) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         },
-      }
+      },
     );
 
-    const data = response.data;
+    const { data } = response;
     const sentence = data.choices?.[0]?.message?.content?.trim();
 
     if (!sentence) {

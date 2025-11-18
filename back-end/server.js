@@ -1,24 +1,23 @@
 import express from "express";
-import bodyParser from 'body-parser';
+import bodyParser from "body-parser";
 import axios from "axios";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
-import mongoose from 'mongoose';
-import authRoutes from './src/routes/authRoutes.js';
-import profileRoutes from './src/routes/profileRoutes.js';
-import callHistoryRoutes from './src/routes/callHistoryRoutes.js';
-import translationLogRoutes from './src/routes/translationLogRoutes.js';
-import meetingRoutes from './src/routes/meetingRoutes.js';
+import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
+import authRoutes from "./src/routes/authRoutes.js";
+import profileRoutes from "./src/routes/profileRoutes.js";
+import callHistoryRoutes from "./src/routes/callHistoryRoutes.js";
+import translationLogRoutes from "./src/routes/translationLogRoutes.js";
+import meetingRoutes from "./src/routes/meetingRoutes.js";
 import { generateSentenceFromSigns } from "./src/translation/sentenceGenerator.js";
-import fs from 'fs';
 
-dotenv.config(); 
-
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,30 +28,30 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 // jwt token
-app.use(bodyParser.json({limit: "30mb", extended: true}));
-app.use(bodyParser.urlencoded({limit: "30mb", extended: true}));
+app.use(bodyParser.json({ limit: "30mb", extended: true }));
+app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 app.use(cors());
 
 // Mount auth routes
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
 // Mount profile routes
-app.use('/api/profile', profileRoutes);
+app.use("/api/profile", profileRoutes);
 // Call history routes
-app.use('/api/call-history', callHistoryRoutes);
+app.use("/api/call-history", callHistoryRoutes);
 // Translation Log routes
-app.use('api/translation-log', translationLogRoutes);
+app.use("api/translation-log", translationLogRoutes);
 
 // Serve static files from uploads directory
-const uploadsDir = path.join(__dirname, 'uploads');
+const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-const profilesDir = path.join(uploadsDir, 'profiles');
+const profilesDir = path.join(uploadsDir, "profiles");
 if (!fs.existsSync(profilesDir)) {
   fs.mkdirSync(profilesDir, { recursive: true });
 }
-app.use('/uploads', express.static(uploadsDir));
+app.use("/uploads", express.static(uploadsDir));
 
 // --- Sentence translation route ---
 app.post("/api/translate", async (req, res) => {
@@ -73,28 +72,28 @@ app.post("/api/translate", async (req, res) => {
   }
 });
 
-
 // meeting create and join routes
-app.use('/api/meetings', meetingRoutes);
-
-
+app.use("/api/meetings", meetingRoutes);
 
 // Connect to MongoDB if URI provided
-const MONGODB_URI = process.env.MONGODB_URI;
+const { MONGODB_URI } = process.env;
 if (MONGODB_URI) {
-  mongoose.connect(MONGODB_URI).then(() => console.log('MongoDB connected')).catch((err) => console.error('MongoDB connection error:', err));
+  mongoose
+    .connect(MONGODB_URI)
+    .then(() => console.log("MongoDB connected"))
+    .catch((err) => console.error("MongoDB connection error:", err));
 } else {
-  console.warn('MONGODB_URI not set; auth endpoints will fail until configured');
+  console.warn(
+    "MONGODB_URI not set; auth endpoints will fail until configured",
+  );
 }
-
-
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",  // front-end runs on 3000
-    methods: ["GET", "POST"]
+    origin: "http://localhost:3000", // front-end runs on 3000
+    methods: ["GET", "POST"],
   },
 });
 
@@ -135,7 +134,7 @@ io.on("connection", (socket) => {
       candidate,
       sdpMid,
       sdpMLineIndex,
-      sender: socket.id
+      sender: socket.id,
     });
   });
 
@@ -156,7 +155,6 @@ function error(err, req, res, next) {
 }
 
 app.use(error);
-
 
 server.listen(3001, () => {
   console.log(`Listening on Port 3001`);

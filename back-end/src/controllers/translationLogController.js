@@ -1,5 +1,1 @@
-
-
-export const getTranslationLog = async (req, res) => {
-    
-}
+export const getTranslationLog = async (req, res) => {};
