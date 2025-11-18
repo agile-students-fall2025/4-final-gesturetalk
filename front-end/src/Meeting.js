@@ -292,7 +292,6 @@ function Meeting() {
                   <VideoTile
                     key={p.id}
                     stream={p.stream}
-                    picture={p.picture}
                     isLocal={p.isLocal}
                     gestureOn={gestureOn}
                     cameraOn={camOn}
