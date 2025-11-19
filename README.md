@@ -7,9 +7,9 @@
 | Name | Sprint 0 | Sprint 1 |  Sprint 2 | Sprint 3 |  Sprint 4 |
 | :------- | :------: | -------: | -------: | -------: |  -------: |
 | [Iva Park](https://github.com/ivapark)  | --- | Product Owner |  ---  | ---  | --- |
-| [Jasmine Fan](https://github.com/jasmine7310)  | Product Owner  | ---  |  ---  | ---  | --- |
+| [Jasmine Fan](https://github.com/jasmine7310)  | Product Owner  | ---  |  ---  | Scrum Master  | --- |
 | [Terry Cao](https://github.com/cao-exe)  | Scrum Master  |   ---  | Product Owner  | --- | --- |
-| [Walker Tupman](https://github.com/bestole)  | ---  | Scrum Master |  ---  | ---  | --- |
+| [Walker Tupman](https://github.com/bestole)  | ---  | Scrum Master |  ---  | Product Owner | --- |
 | [Venetia Liu](https://github.com/venetialiu)  | ---  | ---  | Scrum Master  | ---  | --- |
 
 # Project History
