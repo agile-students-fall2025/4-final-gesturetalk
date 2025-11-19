@@ -35,11 +35,11 @@ app.use(cors());
 
 // Mount auth routes
 app.use("/api/auth", authRoutes);
-// Mount profile routes
-app.use("/api/profile", profileRoutes);
-// Call history routes
+// Mount profile routes + auth middleware
+app.use("/api/profile", auth, profileRoutes);
+// Call history routes + auth middleware
 app.use("/api/call-history", auth, callHistoryRoutes);
-// Translation Log routes
+// Translation Log routes + auth middleware
 app.use("api/translation-log", auth, translationLogRoutes);
 
 // Serve static files from uploads directory
