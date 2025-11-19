@@ -46,7 +46,6 @@ describe("profileController", () => {
         file: { filename: "test.jpg" },
         body: { userId: "test123" },
       };
-      const res = mockRes();
 
       // Test validates that both file and userId are present
       // (actual DB call would timeout without mock, so we just verify inputs are accepted)

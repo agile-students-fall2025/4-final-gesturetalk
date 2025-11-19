@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import multer from "multer";
 import upload from "../src/middleware/upload.js";
 
 describe("upload middleware", () => {
@@ -16,9 +15,10 @@ describe("upload middleware", () => {
     };
 
     // Test fileFilter
+    // eslint-disable-next-line no-underscore-dangle
     const fileFilter = upload._fileFilter || upload.fileFilter;
     if (fileFilter) {
-      fileFilter(mockReq, mockFile, (error, accepted) => {
+      fileFilter(mockReq, mockFile, (error) => {
         expect(error).to.exist;
         expect(error.message).to.equal("Only image files are allowed");
         done();
@@ -36,6 +36,7 @@ describe("upload middleware", () => {
     };
 
     // Test fileFilter
+    // eslint-disable-next-line no-underscore-dangle
     const fileFilter = upload._fileFilter || upload.fileFilter;
     if (fileFilter) {
       fileFilter(mockReq, mockFile, (error, accepted) => {
@@ -55,6 +56,7 @@ describe("upload middleware", () => {
       mimetype: "image/png",
     };
 
+    // eslint-disable-next-line no-underscore-dangle
     const fileFilter = upload._fileFilter || upload.fileFilter;
     if (fileFilter) {
       fileFilter(mockReq, mockFile, (error, accepted) => {
@@ -74,6 +76,7 @@ describe("upload middleware", () => {
       mimetype: "image/gif",
     };
 
+    // eslint-disable-next-line no-underscore-dangle
     const fileFilter = upload._fileFilter || upload.fileFilter;
     if (fileFilter) {
       fileFilter(mockReq, mockFile, (error, accepted) => {
@@ -93,6 +96,7 @@ describe("upload middleware", () => {
       mimetype: "image/webp",
     };
 
+    // eslint-disable-next-line no-underscore-dangle
     const fileFilter = upload._fileFilter || upload.fileFilter;
     if (fileFilter) {
       fileFilter(mockReq, mockFile, (error, accepted) => {
@@ -112,9 +116,10 @@ describe("upload middleware", () => {
       mimetype: "application/pdf",
     };
 
+    // eslint-disable-next-line no-underscore-dangle
     const fileFilter = upload._fileFilter || upload.fileFilter;
     if (fileFilter) {
-      fileFilter(mockReq, mockFile, (error, accepted) => {
+      fileFilter(mockReq, mockFile, (error) => {
         expect(error).to.exist;
         expect(error.message).to.equal("Only image files are allowed");
         done();
@@ -131,9 +136,10 @@ describe("upload middleware", () => {
       mimetype: "video/mp4",
     };
 
+    // eslint-disable-next-line no-underscore-dangle
     const fileFilter = upload._fileFilter || upload.fileFilter;
     if (fileFilter) {
-      fileFilter(mockReq, mockFile, (error, accepted) => {
+      fileFilter(mockReq, mockFile, (error) => {
         expect(error).to.exist;
         expect(error.message).to.equal("Only image files are allowed");
         done();
