@@ -10,6 +10,8 @@ const CallHistory = () => {
     const [meetings, setMeetings] = useState([]);
     const navigate = useNavigate();
     const { currentUser } = useContext(UserContext);
+    const baseURL = "http://localhost:3001/api/"
+    const token = localStorage.getItem("authToken")
 
     if (!currentUser) {
         alert("Please sign in.");
@@ -20,22 +22,32 @@ const CallHistory = () => {
     // const [error, setError] = useState(null);
 
 
-    // fetch meeting data from backend (update later)
+    // fetch meeting data from backend 
     useEffect(() => {
-        // dummy data
-        const tempData = [
-            { id: 1, title: 'Meeting Name 01', date: '2025-10-25T09:00:00Z', duration: 45 },
-            { id: 2, title: 'Meeting Name 02', date: '2025-10-26T11:30:00Z', duration: 60 },
-            { id: 3, title: 'Meeting Name 03', date: '2025-10-27T14:00:00Z', duration: 30 },
-            { id: 4, title: 'Meeting Name 04', date: '2025-10-28T10:00:00Z', duration: 90 },
-            { id: 5, title: 'Meeting Name 05', date: '2025-10-29T16:00:00Z', duration: 25 },
-            { id: 6, title: 'Meeting Name 06', date: '2025-10-30T09:30:00Z', duration: 40 },
-            { id: 7, title: 'Meeting Name 07', date: '2025-11-01T13:00:00Z', duration: 55 },
-            { id: 8, title: 'Meeting Name 08', date: '2025-11-02T15:30:00Z', duration: 35 },
-            { id: 9, title: 'Meeting Name 09', date: '2025-11-03T12:00:00Z', duration: 70 },
-        ];
-        
-        setMeetings(tempData);
+        const fetchCallHistory = async () => {
+            try{
+                // fetch call history from backend
+                const res = await fetch(`${baseURL}call-history`, {
+                    method: 'GET',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        Authorization: `Bearer ${token}}` 
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.Id || currentUser.email,
+                    }),
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    // assuming that data inlcudes meetings (an array of meetings) here 
+                    setMeetings(data.meetings); 
+                    console.log('Call history loaded successfully');
+                }
+            } catch (e) {
+                console.error('Call history fetch error:', err);
+            }
+        }
+        fetchCallHistory();
 
     }, []);
 
@@ -63,12 +75,12 @@ const CallHistory = () => {
                         ):(
                             <ul>
                                 {meetings.map((meeting) => (
-                                    <li key={meeting.id} className="meeting-item">
+                                    <li key={meeting._id} className="meeting-item">
                                         <div className='meeting-title-wrap'>
                                             <h1 className='meeting-title'>{meeting.title}</h1>
                                         </div>
                                         <div className='log-button-wrap'>
-                                            <button className="log-button" onClick={() => handleClick(meeting.id)}>
+                                            <button className="log-button" onClick={() => handleClick(meeting._id)}>
                                                 Translation Log
                                             </button>
                                         </div>
