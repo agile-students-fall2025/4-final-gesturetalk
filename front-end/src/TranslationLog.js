@@ -4,128 +4,49 @@ import './TranslationLog.css'
 import UserContext from './contexts/UserContext';
 
 const TranslationLog = () => {
-    const { meetingIdOld } = useParams();
-    const meetingId = Number(meetingIdOld);
+
+    const { meetingId } = useParams();
     const navigate = useNavigate();
+
     const [meetingTitle, setMeetingTitle] = useState('');
     const [logData, setLogData] = useState([]);
     const { currentUser } = useContext(UserContext);
+    const token = localStorage.getItem("authToken")
+    // remove this when deploying
+    const baseURL = "http://localhost:3001/api"
+    
 
-     if (!currentUser) {
-    navigate("/");
-  } // user not signed in, redirect to sign in
+    useEffect(() => {
+        if (!currentUser) {
+            navigate("/");
+        }
+    }, [currentUser, navigate]);// user not signed in, redirect to sign in
 
     // use effect to fetch meeting infromation by meetingId
     useEffect(() => {
-        // dummy data
-        const tempLogs = {
-            title: 'Meeting Name 01',
-            logs: [
-                {
-                    id: 1,
-                    displayName: 'Display Name_1',
-                    time: '00:01:57',
-                    text: 'Hello.',
-                    isSender: true,
-                },
-                {
-                    id: 2,
-                    displayName: 'Display Name_2',
-                    time: '00:03:27',
-                    text: "Hi! What’s your favorite color?",
-                    isSender: false,
-                },
-                {
-                    id: 3,
-                    displayName: 'Display Name_1',
-                    time: '00:05:27',
-                    text: "My favorite color is probably pink. Not the super bright kind, more like that pastel shade that looks like sunset or strawberry milk. It just feels cozy, like something you’d want around you when you’re in a good mood. What about you?",
-                    isSender: true,
-                },
-                {
-                    id: 4,
-                    displayName: 'Display Name_2',
-                    time: '00:06:21',
-                    text: "My favorite color is blue because it’s kind of peaceful but not boring. It reminds me of the sky right before sunset or when you’re near the water and everything feels quiet for a second. I don’t know, it just feels easy to like.",
-                    isSender: false,
-                },
-                {
-                    id: 5,
-                    displayName: 'Display Name_1',
-                    time: '00:06:27',
-                    text: "My favorite color is blue b",
-                    isSender: true,
-                },
-                {
-                    id: 6,
-                    displayName: 'Display Name_2',
-                    time: '00:06:40',
-                    text: "Oh wow thanks for sharing.",
-                    isSender: false,
-                },
-                {
-                    id: 5,
-                    displayName: 'Display Name_1',
-                    time: '00:06:27',
-                    text: "My favorite color is blue b",
-                    isSender: true,
-                },
-                {
-                    id: 6,
-                    displayName: 'Display Name_2',
-                    time: '00:06:40',
-                    text: "Oh wow thanks for sharing.",
-                    isSender: false,
-                },
-                {
-                    id: 5,
-                    displayName: 'Display Name_1',
-                    time: '00:06:27',
-                    text: "My favorite color is blue b",
-                    isSender: true,
-                },
-                {
-                    id: 6,
-                    displayName: 'Display Name_2',
-                    time: '00:06:40',
-                    text: "Oh wow thanks for sharing.",
-                    isSender: false,
-                },
-                {
-                    id: 5,
-                    displayName: 'Display Name_1',
-                    time: '00:06:27',
-                    text: "My favorite color is blue b",
-                    isSender: true,
-                },
-                {
-                    id: 6,
-                    displayName: 'Display Name_2',
-                    time: '00:06:40',
-                    text: "Oh wow thanks for sharing.",
-                    isSender: false,
-                },
-                {
-                    id: 5,
-                    displayName: 'Display Name_1',
-                    time: '00:06:27',
-                    text: "My favorite color is blue b",
-                    isSender: true,
-                },
-                {
-                    id: 6,
-                    displayName: 'Display Name_2',
-                    time: '00:06:40',
-                    text: "Oh wow thanks for sharing.",
-                    isSender: false,
+        // fetch data from backend
+        const getTranslationLog = async () => {
+            try {
+                const res = await fetch(`${baseURL}/translation-log/${meetingId}`, {
+                    method: 'GET',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}` 
+                    }
+                })
+                const data = await res.json();
+                if (data.ok) {
+                    // how do we update here
+                    setMeetingTitle(data.meetingName);
+                    setLogData(data.translationLogs);
                 }
-            ],
-        };
-
-        setMeetingTitle(tempLogs.title);
-        setLogData(tempLogs.logs);
-
-    }, [meetingId]);
+                console.log('Translation Log loaded successfully')
+            } catch (err) {
+                console.error('Translation Log fetch error:', err);
+            }
+        }
+        getTranslationLog();
+    }, []);
 
     return (
         <div className="translation-log">
@@ -138,18 +59,30 @@ const TranslationLog = () => {
             <div className="inner-translation-log">
                 <div className="log-container">
                     <div className='log-list-container'>
-                        {logData.map((entry) => (
-                        <div
-                            key={entry.id}
-                            className={`log-entry ${entry.isSender ? 'sender' : 'receiver'}`}
-                        >
-                            <div className="entry-header">
-                                <span className="display-name">{entry.displayName}</span>
-                                <span className="timestamp">{entry.time}</span>
-                            </div>
-                            <p className="entry-text">{entry.text}</p>
-                        </div>
-                        ))}
+
+                        {logData.map((entry, index) => {
+                            const colorClass = ["color1", "color2"][index % 2];
+
+                            return (
+                                <div
+                                    key={entry._id}
+                                    className={`log-entry ${colorClass}`}
+                                >
+                                    <div className="entry-header">
+                                        <span className="display-name">{entry.senderId}</span>
+                                        <span className="timestamp">
+                                            {new Date(entry.timestamp).toLocaleTimeString([], {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit'
+                                            })}
+                                        </span>
+                                    </div>
+                                    <p className="entry-text">{entry.text}</p>
+                                </div>
+                            );
+                        })}
+
                     </div>
                 </div>
             </div>   

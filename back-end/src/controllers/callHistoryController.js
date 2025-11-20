@@ -20,8 +20,10 @@ export const getCallHistory = async (req, res) => {
             meetings: userCallHistory
         })
 
+        console.log("getCallHistory sucess")
+
     } catch (err) {
-         console.error("getCallHistory error:", err);
+        console.error("getCallHistory error:", err);
         res.status(500).json({ 
             ok: false,
             error: "Server error" 

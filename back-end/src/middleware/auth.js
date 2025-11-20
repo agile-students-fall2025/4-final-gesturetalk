@@ -18,7 +18,9 @@ const auth = async (req, res, next) => {
 
         const token = header.split(" ")[1];
 
-        // test: our own secret -> replace this later
+        // test: our own secret
+        // replace this later with process.env.JWT_SECRET
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
         

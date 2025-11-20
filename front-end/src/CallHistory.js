@@ -10,13 +10,16 @@ const CallHistory = () => {
     const [meetings, setMeetings] = useState([]);
     const navigate = useNavigate();
     const { currentUser } = useContext(UserContext);
-    const baseURL = "http://localhost:3001/api/"
+
+    // remove this when deploying
+    const baseURL = "http://localhost:3001/api"
     const token = localStorage.getItem("authToken")
 
-    if (!currentUser) {
-        alert("Please sign in.");
-        navigate("/");
-    }
+    useEffect(() => {
+        if (!currentUser) {
+            navigate("/");
+        }
+    }, [currentUser, navigate]);
 
     // const [loading, setLoading] = useState(true);
     // const [error, setError] = useState(null);
@@ -27,15 +30,12 @@ const CallHistory = () => {
         const fetchCallHistory = async () => {
             try{
                 // fetch call history from backend
-                const res = await fetch(`${baseURL}call-history`, {
+                const res = await fetch(`${baseURL}/call-history/`, {
                     method: 'GET',
                     headers: { 
                         'Content-Type': 'application/json', 
-                        Authorization: `Bearer ${token}}` 
+                        Authorization: `Bearer ${token}` 
                     },
-                    body: JSON.stringify({
-                        userId: currentUser.Id || currentUser.email,
-                    }),
                 });
                 const data = await res.json();
                 if (data.ok) {
@@ -43,7 +43,7 @@ const CallHistory = () => {
                     setMeetings(data.meetings); 
                     console.log('Call history loaded successfully');
                 }
-            } catch (e) {
+            } catch (err) {
                 console.error('Call history fetch error:', err);
             }
         }
@@ -77,10 +77,10 @@ const CallHistory = () => {
                                 {meetings.map((meeting) => (
                                     <li key={meeting._id} className="meeting-item">
                                         <div className='meeting-title-wrap'>
-                                            <h1 className='meeting-title'>{meeting.title}</h1>
+                                            <h1 className='meeting-title'>{meeting.meetingName}</h1>
                                         </div>
                                         <div className='log-button-wrap'>
-                                            <button className="log-button" onClick={() => handleClick(meeting._id)}>
+                                            <button className="log-button" onClick={() => handleClick(meeting.meetingId)}>
                                                 Translation Log
                                             </button>
                                         </div>
