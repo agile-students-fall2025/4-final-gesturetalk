@@ -5,6 +5,12 @@ export const getTranslationLog = async (req, res) => {
     // fetch mock data
     // update in sprint 4
     try {
+
+        // for unit testing -> delete later when not using mock data
+        if (req.forceError) {
+            throw new Error("Forced test error");
+        }
+        
         // uncomment this for sprint 4
         const { meetingId } = req.params;
 
@@ -23,7 +29,7 @@ export const getTranslationLog = async (req, res) => {
 
         const userTranslationLogs = mockTranslationLogs;
 
-        res.json({
+        res.status(200).json({
             ok: true,
             translationLogs: userTranslationLogs,
             meetingName : meeting.meetingName
