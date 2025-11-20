@@ -2,6 +2,11 @@ import { mockCallHistory } from "../data/mockCallHistory.js"
 
 export const getCallHistory = async (req, res) => {
     try {
+
+        // for unit testing -> delete later when not using mock data
+        if (req.forceError) {
+            throw new Error("Forced test error");
+        }
         
         // uncomment this in sprint 4
         // const userId = req.user.id
@@ -15,7 +20,7 @@ export const getCallHistory = async (req, res) => {
         */
         const userCallHistory = mockCallHistory;
 
-        res.json({
+        res.status(200).json({
             ok: true,
             meetings: userCallHistory
         })
