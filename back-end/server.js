@@ -9,51 +9,66 @@ import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+
 import authRoutes from "./src/routes/authRoutes.js";
 import profileRoutes from "./src/routes/profileRoutes.js";
 import callHistoryRoutes from "./src/routes/callHistoryRoutes.js";
 import translationLogRoutes from "./src/routes/translationLogRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
 import { generateSentenceFromSigns } from "./src/translation/sentenceGenerator.js";
-import auth from './src/middleware/auth.js';
+import auth from "./src/middleware/auth.js";
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+// Exported app for tests
+export const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
-// jwt token
+// JWT body parsing
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 app.use(cors());
 
-// Mount auth routes
+// ---- Routes ----
+
+// Auth routes
 app.use("/api/auth", authRoutes);
-// Mount profile routes + auth middleware
+
+// Profile routes + auth middleware
 app.use("/api/profile", auth, profileRoutes);
+
 // Call history routes + auth middleware
 app.use("/api/call-history", auth, callHistoryRoutes);
-// Translation Log routes + auth middleware
+
+// Translation log routes + auth middleware
 app.use("/api/translation-log", auth, translationLogRoutes);
 
-// Serve static files from uploads directory
+// Meeting create/join routes
+app.use("/api/meetings", meetingRoutes);
+
+// ---- Static uploads ----
+
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
 const profilesDir = path.join(uploadsDir, "profiles");
 if (!fs.existsSync(profilesDir)) {
   fs.mkdirSync(profilesDir, { recursive: true });
 }
+
 app.use("/uploads", express.static(uploadsDir));
 
-// --- Sentence translation route ---
+// ---- Sentence translation route ----
+
 app.post("/api/translate", async (req, res) => {
   try {
     const { signedWords } = req.body;
@@ -73,25 +88,31 @@ app.post("/api/translate", async (req, res) => {
   }
 });
 
-// meeting create and join routes
-app.use("/api/meetings", meetingRoutes);
+// ---- MongoDB connection ----
 
-// Connect to MongoDB if URI provided
 const { MONGODB_URI } = process.env;
-if (MONGODB_URI) {
-  mongoose
-    .connect(MONGODB_URI)
-    .then(() => console.log("MongoDB connected"))
-    .catch((err) => console.error("MongoDB connection error:", err));
-} else {
-  console.warn(
-    "MONGODB_URI not set; auth endpoints will fail until configured",
-  );
+
+// Only connect to MongoDB when NOT running tests
+if (process.env.NODE_ENV !== "test") {
+  if (MONGODB_URI) {
+    mongoose
+      .connect(MONGODB_URI)
+      .then(() => console.log("MongoDB connected"))
+      .catch((err) => console.error("MongoDB connection error:", err));
+  } else {
+    console.warn(
+      "MONGODB_URI not set; auth endpoints will fail until configured",
+    );
+  }
 }
 
-const server = http.createServer(app);
 
-const io = new Server(server, {
+// ---- HTTP server + Socket.io ----
+
+// Exported server and io for potential socket tests
+export const server = http.createServer(app);
+
+export const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000", // front-end runs on 3000
     methods: ["GET", "POST"],
@@ -104,30 +125,29 @@ const peers = {};
 io.on("connection", (socket) => {
   console.log("Connected:", socket.id);
 
-  // ---- Join a room ----
+  // Join a room
   socket.on("join-room", (roomID) => {
     peers[socket.id] = roomID;
     socket.join(roomID);
     console.log(`Socket ${socket.id} joined room ${roomID}`);
-    // Notify other peers in the room that a new user joined
     socket.to(roomID).emit("user-joined", socket.id);
   });
 
-  // ---- Offer: route to specific target peer ----
+  // Offer → specific target peer
   socket.on("offer", (data) => {
     const { target, sdp } = data;
     console.log(`Offer from ${socket.id} to ${target}`);
     io.to(target).emit("offer", { sdp, sender: socket.id });
   });
 
-  // ---- Answer: route to specific target peer ----
+  // Answer → specific target peer
   socket.on("answer", (data) => {
     const { target, sdp } = data;
     console.log(`Answer from ${socket.id} to ${target}`);
     io.to(target).emit("answer", { sdp, sender: socket.id });
   });
 
-  // ---- ICE Candidate: route to specific target peer ----
+  // ICE candidate → specific target peer
   socket.on("ice-candidate", (data) => {
     const { target, candidate, sdpMid, sdpMLineIndex } = data;
     console.log(`ICE candidate from ${socket.id} to ${target}`);
@@ -139,7 +159,7 @@ io.on("connection", (socket) => {
     });
   });
 
-  // ---- Disconnect ----
+  // Disconnect
   socket.on("disconnect", () => {
     console.log("Disconnected:", socket.id);
     const roomID = peers[socket.id];
@@ -150,6 +170,8 @@ io.on("connection", (socket) => {
   });
 });
 
+// ---- Error middleware ----
+
 function error(err, req, res, next) {
   console.error(err.stack);
   res.status(500).send("Internal Server Error");
@@ -157,6 +179,11 @@ function error(err, req, res, next) {
 
 app.use(error);
 
-server.listen(3001, () => {
-  console.log(`Listening on Port 3001`);
-});
+// ---- Start server (but not during tests) ----
+
+if (process.env.NODE_ENV !== "test") {
+  const PORT = process.env.PORT || 3001;
+  server.listen(PORT, () => {
+    console.log(`Listening on Port ${PORT}`);
+  });
+}
