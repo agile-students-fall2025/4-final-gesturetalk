@@ -3,6 +3,6 @@ import { getCallHistory } from "../controllers/callHistoryController.js";
 
 const router = Router();
 
-router.post("/", getCallHistory);
+router.get("/", getCallHistory);
 
 export default router;

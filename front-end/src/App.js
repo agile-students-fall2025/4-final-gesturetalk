@@ -29,6 +29,16 @@ function App() {
     }
   }, []);
 
+  //  Rehydrate JWT
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("authToken"); 
+    } catch (e) {
+      console.warn('Failed to rehydrate JWT from localStorage', e);
+    }
+  }, []);
+
+
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <UserContext.Provider value={{ currentUser, setCurrentUser }}>

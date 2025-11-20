@@ -68,7 +68,7 @@ function SignIn(){
                 setCurrentUser(user);
                 // persist a minimal user object so profile can survive reloads (optional)
                 localStorage.setItem('currentUser', JSON.stringify(user));
-                localStorage.setItem("token", token);
+                localStorage.setItem("authToken", token);
                 
                 navigate('/home');
             } catch (err) {

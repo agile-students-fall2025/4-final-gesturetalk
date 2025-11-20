@@ -15,6 +15,7 @@ import callHistoryRoutes from "./src/routes/callHistoryRoutes.js";
 import translationLogRoutes from "./src/routes/translationLogRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
 import { generateSentenceFromSigns } from "./src/translation/sentenceGenerator.js";
+import auth from './src/middleware/auth.js';
 
 dotenv.config();
 
@@ -34,12 +35,12 @@ app.use(cors());
 
 // Mount auth routes
 app.use("/api/auth", authRoutes);
-// Mount profile routes
-app.use("/api/profile", profileRoutes);
-// Call history routes
-app.use("/api/call-history", callHistoryRoutes);
-// Translation Log routes
-app.use("api/translation-log", translationLogRoutes);
+// Mount profile routes + auth middleware
+app.use("/api/profile", auth, profileRoutes);
+// Call history routes + auth middleware
+app.use("/api/call-history", auth, callHistoryRoutes);
+// Translation Log routes + auth middleware
+app.use("/api/translation-log", auth, translationLogRoutes);
 
 // Serve static files from uploads directory
 const uploadsDir = path.join(__dirname, "uploads");
