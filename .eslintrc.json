@@ -11,7 +11,7 @@
     "mocha": true
   },
   "rules": {
-    "prettier/prettier": "error",
+    "prettier/prettier": ["error", {"endOfLine": "lf"}],
     "no-unused-vars": "warn",
     "no-console": "off",
     "import/extensions": [
