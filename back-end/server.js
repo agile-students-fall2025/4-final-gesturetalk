@@ -15,7 +15,7 @@ import profileRoutes from "./src/routes/profileRoutes.js";
 import callHistoryRoutes from "./src/routes/callHistoryRoutes.js";
 import translationLogRoutes from "./src/routes/translationLogRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
-import { generateSentenceFromSigns } from "./src/translation/sentenceGenerator.js";
+import generateSentenceFromSigns from "./src/translation/sentenceGenerator.js";
 import auth from "./src/middleware/auth.js";
 
 dotenv.config();
@@ -171,7 +171,7 @@ io.on("connection", (socket) => {
 
 // ---- Error middleware ----
 
-function error(err, req, res, next) {
+function error(err, req, res) {
   console.error(err.stack);
   res.status(500).send("Internal Server Error");
 }

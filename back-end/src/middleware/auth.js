@@ -24,7 +24,7 @@ const auth = async (req, res, next) => {
     req.user = decoded;
 
     // pass it down to next
-    next();
+    return next();
   } catch (error) {
     console.log("Auth error:", error);
     return res.status(401).json({

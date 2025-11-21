@@ -11,7 +11,7 @@ dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 const joinWords = (signedWords) => signedWords.join(" ");
 
-export async function generateSentenceFromSigns(signedWords) {
+async function generateSentenceFromSigns(signedWords) {
   const content = joinWords(signedWords);
 
   console.log("OPENROUTER_API_KEY set?", !!process.env.OPENROUTER_API_KEY);
@@ -54,3 +54,5 @@ export async function generateSentenceFromSigns(signedWords) {
     throw err;
   }
 }
+
+export default generateSentenceFromSigns;

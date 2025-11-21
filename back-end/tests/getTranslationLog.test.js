@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { describe } from "mocha";
 import * as controller from "../src/controllers/translationLogController.js";
-import { mockTranslationLogs } from "../src/data/mockTranslationLogs.js";
-import { mockCallHistory } from "../src/data/mockCallHistory.js";
+import mockTranslationLogs from "../src/data/mockTranslationLogs.js";
+import mockCallHistory from "../src/data/mockCallHistory.js";
 
 describe("Testing Translation Log Controller", () => {
   let req;

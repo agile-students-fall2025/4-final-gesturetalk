@@ -1,4 +1,4 @@
-export const mockTranslationLogs = [
+const mockTranslationLogs = [
   // Meeting mtg-001
   {
     _id: 1,
@@ -77,3 +77,5 @@ export const mockTranslationLogs = [
     timestamp: new Date("2025-03-01T09:05:34Z"),
   },
 ];
+
+export default mockTranslationLogs;

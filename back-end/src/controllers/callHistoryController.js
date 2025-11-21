@@ -1,4 +1,4 @@
-import { mockCallHistory } from "../data/mockCallHistory.js";
+import mockCallHistory from "../data/mockCallHistory.js";
 
 export const getCallHistory = async (req, res) => {
   try {

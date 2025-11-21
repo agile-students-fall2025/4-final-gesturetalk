@@ -1,5 +1,5 @@
-import { mockTranslationLogs } from "../data/mockTranslationLogs.js";
-import { mockCallHistory } from "../data/mockCallHistory.js";
+import mockTranslationLogs from "../data/mockTranslationLogs.js";
+import mockCallHistory from "../data/mockCallHistory.js";
 
 export const getTranslationLog = async (req, res) => {
   // fetch mock data
