@@ -7,12 +7,10 @@ const MeetingRoomchema = new mongoose.Schema(
   },
 
   { timestamps: true },
-
 );
 
 const MeetingRoom = mongoose.model("MeetingRoom", MeetingRoomchema);
 export default MeetingRoom;
-
 
 /* 
 Potentially how the schemas for call history / translation log can look like:

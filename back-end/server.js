@@ -106,7 +106,6 @@ if (process.env.NODE_ENV !== "test") {
   }
 }
 
-
 // ---- HTTP server + Socket.io ----
 
 // Exported server and io for potential socket tests

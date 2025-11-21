@@ -38,5 +38,5 @@ export const mockCallHistory = [
     endTime: new Date("2025-03-01T09:30:00Z"),
     duration: 30,
     createdBy: "userA",
-  }
+  },
 ];
