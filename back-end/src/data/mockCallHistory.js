@@ -1,4 +1,4 @@
-export const mockCallHistory = [
+const mockCallHistory = [
   {
     _id: 1,
     meetingId: "mtg-001",
@@ -38,5 +38,7 @@ export const mockCallHistory = [
     endTime: new Date("2025-03-01T09:30:00Z"),
     duration: 30,
     createdBy: "userA",
-  }
+  },
 ];
+
+export default mockCallHistory;

@@ -58,11 +58,10 @@ describe("Testing meeting controller for join and create", () => {
         return null;
       };
 
-      MeetingRoom.create = async (data) => ({
-        ...data,
-      });
+      /* eslint-disable node/no-unsupported-features/es-syntax */
+      MeetingRoom.create = async (data) => ({ ...data });
 
-      const res = {
+      res = {
         statusCode: null,
         jsonData: null,
         status(code) {

@@ -2,7 +2,7 @@ import { expect } from "chai";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import { generateSentenceFromSigns } from "../src/translation/sentenceGenerator.js";
+import generateSentenceFromSigns from "../src/translation/sentenceGenerator.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

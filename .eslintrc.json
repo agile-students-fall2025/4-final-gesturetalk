@@ -11,7 +11,7 @@
     "mocha": true
   },
   "rules": {
-    "prettier/prettier": "error",
+    "prettier/prettier": ["error", {"endOfLine": "auto"}],
     "no-unused-vars": "warn",
     "no-console": "off",
     "import/extensions": [
@@ -42,6 +42,10 @@
         "import/prefer-default-export": "off"
       }
    }
-]
-
+  ],
+  "settings": {
+  "node": {
+    "version": ">=25.2.1"
+  }
+  }
 }

@@ -41,9 +41,7 @@ describe("Route smoke tests", () => {
   // --- TRANSLATE ROUTE ---
 
   it("POST /api/translate responds with 400 on bad body", async () => {
-    const res = await request(app)
-      .post("/api/translate")
-      .send({}); // missing signedWords
+    const res = await request(app).post("/api/translate").send({}); // missing signedWords
     expect(res.status).to.equal(400);
     expect(res.body).to.have.property(
       "error",
