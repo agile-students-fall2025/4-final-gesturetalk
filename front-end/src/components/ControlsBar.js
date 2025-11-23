@@ -10,8 +10,7 @@ function ControlsBar(props) {
         onClick={props.onToggleMic}
         title={props.micOn ? "Mute mic" : "Unmute mic"}
       >
-        {props.micOn ? "Mic On" : "Mic Off"}
-        {props.micOn ? <FiMic/> : <FiMicOff/>}
+        {props.micOn ? <>Mic On<FiMic/></>: <>Mic Off<FiMicOff/></>} 
       </button>
 
       <button
@@ -20,8 +19,7 @@ function ControlsBar(props) {
         title={props.camOn ? "Turn camera off" : "Turn camera on"}
       >
         
-        {props.camOn ? "Cam On" : "Cam Off"}
-        {props.camOn ? <FiVideo /> : <FiVideoOff/>}
+        {props.camOn ? "Cam On" : "Cam Off"} {props.camOn ? <FiVideo /> : <FiVideoOff/>}
       </button>
 
       <button

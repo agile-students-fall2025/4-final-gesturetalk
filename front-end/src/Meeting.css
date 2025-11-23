@@ -272,6 +272,10 @@ body{
   font-size: 0.9rem;
   transition: all 0.15s ease;
   box-shadow: 0 8px 24px -10px var(--ring);
+  display: inline-flex;      
+  align-items: center;        
+  gap: 6px;                   
+  justify-content: center; 
 }
 
 /* Active states */
@@ -314,6 +318,9 @@ body{
   .meeting-main{ flex-direction:column; }
   /* keep 2 columns even on small screens per your request */
   .video-grid{ grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+  .ctrl{
+    margin-top: 10px;
+  }
 }
 
 .tile { position: relative; background: #000; overflow: hidden; border-radius: 10px; }

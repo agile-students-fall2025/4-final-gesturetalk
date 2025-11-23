@@ -1,7 +1,7 @@
 body {
     margin: 0;
     font-family: "Poppins", sans-serif;
-    background-image: url("../public/background.svg");
+    background-image: url('/public/signInUpBg.png');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -15,8 +15,6 @@ body {
   .home-container {
     max-width: 100%;
     min-height: 100vh;
-
-    
   }
   
   header {
@@ -27,7 +25,7 @@ body {
   }
   
   .logo {
-    font-size: 1.8rem;
+    font-size: 38px;
     letter-spacing: 1px;
     color: #1f1f1f;
   }
@@ -36,6 +34,13 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    background: rgba(243, 243, 243, 0.73);
+    backdrop-filter: blur(20px);
+    border-radius: 10px;
+    padding: 8px 20px;
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
+    transition: transform 0.3s ease;
+    margin-top: 1%;
   }
   
   .profile img {
@@ -47,6 +52,7 @@ body {
     object-position: center center;
     background: #f3f4f8;
     display: inline-block;
+    margin-top: 0;
   }
   
   main {
@@ -82,13 +88,14 @@ body {
   
   .card {
     flex: 1 1 45%;
-    background: rgba(255, 255, 255, 0.4);
+    background: radial-gradient(61.41% 43.29% at 50% 50%, rgba(255, 255, 255, 0.00) 5%, rgba(243, 243, 243, 0.73) 80%);
     backdrop-filter: blur(20px);
     border-radius: 30px;
     padding: 50px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
     text-align: center;
     transition: transform 0.3s ease;
+    
   }
   
   .card:hover {
@@ -140,6 +147,15 @@ body {
     color: #444;
   }
 
+  #logoHome{
+    margin-top: 8%;
+    margin-bottom: 5%;
+  }
+
+  #homeSpan{
+    padding-top: 5x;
+  }
+
 
   /* ===== Modal Styles ===== */
 
@@ -150,7 +166,7 @@ body {
     width: 100%;
     height: 100%;
     backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -164,7 +180,7 @@ body {
     backdrop-filter: blur(25px);
     border-radius: 25px;
     padding: 40px 30px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
     text-align: center;
     animation: popIn 0.3s ease-out;
   }
@@ -174,9 +190,9 @@ body {
     to { transform: scale(1); opacity: 1; }
   }
   
-  .close-btn {
+  .close-btn-home {
     position: absolute;
-    top: -32px;
+    top: 2px;
     right: -32px;
     font-size: 1.4rem;
     background: transparent;
@@ -184,7 +200,15 @@ body {
     cursor: pointer;
     color: #111;
   }
-  
+ 
+  .close-btn-home:hover {
+    background-color: transparent;
+  }
+
+  .close-btn-home:active {
+    background-color: transparent;
+  }
+
   .modal-title {
     font-size: 1.5rem;
     font-weight: 600;
@@ -199,7 +223,7 @@ body {
     background: rgba(255, 255, 255, 0.5);
     font-size: 1rem;
     margin-bottom: 20px;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
   }
   
   .modal-label {
@@ -217,7 +241,7 @@ body {
     padding: 10px 14px;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
     margin-bottom: 25px;
   }
   
@@ -246,42 +270,89 @@ body {
     align-items: center;
     justify-content: center;
     padding: 0;
-  
+  }
+
+  .copy-btn:active{
+    transform: scale(0.95);
+    background-color: transparent;
+  }
+
+  .copy-btn:hover{
+    transform: scale(0.95);
+    background-color: transparent;
   }
   
-  .copy-icon {
-  
+  .copy-icon-home {
     width: 18px;
     height: 18px;
     opacity: 0.8;
     transition: opacity 0.2s ease;
-    transform: translateY(-16px); /* moves the icon up slightly */
-
+    transform: translateY(-3px); /* moves the icon up slightly */
   }
-  
-  .copy-btn:hover .copy-icon {
-    opacity: 1;
+
+  .copy-icon-home:hover{
+    transform: scale(0.95);
+    background-color: transparent;
   }
   
   .create-btn {
-    background: #000;
+    background-color: #000;
     color: #fff;
     border: none;
     border-radius: 10px;
     padding: 12px 18px;
     font-size: 1rem;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background-color 0.2s ease;
   }
   
   .create-btn:hover {
-    background: #333;
+    background-color: rgb(145, 97, 218);
+  }
+
+  #copyHome:hover{
+    background-color: transparent;
+  }
+
+  #createMeetingBtn:active{
+    background-color: rgb(120, 70, 200);
+  }
+
+  #joinMeetingBtn:active{
+    background-color: rgb(120, 70, 200);
+  }
+
+  #joinMeetingBtn:hover{
+    background-color: rgb(120, 70, 200);
+  }
+
+  #createMeetingBtn:hover{
+    background-color: rgb(120, 70, 200);
   }
   
   
   @media (max-width: 800px) {
     .content {
       flex-direction: column;
+    }
+
+     .card {
+      flex: 1 1 45%;
+      background: radial-gradient(61.41% 43.29% at 50% 50%, rgba(255, 255, 255, 0.00) 5%, rgba(243, 243, 243, 0.73) 80%);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      padding: 35px;
+      box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .profile #homeSpan{
+      display: none;
+    }
+
+    .home-container {
+       margin: 5%;
     }
   }
   

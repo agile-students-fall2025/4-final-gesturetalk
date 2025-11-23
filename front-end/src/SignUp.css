@@ -18,7 +18,7 @@
     width: 30%;
     height: 800px;
     flex-shrink: 0;
-    border-radius: 91px;
+    border-radius: 61px;
     opacity: 0.87;
     background: radial-gradient(61.41% 43.29% at 50% 40.32%, rgba(255, 255, 255, 0.00) 55.77%, rgba(255, 255, 255, 0.73) 100%);
     box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
@@ -31,8 +31,9 @@
 }
 
 h1{
-    margin-top: 8%;
+    margin-top: 15%;
     font-size: 48px;
+    margin-bottom: 10%;
     font-family: 'MuseoModerno', sans-serif;
     font-style: normal;
 }
@@ -58,21 +59,35 @@ h1{
     left: 20px;  
     margin-top: 0;
     margin-left: 2%;
-    height: auto;
+    height: 230px;
 }
 
 #returnHomeBtn{
     position: absolute;
     bottom: 60px;   
     left: 20px;  
-    font-size: 22px;
+    font-size: 18px;
     margin-left: 2%;
     font-weight: 300;
     font-family: 'Narnoor', serif;
 }
 
+#signUpBtn{
+    margin-top: 10%;
+}
+
 
 @media (max-width: 800px){
+    #signup-content img {
+        position: absolute;
+        top: 0px;   
+        left: 20px;  
+        margin-top: 0;
+        margin-left: 2%;
+        height: 100px;
+        width: auto;
+    }
+
     #signup-content{
         flex-direction: column;
         justify-content: flex-start;
@@ -80,21 +95,32 @@ h1{
 
     #signup-form{
         width: 80%;
-        border-radius: 61px;
-        height: 730px;
+        border-radius: 31px;
+        height: 530px;
         margin: 0;
-        margin-top: 42%;
+        margin-top: 30%;
     }
 
-    
+    h1{
+        margin-top: 13%;
+        font-size: 28px;
+        margin-bottom: 3%;
+        font-family: 'MuseoModerno', sans-serif;
+        font-style: normal;
+    }
+
     #returnHomeBtn{
         position: absolute;
-        bottom: 30px;   
+        bottom: 40px;   
         left: 20px;  
         font-size: 22px;
         margin-left: 2%;
         font-weight: 300;
         font-family: 'Narnoor', serif;
+    }
+
+    #signUpBtn{
+        margin-top: 2%;
     }
 
 }
