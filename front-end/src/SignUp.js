@@ -42,7 +42,7 @@ function SignUp(){
 
     return(
         <div id="signup-content">
-            <img alt="logo" src="./shuwaWsub.png"/>
+            <img alt="logo" id="logoSingup" src="./shuwaWsub.png"/>
             <form id="signup-form" onSubmit={handleSubmit}>
                 <h1>Sign Up</h1>
                 <input id='dNameInput' type='text' placeholder='display name' value={name} onChange={e=>setName(e.target.value)} />
@@ -51,7 +51,6 @@ function SignUp(){
                 <input type='password' placeholder='confirm password' value={confirm} onChange={e=>setConfirm(e.target.value)} />
                 {error && <div style={{color:'red', fontSize:12}}>{error}</div>}
                 <button id="signUpBtn" type='submit' disabled={loading}>{loading? 'Creating...':'Create Account'}</button>
-                <button id="googleBtn" type='button'>Sign Up with Google</button>
             </form>
             <a id='returnHomeBtn' onClick={toSignIn}>&lt;  Return to Sign In</a>
         </div>
