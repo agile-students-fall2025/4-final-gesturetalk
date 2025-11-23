@@ -1,9 +1,10 @@
 .translation-log {
-  background-image: url('/public/callHistoryBg.png');
+  background-image: url('/public/signInUpBg.png');
   background-size: cover;
   background-position: center;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 
 
@@ -39,21 +40,22 @@
   margin-bottom: 1.25rem;
   padding: 1rem;
   border-radius: 10px;
-}
-
-.color1 {
-  background: #fff6fa;
+  box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.41);
 }
 
 .color2 {
-  background: #f5f9ff;
+  background: #eafdff;
+}
+
+.color1 {
+  background: #f4eaff;
 }
 
 .entry-header {
   display: flex;
   display: inline-flex;
   gap: 2rem;
-  margin-bottom: 0.4rem;
+  margin-bottom: 5px;
 }
 
 .display-name {
@@ -72,7 +74,7 @@
   color: #333;
   line-height: 1.5;
   font-size: clamp(0.7rem, 1.2vw, 1.2rem);
-  margin-top: 4px;
+  margin-top: 0;
   white-space: pre-line;
 }
 
@@ -90,6 +92,8 @@
     width: 70vw;
     height: 60vh;
     background: white;
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
+    background: radial-gradient(50% 50% at 50% 50%, rgba(215, 220, 240, 0.00) 0%, rgba(255, 255, 255, 0.54) 100%);
 }
 
 .log-list-container {

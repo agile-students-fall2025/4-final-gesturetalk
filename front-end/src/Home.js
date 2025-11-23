@@ -194,7 +194,7 @@ export default function Home() {
             className="modal-card"
             onClick={(e) => e.stopPropagation()} // prevent background close
           >
-            <button className="close-btn" onClick={() => setShowModal(false)}>
+            <button className="close-btn-home" onClick={() => setShowModal(false)}>
               ✕
             </button>
             <h2 className="modal-title">Create Meeting</h2>
@@ -213,7 +213,7 @@ export default function Home() {
               <div className="code-box">
                 <input type="text" readOnly name="meetingCode" value={meetingCode} onChange={(e) => setMeetingCode(e.target.value)} />
                 <button type="button" className="copy-btn" onClick={handleCopy}>
-                <img src="/copy.svg" alt="Copy" className="copy-icon" />
+                <img src="/copy.svg" alt="Copy" className="copy-icon-home" id="copyHome"/>
                 </button>
               </div>
 
@@ -221,6 +221,7 @@ export default function Home() {
 
             <button
               className="create-btn"
+              id="createMeetingBtn"
               onClick={() => {
                 // check if meeting name not empty
                 if (!meetingName.trim()) {
@@ -244,7 +245,7 @@ export default function Home() {
             className="modal-card"
             onClick={(e) => e.stopPropagation()}
           >
-            <button className="close-btn" onClick={() => setShowJoinModal(false)}>
+            <button className="close-btn-home" onClick={() => setShowJoinModal(false)}>
               ✕
             </button>
             <h2 className="modal-title">Join Meeting</h2>
@@ -262,6 +263,7 @@ export default function Home() {
 
             <button
               className="create-btn"
+              id="joinMeetingBtn"
               onClick={() => {
                 if (!joinCode.trim()) {
                   alert("Please enter a meeting code.");

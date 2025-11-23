@@ -1,14 +1,13 @@
 @import url(https://fonts.google.com/specimen/Narnoor);
 
 .call-history {
-    background-image: url('/public/callHistoryBg.png');
+    background-image: url('/public/signInUpBg.png');
     background-size: cover;
     background-position: center;
     width: 100vw;
     height: 100vh;
+    overflow: hidden;
 }
-
-
 
 .inner-call-history {
     display: flex;
@@ -34,7 +33,7 @@
     border-radius: clamp(30px, 5vw, 91px);
     opacity: 0.87;
     background: radial-gradient(61.41% 43.29% at 50% 40.32%, rgba(255, 255, 255, 0.00) 55.77%, rgba(255, 255, 255, 0.73) 100%);
-    box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
     padding-left: 5%;
     padding-right: 5%;
     padding-top: 5%;
@@ -71,6 +70,7 @@
     padding: 1%;
     background: transparent;
     border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 2%;
 }
 
 .meeting-title {
@@ -95,7 +95,7 @@
     margin-right: auto;
     border: none;
     cursor: pointer;
-    padding: 3rem;
+    padding: 5%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -104,6 +104,15 @@
 
 .back-button:hover {
   transform: scale(1.1);
+  background-color: transparent;
+}
+
+#backBtnCallHistory:hover{
+    background-color: transparent;
+}
+
+#backBtnCallHistory:active{
+    background-color: transparent;
 }
 
 .back-button svg path {
@@ -112,8 +121,9 @@
 }
 
 .back-button svg {
-    width: 4.5rem;
-    height: 4.5rem;
+    width: 20px;
+    height: 20px;
+    padding: 5%;
 }
 
 .meeting-list-box {
@@ -149,6 +159,17 @@
     font-weight: 400;
     line-height: normal;
     text-align: center;
+    margin-top: 5%;
+    margin-bottom: 5%;
+}
+
+.meeting-title{
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.log-button{
+    padding-bottom: 13px;
 }
 
 

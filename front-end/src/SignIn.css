@@ -19,7 +19,7 @@
     border-top-right-radius: 61px;
     opacity: 0.87;
     background: radial-gradient(61.41% 43.29% at 50% 40.32%, rgba(255, 255, 255, 0.00) 55.77%, rgba(255, 255, 255, 0.73) 100%);
-    box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
     display: flex;
     justify-content: flex-start;
     align-items: center;
