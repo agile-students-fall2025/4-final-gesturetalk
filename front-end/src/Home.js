@@ -122,10 +122,10 @@ export default function Home() {
   return (
     <div className="home-container">
       <header>
-        <h1 className="logo">shuwa</h1>
+        <h1 className="logo" id="logoHome">shuwa</h1>
         <div className="profile" onClick={() => navigate("/profile")} style={{ cursor: "pointer" }}>
           <img src={currentUser?.picture || "/profile.svg"} alt="Profile" />
-          <span>{currentUser?.name || 'Username'}</span>
+          <span id="homeSpan">{currentUser?.name || 'Username'}</span>
         </div>
       </header>
 

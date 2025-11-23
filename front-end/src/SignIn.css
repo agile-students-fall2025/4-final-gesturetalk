@@ -13,10 +13,10 @@
 
 #signin-form {
     width: 30%;
-    height: 600px;
+    height: 500px;
     flex-shrink: 0;
-    border-top-left-radius: 91px;
-    border-top-right-radius: 91px;
+    border-top-left-radius: 61px;
+    border-top-right-radius: 61px;
     opacity: 0.87;
     background: radial-gradient(61.41% 43.29% at 50% 40.32%, rgba(255, 255, 255, 0.00) 55.77%, rgba(255, 255, 255, 0.73) 100%);
     box-shadow: 9px 16px 92.7px 58px rgba(60, 56, 110, 0.25);
@@ -31,7 +31,7 @@ p, input, a {
 }
 
 #sub{
-    margin-top: 8%;
+    margin-top: 10%;
     font-size: 20px;
 }
 
@@ -41,32 +41,32 @@ img{
 
 #hook{
     margin-top: 1%;
-    margin-bottom: 5%;
+    margin-bottom: 3%;
     font-size: 26px;
 }
 
 input{
-    padding-top: 20px;
-    padding-bottom: 25px;
+    padding-top: 15px;
+    padding-bottom: 20px;
     padding-left: 10%;
     padding-right: 10%;
-    margin-bottom: 5%;
+    margin-bottom: 3%;
     border-radius: 10px;
     background: radial-gradient(50% 50% at 50% 50%, rgba(215, 220, 240, 0.00) 0%, rgba(255, 255, 255, 0.54) 100%);
     box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
     color: black;
     font-family: 'Narnoor', serif;
     vertical-align: middle;
-    font-size: 22px;
+    font-size: 18px;
 }
 
 #usernameInput{
-    margin-top: 20%;
+    margin-top: 15%;
 }
 
 input::placeholder{
     color: black;
-    font-size: 22px;
+    font-size: 18px;
 }
 
 button{
@@ -76,15 +76,15 @@ button{
     background-color: black;
     color: white;
     border-radius: 10px;
-    margin-top: 30px;
-    font-size: 22px;
+    margin-top: 5px;
+    font-size: 18px;
 }
 
 a{
     text-decoration: underline;
     margin-top: 10px;
     cursor: pointer;
-    font-size: 22px;
+    font-size: 16px;
 }
 
 button:hover{
@@ -97,10 +97,10 @@ button:hover{
     }
 
     input{
-    padding-top: 20px;
-    padding-bottom: 25px;
+    padding-top: 15px;
+    padding-bottom: 20px;
     padding-left: 10%;
-    padding-right: 10%;
+    padding-right: 7%;
     margin-bottom: 5%;
     border-radius: 10px;
     background: radial-gradient(50% 50% at 50% 50%, rgba(215, 220, 240, 0.00) 0%, rgba(255, 255, 255, 0.54) 100%);
@@ -108,7 +108,7 @@ button:hover{
     color: black;
     font-family: 'Narnoor', serif;
     vertical-align: middle;
-    font-size: 16px;
+    font-size: 14px;
     }
 
     #usernameInput{
@@ -121,17 +121,17 @@ button:hover{
     }
 
     #signin-form{
-        margin-top: 25%;
+        margin-top: 15%;
         margin-bottom: 0;
         width: 80%;
         height: 600px;
-        border-top-left-radius: 61px;
-        border-top-right-radius: 61px;
+        border-top-left-radius: 31px;
+        border-top-right-radius: 31px;
     }
 
     #sub{
-        margin-top: 20%;
-        font-size: 14px;
+        margin-top: 30%;
+        font-size: 12px;
     }
 
     a{

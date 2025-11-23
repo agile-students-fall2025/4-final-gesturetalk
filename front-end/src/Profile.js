@@ -166,7 +166,7 @@ function Profile() {
       <p id="logo">shuwa</p>
 
       <div id="profile-card">
-        <button className="close-btn" onClick={() => navigate("/home")}>
+        <button className="close-btn" id="profileCloseBtn" onClick={() => navigate("/home")}>
           ✕
         </button>
         <h2 id="profile-title">My Profile</h2>
@@ -193,8 +193,8 @@ function Profile() {
           />
         )}
 
-        <button className="save-btn" onClick={handleSave}>Save</button>
-        <button className="logout-btn" onClick={handleLogout}>Logout</button>
+        <button className="save-btn" id="profileSaveBtn" onClick={handleSave}>Save</button>
+        <button className="logout-btn" id="profileLogoutBtn" onClick={handleLogout}>Logout</button>
       </div>
 
       {/* Upload Modal */}
