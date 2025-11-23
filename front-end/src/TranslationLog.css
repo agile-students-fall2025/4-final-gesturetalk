@@ -113,3 +113,50 @@
   flex-direction: row;
   
 }
+
+@media (max-width: 800px) {
+  .log-container {
+    width: 85vw;
+    height: 70vh;
+    padding: 8%;
+     border-radius: 1.2rem;
+  }
+
+  .log-entry{
+    font-size: 16px;
+  }
+
+  .entry-text{
+    font-size: 16px;
+  }
+
+  .display-name{
+    font-size: 18px;
+  }
+
+  .timestamp{
+    padding-top: 4px;
+    font-size: 14px;
+  }
+
+  .title{
+    margin-top: 20%;
+    font-size: 24px;
+  }
+
+  .back-button svg{
+    width: 40px;
+    height: 40px;
+  }
+
+  .back-button{
+    padding:0;
+    margin-bottom: 15%;
+  }
+
+  .translation-log{
+    padding: 5%;
+  }
+
+
+}

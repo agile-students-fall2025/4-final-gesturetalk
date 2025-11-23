@@ -188,4 +188,19 @@
   .title {
     font-size: 2rem;
   }
+
+  .log-button{
+    margin-top: 0;
+    padding-bottom: 10px;
+  }
+
+  .meeting-title {
+    white-space: normal; 
+    word-wrap: break-word; 
+    overflow-wrap: break-word; 
+   }
+
+   .call-history {
+    padding:5%
+   }
 }
