@@ -346,7 +346,7 @@ export default function VideoTile(props) {
       const res = await fetch('http://localhost:3001/api/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signedWords }),
+        body: JSON.stringify({ signedWords, meetingId: props.meetingId }),
       });
 
       const data = await res.json();
