@@ -24,5 +24,4 @@ const CallHistorySchema = new mongoose.Schema({
   duration: { type: Number }, 
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 }, { timestamps: true });
-
-
+*/
