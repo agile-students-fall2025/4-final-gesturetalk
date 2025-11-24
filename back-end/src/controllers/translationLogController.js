@@ -1,5 +1,6 @@
 import mockTranslationLogs from "../data/mockTranslationLogs.js";
 import mockCallHistory from "../data/mockCallHistory.js";
+import TranslationLog from "../models/TranslationLog.js";
 
 export const getTranslationLog = async (req, res) => {
   // fetch mock data
@@ -43,3 +44,13 @@ export const getTranslationLog = async (req, res) => {
     });
   }
 };
+
+export async function saveTranslationLog({ meetingId, userId, userName, sentence, signedWords }) {
+  return TranslationLog.create({
+    meetingId,
+    userId,
+    userName,
+    sentence,
+    signedWords,
+  });
+}

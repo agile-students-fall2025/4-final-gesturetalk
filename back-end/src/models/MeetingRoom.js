@@ -24,12 +24,4 @@ const CallHistorySchema = new mongoose.Schema({
   duration: { type: Number }, 
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 }, { timestamps: true });
-
-const TranslationLogSchema = new mongoose.Schema({
-  meetingId: { type: String, required: true },  
-  senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  text: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now }
-}, { timestamps: true });
-
 */

@@ -17,6 +17,8 @@ import translationLogRoutes from "./src/routes/translationLogRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
 import generateSentenceFromSigns from "./src/translation/sentenceGenerator.js";
 import auth from "./src/middleware/auth.js";
+import { saveTranslationLog } from "./src/controllers/translationLogController.js";
+import { timeStamp } from "console";
 
 dotenv.config();
 
@@ -71,15 +73,30 @@ app.use("/uploads", express.static(uploadsDir));
 
 app.post("/api/translate", async (req, res) => {
   try {
-    const { signedWords } = req.body;
+    const { signedWords, meetingId } = req.body;
 
     if (!Array.isArray(signedWords) || signedWords.length === 0) {
       return res
         .status(400)
         .json({ error: "signedWords must be a non-empty array of strings" });
     }
+    if (!meetingId) {
+      return res
+        .status(400)
+        .json({ error: "meetingId is required" });
+    }
 
     const sentence = await generateSentenceFromSigns(signedWords);
+    await saveTranslationLog({
+      meetingId,
+      userId: req.user?._id || null, // null if not authenticated
+      userName: req.user?.name || "Guest",
+      sentence,
+      signedWords,
+    });
+    
+    console.log(`✅ Translation log saved for meeting ${meetingId}`);
+
     res.json({ sentence });
     return;
   } catch (err) {
