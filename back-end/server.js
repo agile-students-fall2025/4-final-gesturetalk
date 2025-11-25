@@ -89,12 +89,10 @@ app.post("/api/translate", async (req, res) => {
     const sentence = await generateSentenceFromSigns(signedWords);
     await saveTranslationLog({
       meetingId,
-      userId: req.user?._id || null, // null if not authenticated
-      userName: req.user?.name || "Guest",
-      sentence,
-      signedWords,
+      message: sentence,
+      user: req.user?.name || "Guest",
     });
-    
+
     console.log(`✅ Translation log saved for meeting ${meetingId}`);
 
     res.json({ sentence });

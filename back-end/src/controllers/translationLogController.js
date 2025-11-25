@@ -1,6 +1,6 @@
 import mockTranslationLogs from "../data/mockTranslationLogs.js";
 import mockCallHistory from "../data/mockCallHistory.js";
-import TranslationLog from "../models/TranslationLog.js";
+import {TranslationLog, TranslationMessage} from "../models/TranslationLog.js";
 
 export const getTranslationLog = async (req, res) => {
   // fetch mock data
@@ -45,12 +45,32 @@ export const getTranslationLog = async (req, res) => {
   }
 };
 
-export async function saveTranslationLog({ meetingId, userId, userName, sentence, signedWords }) {
+export async function saveTranslationLog({ meetingId, user, message })  {
+  if (!meetingId) {
+    throw new Error("Meeting ID is required");
+  }
+
+  // find existing translation log
+  const existing = await TranslationLog.findOne({ meetingId });
+  if (existing) {
+    // append message if provided
+    if (message) {
+      existing.messageLog = existing.messageLog || [];
+      existing.messageLog.push({ user, message });
+      await existing.save();
+    }
+    return existing;
+  }
+
+  // if no existing log but a message is provided, create with that message
+  if (message) {
+    return TranslationLog.create({
+      meetingId,
+      messageLog: [message],
+    });
+  }
   return TranslationLog.create({
     meetingId,
-    userId,
-    userName,
-    sentence,
-    signedWords,
+    messageLog: [],
   });
 }
