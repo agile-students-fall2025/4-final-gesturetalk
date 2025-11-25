@@ -45,12 +45,31 @@ export const getTranslationLog = async (req, res) => {
   }
 };
 
-export async function saveTranslationLog({ meetingId, userId, userName, sentence, signedWords }) {
-  return TranslationLog.create({
-    meetingId,
-    userId,
-    userName,
-    sentence,
-    signedWords,
-  });
+export async function saveTranslationLog({ meetingId, user, message })  {
+  if (!meetingId) {
+    throw new Error("Meeting ID is required");
+  }
+
+  // find existing translation log
+  let log = await TranslationLog.findOne({ meetingId });
+  
+  // if not found, create new log
+  if (!log) {
+    log = await TranslationLog.create({
+      meetingId,
+      messages: []
+    });
+  }
+  // add new message
+  if (message) {
+    log.messages.push({
+      user,
+      message,
+      timestamp: new Date()
+    });
+    await log.save();
+  }
+  
+  return log;
+
 }
