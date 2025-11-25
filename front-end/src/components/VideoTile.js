@@ -1,6 +1,8 @@
 // src/components/VideoTile.js
 import React, { useEffect, useRef, useState } from "react";
 import * as tf from "@tensorflow/tfjs";
+import { useContext } from "react";
+import  UserContext from "../contexts/UserContext";
 
 // =========================
 //  MediaPipe loader (CDN)
@@ -327,6 +329,7 @@ export default function VideoTile(props) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [gesture, setGesture] = useState(null);
+  const { currentUser } = useContext(UserContext);
 
   const [signedWords, setSignedWords] = useState([]);
   const [translatedSentence, setTranslatedSentence] = useState('');
@@ -346,7 +349,7 @@ export default function VideoTile(props) {
       const res = await fetch('http://localhost:3001/api/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signedWords, meetingId: props.meetingId }),
+        body: JSON.stringify({ signedWords, meetingId: props.meetingId , user: currentUser?.name || "Guest"}),
       });
 
       const data = await res.json();
