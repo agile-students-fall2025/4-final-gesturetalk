@@ -71,9 +71,9 @@ app.use("/uploads", express.static(uploadsDir));
 
 // ---- Sentence translation route ----
 
-app.post("/api/translate", async (req, res) => {
+app.post("/api/translate", auth,  async (req, res) => {
   try {
-    const { signedWords, meetingId } = req.body;
+    const { signedWords, meetingId, userName } = req.body;
 
     if (!Array.isArray(signedWords) || signedWords.length === 0) {
       return res
@@ -90,7 +90,7 @@ app.post("/api/translate", async (req, res) => {
     await saveTranslationLog({
       meetingId,
       message: sentence,
-      user: req.user?.name || "Guest",
+      user: userName || "Guest",
     });
 
     console.log(`✅ Translation log saved for meeting ${meetingId}`);

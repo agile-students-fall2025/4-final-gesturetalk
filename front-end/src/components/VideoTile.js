@@ -344,12 +344,44 @@ export default function VideoTile(props) {
 
     setTranslating(true);
     setTranslatedSentence('');
+    const token = localStorage.getItem('authToken');
+    // Prefer context (already available)
+    let userName = currentUser?.name
+      || currentUser?.username
+      || (currentUser?.email ? currentUser.email.split('@')[0] : null);
+
+    let userId = currentUser?._id || currentUser?.id;
+
+    // Fallback to localStorage if context missing
+    if (!userName || !userId) {
+      const raw = localStorage.getItem('currentUser');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          userName = userName || parsed.name || parsed.username || (parsed.email ? parsed.email.split('@')[0] : null);
+          userId = userId || parsed._id || parsed.id;
+        } catch (e) {
+          console.warn('Failed to parse currentUser from localStorage', e);
+        }
+      }
+    }
+
+    // Final fallback
+    if (!userName) userName = 'Anonymous';
 
     try {
       const res = await fetch('http://localhost:3001/api/translate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signedWords, meetingId: props.meetingId , user: currentUser?.name || "Guest"}),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({
+          signedWords,
+          meetingId: props.meetingId,
+          userId,
+          userName,
+        }),
       });
 
       const data = await res.json();
