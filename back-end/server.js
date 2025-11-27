@@ -53,7 +53,7 @@ app.use("/api/call-history", auth, callHistoryRoutes);
 app.use("/api/translation-log", auth, translationLogRoutes);
 
 // Meeting create/join routes
-app.use("/api/meetings", meetingRoutes);
+app.use("/api/meetings", auth, meetingRoutes);
 
 // ---- Static uploads ----
 

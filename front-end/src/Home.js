@@ -50,11 +50,19 @@ export default function Home() {
 
   const handleJoin = async () => {
   try {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      console.error("No token found");
+      return alert("Please sign in again.");
+    }
     const res = await fetch(
       `http://localhost:3001/api/meetings/join/${joinCode}`,
       {
-        method: "GET",
-        headers: { Accept: "application/json" },
+        method: "POST",
+        headers: { 
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`
+        },
       }
     );
 
@@ -80,11 +88,17 @@ export default function Home() {
     return;
   }
   try {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      console.error("No token found");
+      return alert("Please sign in again.");
+    }
     const res = await fetch("http://localhost:3001/api/meetings/create", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({ meetingName, meetingCode })
     });

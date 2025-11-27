@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema(
     googleId: { type: String, unique: true, sparse: true },
     name: { type: String, default: "" },
     picture: { type: String, default: "" },
+    meetings: [
+      {
+        type: String // meetingCode
+      }
+    ]
   },
   { timestamps: true },
 );
