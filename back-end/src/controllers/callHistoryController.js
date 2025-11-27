@@ -4,6 +4,8 @@ import MeetingRoom from "../models/MeetingRoom.js";
 
 export const getCallHistory = async (req, res) => {
   try {
+    console.log("req.user:", req.user);
+    
     // for unit testing -> delete later when not using mock data
     if (req.forceError) {
       throw new Error("Forced test error");
@@ -11,9 +13,10 @@ export const getCallHistory = async (req, res) => {
 
     // uncomment this in sprint 4
     const userId = req.user._id
+    
 
     // fetch data with userId
-    const user = await User.findById(req.userId);
+    const user = await User.findById(userId);
     // const userCallHistory = mockCallHistory;
 
     // find meeting codes array

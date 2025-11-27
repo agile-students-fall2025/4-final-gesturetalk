@@ -1,6 +1,7 @@
-import mockTranslationLogs from "../data/mockTranslationLogs.js";
-import mockCallHistory from "../data/mockCallHistory.js";
+// import mockTranslationLogs from "../data/mockTranslationLogs.js";
+// import mockCallHistory from "../data/mockCallHistory.js";
 import TranslationLog from "../models/TranslationLog.js";
+import MeetingRoom from "../models/MeetingRoom.js";
 
 export const getTranslationLog = async (req, res) => {
   // fetch mock data
@@ -22,15 +23,20 @@ export const getTranslationLog = async (req, res) => {
         }).sort({ timestamp: 1 });
         */
     // find meetingName
-    const meeting = mockCallHistory.find((m) => m.meetingId === meetingId);
+    const meeting = await MeetingRoom.findOne({ meetingCode: meetingId });
     if (!meeting) {
       return res.status(404).json({ ok: false, error: "Meeting not found" });
     }
 
-    const userTranslationLogs = mockTranslationLogs;
+    // const userTranslationLogs = mockTranslationLogs;
+    const userTranslationLogs = await TranslationLog.find({ meetingId }).sort({ createdAt: 1 });
+    if (!userTranslationLogs) {
+      return res.status(404).json({ ok: false, error: "Translation logs not found" });
+    }
 
     res.status(200).json({
       ok: true,
+      // sorted translation logs
       translationLogs: userTranslationLogs,
       meetingName: meeting.meetingName,
     });

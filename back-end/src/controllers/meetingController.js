@@ -16,7 +16,18 @@ export const createMeetingRoom = async (req, res) => {
 
     const newMeeting = await MeetingRoom.create({ meetingName, meetingCode });
 
+    // add meeting to current user's meetings array
+    if (req.user && req.user._id) {
+      await User.findByIdAndUpdate(
+        req.user._id,
+        { $addToSet: { meetings: meetingCode } },
+        { new: true }
+      );
+    }
+    console.log("meeting added to user for create Meeting Room")
+
     return res.status(201).json({ ok: true, meeting: newMeeting });
+
   } catch (err) {
     console.error("Meeting creation error:", err);
     res.status(500).json({ ok: false, error: "Server error" });

@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 const auth = async (req, res, next) => {
   // ex: user wants to like a post
@@ -21,7 +22,15 @@ const auth = async (req, res, next) => {
     // replace this later with process.env.JWT_SECRET
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+
+    // find user in database
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({ ok: false, error: "User not found" });
+    }
+
+    req.user = user;
 
     // pass it down to next
     return next();
