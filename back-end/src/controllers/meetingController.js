@@ -1,4 +1,5 @@
 import MeetingRoom from "../models/MeetingRoom.js";
+import User from "../models/User.js";
 
 export const createMeetingRoom = async (req, res) => {
   const { meetingName, meetingCode } = req.body;
@@ -34,7 +35,16 @@ export const joinMeetingRoom = async (req, res) => {
       return res.status(404).json({ ok: false, error: "Meeting not found" });
     }
 
+    // add meeting to user data
+    const userId = req.user._id; 
+    await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { meetings: meetingCode } }, // prevents duplicates
+      { new: true }
+    );
+
     return res.status(200).json({ ok: true, meeting });
+
   } catch (err) {
     console.error("Join meeting error:", err);
     res.status(500).json({ ok: false, error: "Server error" });
