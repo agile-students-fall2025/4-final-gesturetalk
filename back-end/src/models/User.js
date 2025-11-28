@@ -16,9 +16,9 @@ const userSchema = new mongoose.Schema(
     picture: { type: String, default: "" },
     meetings: [
       {
-        type: String // meetingCode
-      }
-    ]
+        type: String, // meetingCode
+      },
+    ],
   },
   { timestamps: true },
 );

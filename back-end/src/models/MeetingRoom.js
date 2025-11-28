@@ -4,6 +4,8 @@ const MeetingRoomchema = new mongoose.Schema(
   {
     meetingName: { type: String, required: true },
     meetingCode: { type: String, required: true, unique: true },
+    participantCount: { type: Number, min: 0, default: 0 }, // should only be int!!
+    // if participantCount == 0, then meeting should be deleted from db
   },
 
   { timestamps: true },

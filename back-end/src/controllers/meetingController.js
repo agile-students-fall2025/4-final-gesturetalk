@@ -21,13 +21,12 @@ export const createMeetingRoom = async (req, res) => {
       await User.findByIdAndUpdate(
         req.user._id,
         { $addToSet: { meetings: meetingCode } },
-        { new: true }
+        { new: true },
       );
     }
-    console.log("meeting added to user for create Meeting Room")
+    console.log("meeting added to user for create Meeting Room");
 
     return res.status(201).json({ ok: true, meeting: newMeeting });
-
   } catch (err) {
     console.error("Meeting creation error:", err);
     res.status(500).json({ ok: false, error: "Server error" });
@@ -47,15 +46,14 @@ export const joinMeetingRoom = async (req, res) => {
     }
 
     // add meeting to user data
-    const userId = req.user._id; 
+    const userId = req.user._id;
     await User.findByIdAndUpdate(
       userId,
       { $addToSet: { meetings: meetingCode } }, // prevents duplicates
-      { new: true }
+      { new: true },
     );
 
     return res.status(200).json({ ok: true, meeting });
-
   } catch (err) {
     console.error("Join meeting error:", err);
     res.status(500).json({ ok: false, error: "Server error" });

@@ -31,10 +31,12 @@ export const getTranslationLog = async (req, res) => {
     // const userTranslationLogs = mockTranslationLogs;
     const userTranslationLogs = await TranslationLog.findOne({ meetingId });
     if (!userTranslationLogs) {
-      return res.status(404).json({ ok: false, error: "Translation logs not found" });
+      return res
+        .status(404)
+        .json({ ok: false, error: "Translation logs not found" });
     }
 
-    const flattened = userTranslationLogs.messages.map(m => ({
+    const flattened = userTranslationLogs.messages.map((m) => ({
       _id: m._id,
       user: m.user,
       message: m.message,
@@ -58,19 +60,19 @@ export const getTranslationLog = async (req, res) => {
   }
 };
 
-export async function saveTranslationLog({ meetingId, user, message })  {
+export async function saveTranslationLog({ meetingId, user, message }) {
   if (!meetingId) {
     throw new Error("Meeting ID is required");
   }
 
   // find existing translation log
   let log = await TranslationLog.findOne({ meetingId });
-  
+
   // if not found, create new log
   if (!log) {
     log = await TranslationLog.create({
       meetingId,
-      messages: []
+      messages: [],
     });
   }
   // add new message
@@ -78,11 +80,10 @@ export async function saveTranslationLog({ meetingId, user, message })  {
     log.messages.push({
       user,
       message,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
     await log.save();
   }
-  
-  return log;
 
+  return log;
 }
