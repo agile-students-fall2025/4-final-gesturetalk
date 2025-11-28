@@ -269,9 +269,15 @@ function Meeting() {
 
   const handleEndCall = () => {
     Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+    peerConnectionsRef.current = {};
+
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((t) => t.stop());
+      localStreamRef.current = null;
     }
+
+    setCamOn(false);
+    
     navigate("/home");
   };
 

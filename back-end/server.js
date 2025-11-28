@@ -18,7 +18,7 @@ import meetingRoutes from "./src/routes/meetingRoutes.js";
 import generateSentenceFromSigns from "./src/translation/sentenceGenerator.js";
 import auth from "./src/middleware/auth.js";
 import { saveTranslationLog } from "./src/controllers/translationLogController.js";
-import { timeStamp } from "console";
+import MeetingRoom from "./src/models/MeetingRoom.js";
 
 dotenv.config();
 
@@ -71,7 +71,7 @@ app.use("/uploads", express.static(uploadsDir));
 
 // ---- Sentence translation route ----
 
-app.post("/api/translate", auth,  async (req, res) => {
+app.post("/api/translate", auth, async (req, res) => {
   try {
     const { signedWords, meetingId, userName } = req.body;
 
@@ -81,9 +81,7 @@ app.post("/api/translate", auth,  async (req, res) => {
         .json({ error: "signedWords must be a non-empty array of strings" });
     }
     if (!meetingId) {
-      return res
-        .status(400)
-        .json({ error: "meetingId is required" });
+      return res.status(400).json({ error: "meetingId is required" });
     }
 
     const sentence = await generateSentenceFromSigns(signedWords);
@@ -140,9 +138,20 @@ io.on("connection", (socket) => {
   console.log("Connected:", socket.id);
 
   // Join a room
-  socket.on("join-room", (roomID) => {
+  socket.on("join-room", async ({ meetingId }) => {
+    const roomID = meetingId;
     peers[socket.id] = roomID;
     socket.join(roomID);
+    // User join room, increment count
+    const meetingRoom = await MeetingRoom.findOneAndUpdate(
+      { meetingCode: roomID },
+      { $inc: { participantCount: 1 } },
+      { new: true },
+    );
+    console.log(
+      `Meeting Room Participant Count: ${meetingRoom.participantCount}`,
+    );
+    console.log("Updated Meeting Room", meetingRoom);
     console.log(`Socket ${socket.id} joined room ${roomID}`);
     socket.to(roomID).emit("user-joined", socket.id);
   });
@@ -174,12 +183,22 @@ io.on("connection", (socket) => {
   });
 
   // Disconnect
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log("Disconnected:", socket.id);
     const roomID = peers[socket.id];
     delete peers[socket.id];
     if (roomID) {
       socket.to(roomID).emit("user-disconnected", socket.id);
+      const decrementCount = await MeetingRoom.findOneAndUpdate(
+        { meetingCode: roomID },
+        { $inc: { participantCount: -1 } },
+        { new: true },
+      );
+
+      if (decrementCount && decrementCount.participantCount <= 0) {
+        await MeetingRoom.deleteOne({ meetingCode: roomID });
+        console.log(`Meeting Room ${roomID} deleted. Last participant left.`);
+      }
     }
   });
 });
