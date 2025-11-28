@@ -69,7 +69,7 @@ const TranslationLog = () => {
                                     className={`log-entry ${colorClass}`}
                                 >
                                     <div className="entry-header">
-                                        <span className="display-name">{entry.senderId}</span>
+                                        <span className="display-name">{entry.user}</span>
                                         <span className="timestamp">
                                             {new Date(entry.timestamp).toLocaleTimeString([], {
                                                 hour: '2-digit',
@@ -78,7 +78,7 @@ const TranslationLog = () => {
                                             })}
                                         </span>
                                     </div>
-                                    <p className="entry-text">{entry.text}</p>
+                                    <p className="entry-text">{entry.message}</p>
                                 </div>
                             );
                         })}

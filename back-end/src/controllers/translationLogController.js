@@ -29,15 +29,22 @@ export const getTranslationLog = async (req, res) => {
     }
 
     // const userTranslationLogs = mockTranslationLogs;
-    const userTranslationLogs = await TranslationLog.find({ meetingId }).sort({ createdAt: 1 });
+    const userTranslationLogs = await TranslationLog.findOne({ meetingId });
     if (!userTranslationLogs) {
       return res.status(404).json({ ok: false, error: "Translation logs not found" });
     }
 
+    const flattened = userTranslationLogs.messages.map(m => ({
+      _id: m._id,
+      user: m.user,
+      message: m.message,
+      timestamp: m.timestamp,
+    }));
+
     res.status(200).json({
       ok: true,
       // sorted translation logs
-      translationLogs: userTranslationLogs,
+      translationLogs: flattened,
       meetingName: meeting.meetingName,
     });
 
