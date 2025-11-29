@@ -20,7 +20,7 @@ function SignIn(){
             if (!email || !password) { setError('Enter email and password'); return; }
             setLoading(true); setError('');
             try {
-                const res = await fetch('http://localhost:3001/api/auth/signin', {
+                const res = await fetch('http://138.197.83.95:5001/api/auth/signin', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
@@ -50,7 +50,7 @@ function SignIn(){
                 if (!googleToken) return console.warn('No credential returned from Google');
                 
                 // send Google token to your backend
-                const res = await fetch("http://localhost:3001/api/auth/google", {
+                const res = await fetch("http://138.197.83.95:5001/api/auth/google", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ googleToken })

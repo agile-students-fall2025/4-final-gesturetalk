@@ -126,7 +126,7 @@ export const server = http.createServer(app);
 
 export const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // front-end runs on 3000
+    origin: "http://138.197.83.95:3000", // front-end runs on 3000
     methods: ["GET", "POST"],
   },
 });
@@ -215,7 +215,7 @@ app.use(error);
 // ---- Start server (but not during tests) ----
 
 if (process.env.NODE_ENV !== "test") {
-  const PORT = process.env.PORT || 3001;
+  const PORT = process.env.PORT || 5001;
   server.listen(PORT, () => {
     console.log(`Listening on Port ${PORT}`);
   });

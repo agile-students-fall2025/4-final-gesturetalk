@@ -12,7 +12,7 @@ const CallHistory = () => {
     const { currentUser } = useContext(UserContext);
 
     // remove this when deploying
-    const baseURL = "http://localhost:3001/api"
+    const baseURL = "http://138.197.83.95:5001/api"
     const token = localStorage.getItem("authToken")
 
     useEffect(() => {

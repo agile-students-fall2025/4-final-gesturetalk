@@ -13,7 +13,7 @@ const TranslationLog = () => {
     const { currentUser } = useContext(UserContext);
     const token = localStorage.getItem("authToken")
     // remove this when deploying
-    const baseURL = "http://localhost:3001/api"
+    const baseURL = "http://138.197.83.95:5001/api"
     
 
     useEffect(() => {

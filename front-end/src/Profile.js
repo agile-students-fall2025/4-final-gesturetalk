@@ -40,7 +40,7 @@ function Profile() {
     // If password was changed, send update to backend
     if (password) {
       try {
-        const res = await fetch('http://localhost:3001/api/auth/update-password', {
+        const res = await fetch('http://138.197.83.95:5001/api/auth/update-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -119,7 +119,7 @@ function Profile() {
       // Send either MongoDB ID or email (for Google OAuth users)
       formData.append('userId', currentUser.id || currentUser.email);
 
-      const res = await fetch('http://localhost:3001/api/profile/upload', {
+      const res = await fetch('http://138.197.83.95:5001/api/profile/upload', {
         method: 'POST',
         body: formData,
       });
