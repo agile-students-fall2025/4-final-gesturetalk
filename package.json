@@ -21,10 +21,14 @@
     "chai": "^6.2.1",
     "mocha": "^11.7.5",
     "react-icons": "^5.5.0",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.4",
+    "react-scripts": "^5.0.1"
   },
   "type": "module",
   "engines": {
     "node": ">=25.2.1"
+  },
+  "scripts": {
+    "build": "react-scripts build"
   }
 }
