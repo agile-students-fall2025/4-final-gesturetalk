@@ -65,7 +65,7 @@ function Meeting() {
 
   // ---- Initialize socket & media ----
   useEffect(() => {
-    socketRef.current = io("http://localhost:3001", { transports: ["websocket"] });
+    socketRef.current = io("http://138.197.83.95:5001", { transports: ["websocket"] });
     const socket = socketRef.current;
 
     async function startMedia() {

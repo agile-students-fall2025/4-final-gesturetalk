@@ -12,7 +12,7 @@ export const uploadProfilePicture = async (req, res) => {
     }
 
     // Construct full picture URL (include server URL for browser to access)
-    const serverUrl = process.env.SERVER_URL || "http://localhost:3001";
+    const serverUrl = process.env.SERVER_URL || "http://138.197.83.95:5001";
     const pictureUrl = `${serverUrl}/uploads/profiles/${req.file.filename}`;
 
     // Try to find user by MongoDB ObjectId first (for DB-created users)

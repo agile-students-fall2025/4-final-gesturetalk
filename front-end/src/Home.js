@@ -56,7 +56,7 @@ export default function Home() {
       return alert("Please sign in again.");
     }
     const res = await fetch(
-      `http://localhost:3001/api/meetings/join/${joinCode}`,
+      `http://138.197.83.95:5001/api/meetings/join/${joinCode}`,
       {
         method: "POST",
         headers: { 
@@ -93,7 +93,7 @@ export default function Home() {
       console.error("No token found");
       return alert("Please sign in again.");
     }
-    const res = await fetch("http://localhost:3001/api/meetings/create", {
+    const res = await fetch("http://138.197.83.95:5001/api/meetings/create", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
