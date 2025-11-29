@@ -1,27 +1,16 @@
-// import mockTranslationLogs from "../data/mockTranslationLogs.js";
-// import mockCallHistory from "../data/mockCallHistory.js";
 import TranslationLog from "../models/TranslationLog.js";
 import MeetingRoom from "../models/MeetingRoom.js";
 
 export const getTranslationLog = async (req, res) => {
-  // fetch mock data
-  // update in sprint 4
+
   try {
     // for unit testing -> delete later when not using mock data
     if (req.forceError) {
       throw new Error("Forced test error");
     }
 
-    // uncomment this for sprint 4
     const { meetingId } = req.params;
 
-    // update in sprint 4
-    // fetch data with userId
-    /*
-        const TranslationLogs =  await TranslationLogs.find({
-            meetingId: meetingId
-        }).sort({ timestamp: 1 });
-        */
     // find meetingName
     const meeting = await MeetingRoom.findOne({ meetingCode: meetingId });
     if (!meeting) {
