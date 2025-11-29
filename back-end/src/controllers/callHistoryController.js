@@ -1,4 +1,3 @@
-// import mockCallHistory from "../data/mockCallHistory.js";
 import User from "../models/User.js";
 import MeetingRoom from "../models/MeetingRoom.js";
 
@@ -11,12 +10,10 @@ export const getCallHistory = async (req, res) => {
       throw new Error("Forced test error");
     }
 
-    // uncomment this in sprint 4
     const userId = req.user._id;
 
     // fetch data with userId
     const user = await User.findById(userId);
-    // const userCallHistory = mockCallHistory;
 
     // find meeting codes array
     const meetingCodes = user.meetings;
