@@ -95,7 +95,6 @@ app.post("/api/translate", auth, translateValidation, async (req, res) => {
     console.log(`✅ Translation log saved for meeting ${meetingId}`);
 
     res.json({ sentence });
-    return;
   } catch (err) {
     console.error("Translation error:", err);
     res.status(500).json({ error: "Translation failed" });
@@ -127,7 +126,7 @@ export const server = http.createServer(app);
 
 export const io = new Server(server, {
   cors: {
-    origin: "http://138.197.83.95:3000", // front-end runs on 3000
+    origin: `${process.env.CORS_ORIGIN}`, // front-end runs on 3000
     methods: ["GET", "POST"],
   },
 });
