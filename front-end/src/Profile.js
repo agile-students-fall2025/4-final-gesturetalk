@@ -119,8 +119,15 @@ function Profile() {
       // Send either MongoDB ID or email (for Google OAuth users)
       formData.append('userId', currentUser.id || currentUser.email);
 
+      const token = localStorage.getItem('authToken');
+      const headers = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/profile/upload`, {
         method: 'POST',
+        headers,
         body: formData,
       });
 

@@ -25,7 +25,17 @@ function SignIn(){
                     body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
-                if (!data.ok) { setError(data.error || 'Sign in failed'); setLoading(false); return; }
+                if (!data.ok) { 
+                    // Handle validation errors from express-validator
+                    if (data.errors && data.errors.length > 0) {
+                        const errorMessages = data.errors.map(err => err.msg).join(', ');
+                        setError(errorMessages);
+                    } else {
+                        setError(data.error || 'Sign in failed');
+                    }
+                    setLoading(false); 
+                    return; 
+                }
                 
                 // store jwt token
                 const token = data.token;
@@ -59,7 +69,13 @@ function SignIn(){
                 const data = await res.json();
                 if (!data.ok) {
                     console.error("Google backend login failed:", data.error);
-                    setError("Google login failed");
+                    // Handle validation errors from express-validator
+                    if (data.errors && data.errors.length > 0) {
+                        const errorMessages = data.errors.map(err => err.msg).join(', ');
+                        setError(`Google login failed: ${errorMessages}`);
+                    } else {
+                        setError(data.error || "Google login failed");
+                    }
                     return;
                 }
 

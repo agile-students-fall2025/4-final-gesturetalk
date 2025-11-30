@@ -26,7 +26,17 @@ function SignUp(){
                 body: JSON.stringify({ name, email, password })
             });
             const data = await res.json();
-            if (!data.ok) { setError(data.error || 'Signup failed'); setLoading(false); return; }
+            if (!data.ok) { 
+                // Handle validation errors from express-validator
+                if (data.errors && data.errors.length > 0) {
+                    const errorMessages = data.errors.map(err => err.msg).join(', ');
+                    setError(errorMessages);
+                } else {
+                    setError(data.error || 'Signup failed');
+                }
+                setLoading(false); 
+                return; 
+            }
             
             // store jwt token
             const token = data.token;
@@ -43,7 +53,7 @@ function SignUp(){
     return(
         <div id="signup-content">
             <img alt="logo" id="logoSingup" src="./shuwaWsub.png"/>
-            <form id="signup-form" onSubmit={handleSubmit}>
+            <form id="signup-form" onSubmit={handleSubmit} noValidate>
                 <h1>Sign Up</h1>
                 <input id='dNameInput' type='text' placeholder='display name' value={name} onChange={e=>setName(e.target.value)} />
                 <input type='email' placeholder='email' value={email} onChange={e=>setEmail(e.target.value)} />

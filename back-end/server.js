@@ -205,9 +205,11 @@ io.on("connection", (socket) => {
 
 // ---- Error middleware ----
 
-function error(err, req, res) {
+function error(err, req, res, next) {
   console.error(err.stack);
-  res.status(500).send("Internal Server Error");
+  if (res && typeof res.status === 'function') {
+    res.status(500).json({ ok: false, error: "Internal Server Error" });
+  }
 }
 
 app.use(error);

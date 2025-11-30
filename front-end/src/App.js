@@ -15,6 +15,7 @@ const GOOGLE_CLIENT_ID = '701676482246-gb7dhjv31hpm0ekr3agiucbei4bm5ivv.apps.goo
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Rehydrate user from localStorage so Google login persists across reloads
   useEffect(() => {
@@ -26,6 +27,8 @@ function App() {
       }
     } catch (e) {
       console.warn('Failed to rehydrate currentUser from localStorage', e);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -41,7 +44,7 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <UserContext.Provider value={{ currentUser, setCurrentUser }}>
+      <UserContext.Provider value={{ currentUser, setCurrentUser, isLoading }}>
         <Router>
           <Routes>
             {/* sign in's the first page users land on */}
