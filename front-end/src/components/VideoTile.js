@@ -370,7 +370,7 @@ export default function VideoTile(props) {
     if (!userName) userName = 'Anonymous';
 
     try {
-      const res = await fetch('http://138.197.83.95:5001/api/translate', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/translate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

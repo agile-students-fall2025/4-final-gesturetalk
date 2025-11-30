@@ -12,8 +12,7 @@ const TranslationLog = () => {
     const [logData, setLogData] = useState([]);
     const { currentUser } = useContext(UserContext);
     const token = localStorage.getItem("authToken")
-    // remove this when deploying
-    const baseURL = "http://138.197.83.95:5001/api"
+    const baseURL = `${process.env.REACT_APP_API_URL}/api`
     
 
     useEffect(() => {
