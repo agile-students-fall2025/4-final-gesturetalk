@@ -11,12 +11,13 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, isLoading } = useContext(UserContext);
 
-  if (!currentUser) {
-    alert("Please sign in.");
-    navigate("/");
-  }
+  useEffect(() => {
+    if (!isLoading && !currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, isLoading, navigate]);
 
   //  Update time + date
   useEffect(() => {
