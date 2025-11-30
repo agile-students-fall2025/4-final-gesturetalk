@@ -28,6 +28,9 @@
  run npm install to install all dependencies:
 
 ``` npm install ```
+
+ Before starting create a .env in the front-end folder with the following:
+ ``` REACT_APP_API_URL=http://localhost:5001/ ```
  
  run npm start to run the React.js server:
 
@@ -46,15 +49,16 @@ Go to back-end dir
 ``` npm install ```
 
 Before running back-end, please make a .env in the back-end folder with the following and fill out the required information:
-~~~
+```
 OPENROUTER_MODEL=openai/gpt-oss-20b:free
-OPENROUTER_API_KEY=[api key]
-MONGODB_URI=[mongoDB Atlas cluster]
-PORT=5000
-SERVER_URL=http://localhost:3001/
-JWT_SECRET=local_testing_secret
+OPENROUTER_API_KEY=[API key]
+MONGODB_URI=[MongoDB Atlas Cluster]
+PORT=5001
+SERVER_URL=http://localhost:3000/
+JWT_SECRET=[JWT key]
 JWT_EXPIRES_IN=7d
-~~~
+CORS_ORIGIN=http://localhost:3000
+```
  
  run npm start to run the Express.js server & MongoDB
 
