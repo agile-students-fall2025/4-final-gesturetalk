@@ -11,8 +11,7 @@ const CallHistory = () => {
     const navigate = useNavigate();
     const { currentUser } = useContext(UserContext);
 
-    // remove this when deploying
-    const baseURL = "http://138.197.83.95:5001/api"
+    const baseURL = `${process.env.REACT_APP_API_URL}/api`
     const token = localStorage.getItem("authToken")
 
     useEffect(() => {
