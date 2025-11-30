@@ -17,6 +17,7 @@ import translationLogRoutes from "./src/routes/translationLogRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
 import generateSentenceFromSigns from "./src/translation/sentenceGenerator.js";
 import auth from "./src/middleware/auth.js";
+import { translateValidation } from "./src/middleware/validators.js";
 import { saveTranslationLog } from "./src/controllers/translationLogController.js";
 import MeetingRoom from "./src/models/MeetingRoom.js";
 
@@ -71,7 +72,7 @@ app.use("/uploads", express.static(uploadsDir));
 
 // ---- Sentence translation route ----
 
-app.post("/api/translate", auth, async (req, res) => {
+app.post("/api/translate", auth, translateValidation, async (req, res) => {
   try {
     const { signedWords, meetingId, userName } = req.body;
 

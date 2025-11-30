@@ -5,11 +5,17 @@ import {
   googleSignIn,
   updatePassword,
 } from "../controllers/authController.js";
+import {
+  signUpValidation,
+  signInValidation,
+  googleSignInValidation,
+  updatePasswordValidation,
+} from "../middleware/validators.js";
 
 const router = Router();
-router.post("/signup", signUp);
-router.post("/signin", signIn);
-router.post("/google", googleSignIn);
-router.post("/update-password", updatePassword);
+router.post("/signup", signUpValidation, signUp);
+router.post("/signin", signInValidation, signIn);
+router.post("/google", googleSignInValidation, googleSignIn);
+router.post("/update-password", updatePasswordValidation, updatePassword);
 
 export default router;
