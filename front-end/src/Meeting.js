@@ -13,7 +13,7 @@ const configuration = {
       urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
     },
   ],
-  iceCandidatePoolSize: 4,
+  iceCandidatePoolSize: 5,
 };
 
 function Meeting() {
