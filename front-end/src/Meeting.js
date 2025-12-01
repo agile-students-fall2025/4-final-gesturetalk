@@ -202,7 +202,7 @@ function Meeting() {
       console.error("makeCall error", err);
     }
   }
-/*
+
   async function handleOffer(sdp, peerId) {
     try {
       const pc = new RTCPeerConnection(configuration);
@@ -218,7 +218,7 @@ function Meeting() {
           });
         }
       };
-      */
+      
 
       pc.ontrack = (e) => {
         console.log("Remote track received from", peerId);
@@ -306,11 +306,12 @@ function Meeting() {
     
     navigate("/home");
   };
-
+  /*
   // Callback to receive translated sentence from VideoTile
   const handleTranslatedSentence = (sentence) => {
     appendMessage("You", sentence, "pink");
   };
+  */
 
   return (
     <div id="page-content">
