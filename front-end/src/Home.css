@@ -203,6 +203,7 @@ body {
  
   .close-btn-home:hover {
     background-color: transparent;
+    opacity: 0.7;
   }
 
   .close-btn-home:active {
