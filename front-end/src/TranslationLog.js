@@ -13,13 +13,28 @@ const TranslationLog = () => {
     const { currentUser } = useContext(UserContext);
     const token = localStorage.getItem("authToken")
     const baseURL = `${process.env.REACT_APP_API_URL}/api`
-    
+    const [userColors, setUserColors] = useState({});
+    const COLOR_CLASSES = ["color1", "color2", "color3", "color4", "color5"];
 
     useEffect(() => {
         if (!currentUser) {
             navigate("/");
         }
     }, [currentUser, navigate]);// user not signed in, redirect to sign in
+
+    useEffect(() => {
+        if (logData.length === 0) return;
+
+        const uniqueUsers = [...new Set(logData.map(entry => entry.user))];
+
+        const newColorMap = {};
+        uniqueUsers.forEach((user, index) => {
+            newColorMap[user] = COLOR_CLASSES[index % COLOR_CLASSES.length];
+        });
+
+        setUserColors(newColorMap);
+    }, [logData]);
+
 
     // use effect to fetch meeting infromation by meetingId
     useEffect(() => {
@@ -59,8 +74,8 @@ const TranslationLog = () => {
                 <div className="log-container">
                     <div className='log-list-container'>
 
-                        {logData.map((entry, index) => {
-                            const colorClass = ["color1", "color2"][index % 2];
+                        {logData.map((entry) => {
+                            const colorClass = userColors[entry.user];
 
                             return (
                                 <div
