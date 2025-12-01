@@ -99,6 +99,27 @@ function Meeting() {
       await makeCall(peerId);
     });
 
+    socket.on("new-translation", (data) => {
+    const { userName, sentence, timestamp } = data;
+    console.log("New translation received:", data);
+    
+    // Add to translation feed
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: prev.length ? prev[prev.length - 1].id + 1 : 1,
+        who: userName,
+        t: new Date(timestamp).toLocaleTimeString([], { 
+          hour: "2-digit", 
+          minute: "2-digit", 
+          second: "2-digit" 
+        }),
+        text: sentence,
+        color: userName === currentUser?.name ? "pink" : "indigo",
+      },
+    ]);
+  });
+
     socket.on("offer", async (data) => {
       const { sdp, sender } = data;
       await handleOffer(sdp, sender);
@@ -181,7 +202,7 @@ function Meeting() {
       console.error("makeCall error", err);
     }
   }
-
+/*
   async function handleOffer(sdp, peerId) {
     try {
       const pc = new RTCPeerConnection(configuration);
@@ -197,6 +218,7 @@ function Meeting() {
           });
         }
       };
+      */
 
       pc.ontrack = (e) => {
         console.log("Remote track received from", peerId);
@@ -308,7 +330,7 @@ function Meeting() {
                     cameraOn={camOn}
                     badgeText={p.isLocal ? "You" : "Participant"}
                     meetingId={meetingId} 
-                    onTranslatedSentence={handleTranslatedSentence} // Pass callback
+                    /// onTranslatedSentence={handleTranslatedSentence} // Pass callback
                   />
                 ))}
               </div>
