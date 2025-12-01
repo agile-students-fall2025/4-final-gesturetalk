@@ -59,7 +59,7 @@ export default function Home() {
     const res = await fetch(
       `${process.env.REACT_APP_API_URL}/api/meetings/join/${joinCode}`,
       {
-        method: "POST",
+        method: "GET",
         headers: { 
           Accept: "application/json",
           Authorization: `Bearer ${token}`
