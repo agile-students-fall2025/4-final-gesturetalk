@@ -94,6 +94,12 @@ app.post("/api/translate", auth, translateValidation, async (req, res) => {
 
     console.log(`✅ Translation log saved for meeting ${meetingId}`);
 
+    io.to(meetingId).emit("new-translation", {
+      userName: userName || "Guest",
+      sentence,
+      timestamp: new Date().toISOString(),
+    });
+    
     res.json({ sentence });
   } catch (err) {
     console.error("Translation error:", err);
