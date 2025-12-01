@@ -156,7 +156,6 @@ io.on("connection", (socket) => {
     );
     console.log("Updated Meeting Room", meetingRoom);
     console.log(`Socket ${socket.id} joined room ${roomID}`);
-    socket.to(roomID).emit("user-joined", socket.id);
   });
 
   // Offer → specific target peer
