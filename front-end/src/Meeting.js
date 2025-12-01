@@ -21,9 +21,11 @@ function Meeting() {
   const { meetingId } = useParams();
   const { currentUser } = useContext(UserContext);
 
-  if (!currentUser) {
-    navigate("/");
-  } // user not signed in, redirect to sign in
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, navigate]);// user not signed in, redirect to sign in
 
   // ---- Socket & WebRTC state (use refs for persistence) ----
   const socketRef = useRef(null);
@@ -92,7 +94,8 @@ function Meeting() {
     // ---- Socket event handlers ----
     socket.on("user-joined", async (data) => {
       console.log(`Peer joined:`, data);
-      const peerId = data.socketId;
+      const peerId = typeof data === 'string' ? data : data.socketId;
+      if (!peerId) return;
       await makeCall(peerId);
     });
 
@@ -113,7 +116,8 @@ function Meeting() {
 
     socket.on("user-left", (data) => {
       console.log(`Peer left:`, data);
-      const peerId = data.socketId;
+      const peerId = typeof data === 'string' ? data : data.socketId;
+      if (!peerId) return;
       const pc = peerConnectionsRef.current[peerId];
       if (pc) {
         pc.close();

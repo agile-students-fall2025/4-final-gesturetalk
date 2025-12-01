@@ -142,7 +142,10 @@ io.on("connection", (socket) => {
     const roomID = meetingId;
     peers[socket.id] = roomID;
     socket.join(roomID);
+    
     // User join room, increment count
+    // Emit as object (front-end expects data.socketId)
+    socket.to(roomID).emit("user-joined", { socketId: socket.id });
     const meetingRoom = await MeetingRoom.findOneAndUpdate(
       { meetingCode: roomID },
       { $inc: { participantCount: 1 } },
@@ -188,7 +191,7 @@ io.on("connection", (socket) => {
     const roomID = peers[socket.id];
     delete peers[socket.id];
     if (roomID) {
-      socket.to(roomID).emit("user-disconnected", socket.id);
+      socket.to(roomID).emit("user-left", { socketId: socket.id });
       const decrementCount = await MeetingRoom.findOneAndUpdate(
         { meetingCode: roomID },
         { $inc: { participantCount: -1 } },
