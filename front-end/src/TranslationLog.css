@@ -44,12 +44,17 @@
 }
 
 .color2 {
-  background: #eafdff;
+  background: #effdff;
 }
 
 .color1 {
-  background: #f4eaff;
+  background: #f9f3ff;
 }
+
+.color3 { background: #fff8ef; } 
+.color4 { background: #f4fff4; } 
+.color5 { background: #fff4f9; } 
+
 
 .entry-header {
   display: flex;
