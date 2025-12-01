@@ -545,11 +545,14 @@ export default function VideoTile(props) {
               autoPlay
               muted={!!props.isLocal}
               className="tile-video"
+              style={{ transform: props.isLocal ? "scaleX(-1)" : "none" }}
+
             />
             <canvas
               ref={canvasRef}
               className="tile-overlay"
-              style={{ opacity: props.gestureOn ? 1 : 0 }}
+              style={{ opacity: props.gestureOn ? 1 : 0 , transform: props.isLocal ? "scaleX(-1)" : "none",
+            }}
               width={640}
               height={480}
             />
