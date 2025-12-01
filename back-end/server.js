@@ -87,10 +87,17 @@ app.post("/api/translate", auth, translateValidation, async (req, res) => {
 
     const sentence = await generateSentenceFromSigns(signedWords);
     await saveTranslationLog({
-      meetingId,
-      message: sentence,
-      user: userName || "Guest",
+      meetingId: meetingCode,          // preferred
+      user,
+      message,
     });
+    // or, if you only have the meeting document:
+    await saveTranslationLog({
+      meetingId: meeting._id.toString(), // also works because of normalization
+      user,
+      message,
+    });
+    
 
     console.log(`✅ Translation log saved for meeting ${meetingId}`);
 
