@@ -94,44 +94,6 @@ function padSequence(seq) {
   return cleaned;
 }
 
-// --------------------------------------------------
-// 5. Stratified train/test split (like sklearn)
-// --------------------------------------------------
-function stratifiedSplit(X, y, test_ratio = 0.1) {
-  let trainX = [];
-  let trainY = [];
-  let testX = [];
-  let testY = [];
-
-  const labelGroups = {};
-
-  y.forEach((label, idx) => {
-    if (!labelGroups[label]) labelGroups[label] = [];
-    labelGroups[label].push(idx);
-  });
-
-  Object.keys(labelGroups).forEach((label) => {
-    const indices = labelGroups[label];
-    const testCount = Math.max(1, Math.floor(indices.length * test_ratio));
-
-    const shuffled = indices.slice().sort(() => Math.random() - 0.5);
-
-    const testIdxs = shuffled.slice(0, testCount);
-    const trainIdxs = shuffled.slice(testCount);
-
-    trainIdxs.forEach((i) => {
-      trainX.push(X[i]);
-      trainY.push(y[i]);
-    });
-
-    testIdxs.forEach((i) => {
-      testX.push(X[i]);
-      testY.push(y[i]);
-    });
-  });
-
-  return { trainX, trainY, testX, testY };
-}
 
 // --------------------------------------------------
 // 6. Build LSTM model
