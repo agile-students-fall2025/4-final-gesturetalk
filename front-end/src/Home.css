@@ -29,6 +29,12 @@ body {
     letter-spacing: 1px;
     color: #1f1f1f;
   }
+
+  #logoHome{
+    margin-top: 8%;
+    margin-bottom: 5%;
+    
+  }
   
   .profile {
     display: flex;
@@ -147,11 +153,7 @@ body {
     color: #444;
   }
 
-  #logoHome{
-    margin-top: 8%;
-    margin-bottom: 5%;
-    
-  }
+
 
   #homeSpan{
     padding-top: 5x;
