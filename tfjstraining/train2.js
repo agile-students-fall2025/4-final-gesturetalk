@@ -1,4 +1,4 @@
-// train5.js  (hand-only LSTM + class weight for "name" + early stopping)
+// train4-5.js  (hand-only LSTM with wrist-centered normalization + class weight for "name")
 
 const tf = require("@tensorflow/tfjs-node");
 const fs = require("fs");
@@ -48,9 +48,10 @@ function extractHands(frame) {
 }
 
 // --------------------------------------------------
-// 3. Wrist-centered normalization (match browser)
+// 3. Wrist-centered normalization (match this in browser)
 // --------------------------------------------------
 function normalizeHandFrame(frame126) {
+  // frame126: [x0,y0,z0, x1,y1,z1, ..., x41,y41,z41]
   if (frame126.length !== HAND_DIM) {
     throw new Error(`Expected 126-dim hand frame, got ${frame126.length}`);
   }
@@ -192,12 +193,12 @@ async function main() {
   });
   const nameIdx = labels.indexOf("name");
   if (nameIdx !== -1) {
-    classWeight[nameIdx] = 4.0; // tune 3–6 if you want
+    classWeight[nameIdx] = 3.0; // tune 2–5 as needed
   }
   console.log("Class weights:", classWeight);
 
   // Apply padding + wrist-centered normalization
-  const padded = X.map(padSequence); // [N, 30, 126]
+  const padded = X.map(padSequence); // shape: [N, 30, 126]
 
   const { trainX, trainY, testX, testY } = stratifiedSplit(padded, y, 0.1);
 
@@ -211,27 +212,25 @@ async function main() {
 
   console.log(model.summary());
 
-  // Early stopping when val_accuracy stops improving
-  const earlyStop = tf.callbacks.earlyStopping({
-    monitor: "val_accuracy",
-    patience: 10,       // stop if no improv. for 10 epochs
-    minDelta: 0.0005,   // ignore tiny fluctuations
-    restoreBestWeight: true,
-  });
-
   await model.fit(trainTensor, trainYtensor, {
     epochs: 120,
     batchSize: 8,
     validationData: [testTensor, testYtensor],
     shuffle: true,
-    classWeight,
-    callbacks: [earlyStop],
+    classWeight, // <--- use weights
+    callbacks: [
+      tf.callbacks.earlyStopping({
+        monitor: "val_accuracy",
+        patience: 12,
+        restoreBestWeight: true,
+      }),
+    ],
   });
 
-  await model.save("file://./model5");
+  await model.save("file://./model4");
   fs.writeFileSync("labels.json", JSON.stringify(labels));
 
-  console.log("\n Saved model5 (LSTM-hand-only, wrist-centered) + labels.json");
+  console.log("\n Saved model4 (LSTM-hand-only, wrist-centered) + labels.json");
 }
 
 main().catch((err) => console.error(err));
