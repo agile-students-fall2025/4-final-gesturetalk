@@ -1,4 +1,4 @@
-// training.js  (hand-only LSTM with wrist-centered normalization)
+// train4-5.js  (hand-only LSTM with wrist-centered normalization + class weight for "name")
 
 const tf = require("@tensorflow/tfjs-node");
 const fs = require("fs");
@@ -94,44 +94,6 @@ function padSequence(seq) {
   return cleaned;
 }
 
-// --------------------------------------------------
-// 5. Stratified train/test split (like sklearn)
-// --------------------------------------------------
-function stratifiedSplit(X, y, test_ratio = 0.1) {
-  let trainX = [];
-  let trainY = [];
-  let testX = [];
-  let testY = [];
-
-  const labelGroups = {};
-
-  y.forEach((label, idx) => {
-    if (!labelGroups[label]) labelGroups[label] = [];
-    labelGroups[label].push(idx);
-  });
-
-  Object.keys(labelGroups).forEach((label) => {
-    const indices = labelGroups[label];
-    const testCount = Math.max(1, Math.floor(indices.length * test_ratio));
-
-    const shuffled = indices.slice().sort(() => Math.random() - 0.5);
-
-    const testIdxs = shuffled.slice(0, testCount);
-    const trainIdxs = shuffled.slice(testCount);
-
-    trainIdxs.forEach((i) => {
-      trainX.push(X[i]);
-      trainY.push(y[i]);
-    });
-
-    testIdxs.forEach((i) => {
-      testX.push(X[i]);
-      testY.push(y[i]);
-    });
-  });
-
-  return { trainX, trainY, testX, testY };
-}
 
 // --------------------------------------------------
 // 6. Build LSTM model
@@ -178,6 +140,25 @@ async function main() {
 
   console.log("Total samples:", X.length);
 
+  // class counts
+  const counts = new Array(labels.length).fill(0);
+  y.forEach((c) => counts[c]++);
+  console.log("Class counts:");
+  labels.forEach((lab, i) => {
+    console.log(`  ${lab}: ${counts[i]}`);
+  });
+
+  // class weights (default 1, boost "name")
+  const classWeight = {};
+  labels.forEach((lab, i) => {
+    classWeight[i] = 1.0;
+  });
+  const nameIdx = labels.indexOf("name");
+  if (nameIdx !== -1) {
+    classWeight[nameIdx] = 3.0; // tune 2–5 as needed
+  }
+  console.log("Class weights:", classWeight);
+
   // Apply padding + wrist-centered normalization
   const padded = X.map(padSequence); // shape: [N, 30, 126]
 
@@ -198,6 +179,7 @@ async function main() {
     batchSize: 8,
     validationData: [testTensor, testYtensor],
     shuffle: true,
+    classWeight, // <--- use weights
     callbacks: [
       tf.callbacks.earlyStopping({
         monitor: "val_accuracy",
@@ -207,10 +189,10 @@ async function main() {
     ],
   });
 
-  await model.save("file://./model2");
+  await model.save("file://./model4");
   fs.writeFileSync("labels.json", JSON.stringify(labels));
 
-  console.log("\n🎉 Saved model (LSTM-hand-only, wrist-centered) + labels.json");
+  console.log("\n Saved model4 (LSTM-hand-only, wrist-centered) + labels.json");
 }
 
 main().catch((err) => console.error(err));
