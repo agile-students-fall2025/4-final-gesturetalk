@@ -13,14 +13,16 @@
   background-position: center;
   position: relative;
   overflow: hidden;
+
   display: flex;
-  align-items: center;
-  justify-content: center;
-  /* use same base font as Home */
+  flex-direction: column;
+  align-items: center;     /* center the card, but header stays full-width */
+  justify-content: flex-start;
+
   font-family: "Poppins", sans-serif;
-  box-sizing: border-box;
-  padding: 20px; /* ensure content doesn't touch edges */
+  
 }
+
 
 #gradient-blob {
   position: absolute;
@@ -33,17 +35,66 @@
   z-index: 0;
 }
 
-#logo {
-  position: absolute;
-  left: 20px;
-  top: 20px;
-  font-family: 'MuseoModerno', sans-serif;
-  font-weight: 400;
-  font-size: 48px;
-  color: #000;
-  z-index: 2;
-  margin: 0;
+
+#profileheader {
+  display: flex;
+  justify-content: space-between;  
+  align-items: center;
+  width: 100%;                    
+  padding: 20px 40px 0;           
+  margin: 0 0 20px;
+  z-index: 1;
+  position: relative;
+  width: min(720px, 100%);
+  margin: 0 auto;
 }
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+  
+ .logo1 {
+    font-size: 38px;
+    letter-spacing: 1px;
+    color: #000000;
+}
+
+#logoHome1{
+    margin-top: 8%;
+    margin-bottom: 5%;
+    margin-right: 540px;
+    
+}
+
+.profile1 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(243, 243, 243, 0.73);
+    backdrop-filter: blur(20px);
+    border-radius: 10px;
+    padding: 8px 20px;
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
+    transition: transform 0.3s ease;
+    margin-top: 1%;
+}
+
+.profile1 img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    /* show full avatar without cropping */
+    object-fit: contain;
+    object-position: center center;
+    background: #f3f4f8;
+    display: inline-block;
+    margin-top: 0;
+}
+  
+  
 
 /* Make profile card visually consistent with Home's card styles */
 /* responsive, same scale as Home cards */
@@ -62,7 +113,8 @@
   z-index: 1;
   margin: 0 auto;
   padding-bottom: 5%;
-  padding-top: 3%;
+  padding-top: 4%;
+  margin-top: 40px;
 }
 
 #profile-card .close-btn {
@@ -159,6 +211,8 @@
   margin-bottom: 5%;
   line-height: normal;
 }
+
+
 
 /* Inputs: smaller padding/height to avoid overflow at 100% zoom */
 #profile-card input {
@@ -279,6 +333,45 @@
   width: auto;
   line-height: 1;
 }
+#logoHome1{
+    margin-top: 49px;
+    margin-bottom: 20px;
+    margin-right: 144px;
+    
+}
+.logo1 {
+    font-size: 38px;
+    letter-spacing: 1px;
+    color: #000000;
+
+}
+
+.profile1 img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    /* show full avatar without cropping */
+    object-fit: contain;
+    object-position: center center;
+    background: #f3f4f8;
+    display: inline-block;
+    margin-top: 0;
+    
+}
+  .profile1 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(243, 243, 243, 0.73);
+    backdrop-filter: blur(20px);
+    border-radius: 10px;
+    padding: 8px 20px;
+    box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
+    transition: transform 0.3s ease;
+    margin-top: 20px;
+  }
+  
+
 }
 
 /* Modal Overlay and Card Styles (matching Home.css) */
