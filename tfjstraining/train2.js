@@ -1,4 +1,4 @@
-// training.js  (hand-only LSTM with wrist-centered normalization)
+// train5.js  (hand-only LSTM + class weight for "name" + early stopping)
 
 const tf = require("@tensorflow/tfjs-node");
 const fs = require("fs");
@@ -48,10 +48,9 @@ function extractHands(frame) {
 }
 
 // --------------------------------------------------
-// 3. Wrist-centered normalization (match this in browser)
+// 3. Wrist-centered normalization (match browser)
 // --------------------------------------------------
 function normalizeHandFrame(frame126) {
-  // frame126: [x0,y0,z0, x1,y1,z1, ..., x41,y41,z41]
   if (frame126.length !== HAND_DIM) {
     throw new Error(`Expected 126-dim hand frame, got ${frame126.length}`);
   }
@@ -178,8 +177,27 @@ async function main() {
 
   console.log("Total samples:", X.length);
 
+  // class counts
+  const counts = new Array(labels.length).fill(0);
+  y.forEach((c) => counts[c]++);
+  console.log("Class counts:");
+  labels.forEach((lab, i) => {
+    console.log(`  ${lab}: ${counts[i]}`);
+  });
+
+  // class weights (default 1, boost "name")
+  const classWeight = {};
+  labels.forEach((lab, i) => {
+    classWeight[i] = 1.0;
+  });
+  const nameIdx = labels.indexOf("name");
+  if (nameIdx !== -1) {
+    classWeight[nameIdx] = 4.0; // tune 3–6 if you want
+  }
+  console.log("Class weights:", classWeight);
+
   // Apply padding + wrist-centered normalization
-  const padded = X.map(padSequence); // shape: [N, 30, 126]
+  const padded = X.map(padSequence); // [N, 30, 126]
 
   const { trainX, trainY, testX, testY } = stratifiedSplit(padded, y, 0.1);
 
@@ -193,24 +211,27 @@ async function main() {
 
   console.log(model.summary());
 
+  // Early stopping when val_accuracy stops improving
+  const earlyStop = tf.callbacks.earlyStopping({
+    monitor: "val_accuracy",
+    patience: 10,       // stop if no improv. for 10 epochs
+    minDelta: 0.0005,   // ignore tiny fluctuations
+    restoreBestWeight: true,
+  });
+
   await model.fit(trainTensor, trainYtensor, {
     epochs: 120,
     batchSize: 8,
     validationData: [testTensor, testYtensor],
     shuffle: true,
-    callbacks: [
-      tf.callbacks.earlyStopping({
-        monitor: "val_accuracy",
-        patience: 12,
-        restoreBestWeight: true,
-      }),
-    ],
+    classWeight,
+    callbacks: [earlyStop],
   });
 
-  await model.save("file://./model2");
+  await model.save("file://./model5");
   fs.writeFileSync("labels.json", JSON.stringify(labels));
 
-  console.log("\n🎉 Saved model (LSTM-hand-only, wrist-centered) + labels.json");
+  console.log("\n Saved model5 (LSTM-hand-only, wrist-centered) + labels.json");
 }
 
 main().catch((err) => console.error(err));
