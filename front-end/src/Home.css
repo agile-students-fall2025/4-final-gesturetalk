@@ -54,7 +54,7 @@ body {
     height: 40px;
     border-radius: 50%;
     /* show full avatar without cropping */
-    object-fit: contain;
+    object-fit: cover;
     object-position: center center;
     background: #f3f4f8;
     display: inline-block;
