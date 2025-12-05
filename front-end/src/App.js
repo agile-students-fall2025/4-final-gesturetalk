@@ -35,6 +35,7 @@ function App() {
   //  Rehydrate JWT
   useEffect(() => {
     try {
+      // eslint-disable-next-line no-unused-vars
       const token = localStorage.getItem("authToken"); 
     } catch (e) {
       console.warn('Failed to rehydrate JWT from localStorage', e);
