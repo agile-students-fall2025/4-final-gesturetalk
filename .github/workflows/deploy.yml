@@ -18,7 +18,7 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: ./front-end/package-lock.json
+        cache-dependency-path: "./front-end/package-lock.json"
     
     - name: Install frontend dependencies
       working-directory: ./front-end
@@ -46,7 +46,7 @@ jobs:
     
     - name: Upload front-end files
       run: |
-        rsync -avz --delete ./build/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/www/html/
+        rsync -avz --delete ./front-end/build/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/www/html/
     
     - name: Restart Nginx
       uses: appleboy/ssh-action@v0.1.5
