@@ -70,6 +70,17 @@ h1{
     margin-left: 2%;
     font-weight: 300;
     font-family: 'Narnoor', serif;
+    background-color: transparent;
+    text-decoration: underline;
+    margin-top: 10px;
+    cursor: pointer;
+    margin-right: 0;
+    padding:0;
+    color: black;
+}
+
+#returnHomeBtn:hover{
+    color:rgb(145, 97, 218);
 }
 
 #signUpBtn{
