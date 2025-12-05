@@ -1,0 +1,55 @@
+name: Deploy React App to Ubuntu
+
+on:
+  push:
+    branches: cicd
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test -- --coverage --watchAll=false
+    
+    - name: Build React app
+      run: npm run build
+      env:
+        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+    
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /var/www/html
+          rm -rf *
+          # Files will be uploaded via rsync
+    
+    - name: Upload files
+      run: |
+        rsync -avz --delete ./build/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/www/html/
+    
+    - name: Restart Nginx
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          sudo systemctl reload nginx
