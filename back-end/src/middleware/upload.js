@@ -12,12 +12,12 @@ const storage = multer.diskStorage({
     // Use absolute path from project root
     const projectRoot = path.resolve(__dirname, "../../..");
     const uploadDir = path.join(projectRoot, "back-end", "uploads", "profiles");
-    
+
     // Ensure directory exists
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
-    
+
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {

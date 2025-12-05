@@ -2,7 +2,6 @@ import TranslationLog from "../models/TranslationLog.js";
 import MeetingRoom from "../models/MeetingRoom.js";
 
 export const getTranslationLog = async (req, res) => {
-
   try {
     // for unit testing -> delete later when not using mock data
     if (req.forceError) {
