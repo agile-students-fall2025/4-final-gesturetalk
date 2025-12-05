@@ -33,7 +33,7 @@ const TranslationLog = () => {
         });
 
         setUserColors(newColorMap);
-    }, [logData]);
+    }, [logData, COLOR_CLASSES]);
 
 
     // use effect to fetch meeting infromation by meetingId
@@ -60,7 +60,7 @@ const TranslationLog = () => {
             }
         }
         getTranslationLog();
-    }, []);
+    });
 
     return (
         <div className="translation-log">
