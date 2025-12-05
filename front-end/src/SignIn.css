@@ -91,6 +91,21 @@ button:hover{
     background-color: rgb(145, 97, 218);
 }
 
+#signup-link{
+    background-color: transparent;
+    text-decoration: underline;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    padding-top: 0;
+    padding-bottom: 0;
+    color: black;
+}
+
+#signup-link:hover{
+    color:rgb(145, 97, 218);
+}
+
 @media (max-width: 800px){
     img{
         width: 80%;
