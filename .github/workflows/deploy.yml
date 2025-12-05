@@ -17,8 +17,8 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: "./front-end/package-lock.json"
+        # cache: 'npm'
+        # cache-dependency-path: "./front-end/package-lock.json"
     
     - name: Install frontend dependencies
       working-directory: ./front-end
