@@ -14,7 +14,6 @@ const TranslationLog = () => {
     const token = localStorage.getItem("authToken")
     const baseURL = `${process.env.REACT_APP_API_URL}/api`
     const [userColors, setUserColors] = useState({});
-    const COLOR_CLASSES = ["color1", "color2", "color3", "color4", "color5"];
 
     useEffect(() => {
         if (!currentUser) {
@@ -25,6 +24,7 @@ const TranslationLog = () => {
     useEffect(() => {
         if (logData.length === 0) return;
 
+        const COLOR_CLASSES = ["color1", "color2", "color3", "color4", "color5"];
         const uniqueUsers = [...new Set(logData.map(entry => entry.user))];
 
         const newColorMap = {};
@@ -33,7 +33,7 @@ const TranslationLog = () => {
         });
 
         setUserColors(newColorMap);
-    }, [logData, COLOR_CLASSES]);
+    }, [logData]);
 
 
     // use effect to fetch meeting infromation by meetingId
@@ -60,7 +60,7 @@ const TranslationLog = () => {
             }
         }
         getTranslationLog();
-    });
+    }, [meetingId, baseURL, token]);
 
     return (
         <div className="translation-log">

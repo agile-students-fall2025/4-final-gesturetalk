@@ -62,7 +62,7 @@ function SignUp(){
                 {error && <div style={{color:'red', fontSize:12}}>{error}</div>}
                 <button id="signUpBtn" type='submit' disabled={loading}>{loading? 'Creating...':'Create Account'}</button>
             </form>
-            <a id='returnHomeBtn' onClick={toSignIn}>&lt;  Return to Sign In</a>
+            <button id='returnHomeBtn' type="button" onClick={toSignIn}>&lt;  Return to Sign In</button>
         </div>
     )
 
