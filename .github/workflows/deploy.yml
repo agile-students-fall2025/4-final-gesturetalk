@@ -18,14 +18,17 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+        cache-dependency-path: ./frontend/package-lock.json
     
-    - name: Install dependencies
+    - name: Install frontend dependencies
+      working-directory: ./front-end/package-lock.json
       run: npm install
     
     - name: Run tests
       run: npm test -- --coverage --watchAll=false
     
     - name: Build React app
+      working-directory: ./front-end
       run: npm run build
       env:
         REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
@@ -41,7 +44,7 @@ jobs:
           rm -rf *
           # Files will be uploaded via rsync
     
-    - name: Upload files
+    - name: Upload front-end files
       run: |
         rsync -avz --delete ./build/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/www/html/
     
@@ -53,3 +56,17 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           sudo systemctl reload nginx
+
+    - name: Deploy Backend
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          # Navigate to backend directory on server
+          cd /var/www/backend
+          git pull
+          npm install
+          pm2 restart --update-env
+          pm2 save
