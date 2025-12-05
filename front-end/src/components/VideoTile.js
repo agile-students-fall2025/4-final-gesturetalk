@@ -52,6 +52,7 @@ function getGlobalHands(HandsCtor) {
       modelComplexity: 1,
       minDetectionConfidence: 0.6,
       minTrackingConfidence: 0.6,
+      selfieMode: true,
     });
     window.__aslHandsInstance = hands;
   }
@@ -89,8 +90,10 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
   const ctxRef = useRef(null);
   const seqRef = useRef([]);
   const historyRef = useRef([]);
-  const cameraRef = useRef(null);
+  const frameReqRef = useRef(null);
+  const processingRef = useRef(false);
   const noHandsTimerRef = useRef(null);
+  const removeLoadedListenerRef = useRef(null);
 
   function pushAndSmooth(label, score, windowSize = 5) {
     const buf = historyRef.current;
@@ -126,7 +129,7 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
       await Promise.all([loadMediapipeFromCDN(), loadASLModel()]);
       if (cancelled) return;
 
-      const { Hands, Camera, drawConnectors, drawLandmarks } =
+      const { Hands, drawConnectors, drawLandmarks } =
         await loadMediapipeFromCDN();
 
       if (canvasEl) {
@@ -170,9 +173,6 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
 
         ctx.save();
         ctx.clearRect(0, 0, w, h);
-        if (results.image) {
-          ctx.drawImage(results.image, 0, 0, w, h);
-        }
 
         if (results.multiHandLandmarks && results.multiHandLandmarks.length) {
           for (const lm of results.multiHandLandmarks) {
@@ -262,7 +262,7 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
           });
         }
 
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
         ctx.fillRect(0, 0, 350, 45);
         ctx.fillStyle = "white";
         ctx.font = "28px Arial";
@@ -273,17 +273,47 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
         );
       });
 
-      const camera = new Camera(videoEl, {
-        onFrame: async () => {
-          if (cancelled) return;
-          await hands.send({ image: videoEl });
-        },
-        width: 640,
-        height: 480,
-      });
+      const startLoop = () => {
+        if (!videoEl) return;
+        if (frameReqRef.current) {
+          cancelAnimationFrame(frameReqRef.current);
+        }
 
-      cameraRef.current = camera;
-      camera.start();
+        const loop = () => {
+          if (cancelled) return;
+
+          if (!processingRef.current && videoEl.readyState >= 2) {
+            processingRef.current = true;
+            hands
+              .send({ image: videoEl })
+              .catch((err) => console.error("MediaPipe send error:", err))
+              .finally(() => {
+                processingRef.current = false;
+              });
+          }
+
+          if (!cancelled) {
+            frameReqRef.current = requestAnimationFrame(loop);
+          }
+        };
+
+        loop();
+      };
+
+      if (videoEl?.readyState >= 2) {
+        startLoop();
+      } else if (videoEl) {
+        const onLoadedData = () => {
+          if (cancelled) return;
+          videoEl.removeEventListener("loadeddata", onLoadedData);
+          removeLoadedListenerRef.current = null;
+          startLoop();
+        };
+        removeLoadedListenerRef.current = () => {
+          videoEl.removeEventListener("loadeddata", onLoadedData);
+        };
+        videoEl.addEventListener("loadeddata", onLoadedData);
+      }
     }
 
     if (enabled) {
@@ -295,20 +325,22 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
       historyRef.current = [];
       seqRef.current = [];
       
-      // ✅ Clear timer on cleanup
       if (noHandsTimerRef.current) {
         clearTimeout(noHandsTimerRef.current);
         noHandsTimerRef.current = null;
       }
 
-      if (cameraRef.current && cameraRef.current.stop) {
-        try {
-          cameraRef.current.stop();
-        } catch (e) {
-          console.warn("Camera stop error:", e);
-        }
+      if (frameReqRef.current) {
+        cancelAnimationFrame(frameReqRef.current);
+        frameReqRef.current = null;
       }
-      cameraRef.current = null;
+      processingRef.current = false;
+
+      if (removeLoadedListenerRef.current) {
+        removeLoadedListenerRef.current();
+        removeLoadedListenerRef.current = null;
+      }
+
       ctxRef.current = null;
     };
   }, [enabled, videoEl, canvasEl, onGesture, onNoHandsDetected]);
@@ -551,8 +583,11 @@ export default function VideoTile(props) {
             <canvas
               ref={canvasRef}
               className="tile-overlay"
-              style={{ opacity: props.gestureOn ? 1 : 0 , transform: props.isLocal ? "scaleX(-1)" : "none",
-            }}
+              style={{
+                opacity: props.gestureOn ? 1 : 0,
+                transform: props.isLocal ? "scaleX(-1)" : "none",
+                pointerEvents: "none",
+              }}
               width={640}
               height={480}
             />
