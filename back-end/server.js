@@ -93,7 +93,7 @@ app.post("/api/translate", auth, translateValidation, async (req, res) => {
     });
 
     console.log(`✅ Translation log saved for meeting ${meetingId}`);
-
+    // eslint-disable-next-line no-use-before-define
     io.to(meetingId).emit("new-translation", {
       userName: userName || "Guest",
       sentence,

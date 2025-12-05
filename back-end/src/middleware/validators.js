@@ -7,6 +7,8 @@ export const validate = (req, res, next) => {
     return res.status(400).json({ ok: false, errors: errors.array() });
   }
   next();
+  // eslint-disable-next-line no-useless-return, consistent-return
+  return;
 };
 
 // Auth validators
