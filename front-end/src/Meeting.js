@@ -67,19 +67,9 @@ function Meeting() {
   useEffect(() => {
     let cancelled = false;
 
-    if (!navigator.mediaDevices.__patched) {
-      const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
-      navigator.mediaDevices.getUserMedia = async (...args) => {
-        console.trace("getUserMedia called", args);
-        const stream = await orig(...args);
-        console.log("stream id", stream.id, stream.getTracks().map(t => t.id));
-        return stream;
-      };
-      navigator.mediaDevices.__patched = true;
-    }
-
     socketRef.current = io(process.env.REACT_APP_API_URL, { transports: ["websocket"] });
     const socket = socketRef.current;
+    const streamsSet = createdStreamsRef.current;
 
     async function startMedia() {
       try {
@@ -88,11 +78,11 @@ function Meeting() {
           audio: true,
         });
 
-        createdStreamsRef.current.add(stream);
+        streamsSet.add(stream);
 
         if (cancelled) {
           stopStreamTracks(stream);
-          createdStreamsRef.current.delete(stream);
+          streamsSet.delete(stream);
           return;
         }
 
@@ -181,8 +171,8 @@ function Meeting() {
         localStreamRef.current = null;
       }
 
-      createdStreamsRef.current.forEach((stream) => stopStreamTracks(stream));
-      createdStreamsRef.current.clear();
+      streamsSet.forEach((stream) => stopStreamTracks(stream));
+      streamsSet.clear();
     };
   }, [meetingId, currentUser]);
 
