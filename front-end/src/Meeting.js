@@ -31,6 +31,16 @@ function Meeting() {
   const socketRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const localStreamRef = useRef(null);
+  const createdStreamsRef = useRef(new Set());
+
+  const stopStreamTracks = (stream) => {
+    if (!stream) return;
+    stream.getTracks().forEach((track) => {
+      if (track.readyState !== "ended") {
+        track.stop();
+      }
+    });
+  };
 
   // ---- State ----
   const [micOn, setMicOn] = useState(true);
@@ -55,8 +65,11 @@ function Meeting() {
 
   // ---- Initialize socket & media ----
   useEffect(() => {
+    let cancelled = false;
+
     socketRef.current = io(process.env.REACT_APP_API_URL, { transports: ["websocket"] });
     const socket = socketRef.current;
+    const streamsSet = createdStreamsRef.current;
 
     async function startMedia() {
       try {
@@ -64,9 +77,17 @@ function Meeting() {
           video: { facingMode: "user", width: 640, height: 360 },
           audio: true,
         });
+
+        streamsSet.add(stream);
+
+        if (cancelled) {
+          stopStreamTracks(stream);
+          streamsSet.delete(stream);
+          return;
+        }
+
         localStreamRef.current = stream;
         setLocalStream(stream);
-
         const userPicture = currentUser?.picture || "/profile.svg";
         setParticipants([{ id: socket.id, isLocal: true, stream, picture: userPicture }]);
 
@@ -136,11 +157,22 @@ function Meeting() {
     });
 
     return () => {
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((t) => t.stop());
+      cancelled = true;
+
+      if (socket) {
+        socket.disconnect();
       }
-      if (socket) socket.disconnect();
+
       Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+      peerConnectionsRef.current = {};
+
+      if (localStreamRef.current) {
+        stopStreamTracks(localStreamRef.current);
+        localStreamRef.current = null;
+      }
+
+      streamsSet.forEach((stream) => stopStreamTracks(stream));
+      streamsSet.clear();
     };
   }, [meetingId, currentUser]);
 
@@ -282,16 +314,41 @@ function Meeting() {
   const handleToggleGesture = () => setGestureOn((g) => !g);
 
   const handleEndCall = () => {
-    Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+    Object.entries(peerConnectionsRef.current).forEach(([peerId, pc]) => {
+      pc.getSenders().forEach((sender) => {
+        if (sender.track && sender.track.readyState !== "ended") {
+          sender.track.stop();
+        }
+      });
+      pc.getReceivers().forEach((receiver) => {
+        if (receiver.track && receiver.track.readyState !== "ended") {
+          receiver.track.stop();
+        }
+      });
+      pc.getTransceivers().forEach((transceiver) => {
+        if (typeof transceiver.stop === "function") {
+          transceiver.stop();
+        }
+      });
+      pc.close();
+      delete peerConnectionsRef.current[peerId];
+    });
     peerConnectionsRef.current = {};
 
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((t) => t.stop());
-      localStreamRef.current = null;
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
     }
 
+    createdStreamsRef.current.forEach((stream) => stopStreamTracks(stream));
+    createdStreamsRef.current.clear();
+    localStreamRef.current = null;
+
+    setLocalStream(null);
+    setParticipants([]);
     setCamOn(false);
-    
+    setMicOn(false);
+
     navigate("/home");
   };
   /*
@@ -300,6 +357,11 @@ function Meeting() {
     appendMessage("You", sentence, "pink");
   };
   */
+
+  useEffect(() => {
+    window.__meeting = { localStreamRef };
+    return () => { delete window.__meeting; };
+  }, []);
 
   return (
     <div id="page-content">
