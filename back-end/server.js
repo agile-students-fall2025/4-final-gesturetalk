@@ -212,7 +212,7 @@ io.on("connection", (socket) => {
 });
 
 // ---- Error middleware ----
-
+// eslint-disable-next-line no-unused-vars
 function error(err, req, res, next) {
   console.error(err.stack);
   if (res && typeof res.status === "function") {
