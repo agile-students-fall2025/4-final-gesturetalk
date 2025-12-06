@@ -609,16 +609,22 @@ export default function VideoTile(props) {
               height={480}
             />
           </>
-        ) : hasStream && !cameraOn && props.picture ? (
+        ) : hasStream && !cameraOn ? (
           <div
-            className="placeholder"
+            className="placeholder placeholder-profile"
             style={{
-              background: '#f0f0f0',
-              backgroundImage: `url(${props.picture})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
+              backgroundImage: props.picture ? `url(${props.picture})` : undefined,
             }}
-          />
+          >
+            <div className="placeholder-gloss" />
+            <div className="placeholder-avatar">
+              {props.picture ? (
+                <img src={props.picture} alt="Profile" />
+              ) : (
+                <IconUser />
+              )}
+            </div>
+          </div>
         ) : (
           <div className="placeholder">
             <IconUser />
