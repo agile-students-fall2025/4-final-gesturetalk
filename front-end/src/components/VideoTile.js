@@ -4,6 +4,8 @@ import * as tf from "@tensorflow/tfjs";
 import { useContext } from "react";
 import  UserContext from "../contexts/UserContext";
 
+const DEFAULT_PROFILE_IMAGE = `${process.env.PUBLIC_URL || ""}/defaultPFP.png`;
+
 // =========================
 //  MediaPipe loader (CDN)
 // =========================
@@ -379,6 +381,8 @@ export default function VideoTile(props) {
   const canvasRef = useRef(null);
   const [gesture, setGesture] = useState(null);
   const { currentUser } = useContext(UserContext);
+  const profileImage =
+    props.picture && props.picture.trim() ? props.picture : DEFAULT_PROFILE_IMAGE;
 
   const [signedWords, setSignedWords] = useState([]);
   const [translatedSentence, setTranslatedSentence] = useState('');
@@ -612,21 +616,24 @@ export default function VideoTile(props) {
         ) : hasStream && !cameraOn ? (
           <div
             className="placeholder placeholder-profile"
-            style={
-              props.picture
-                ? {
-                    background: `url(${props.picture}) center/cover no-repeat`,
-                  }
-                : undefined
-            }
+            style={{
+              backgroundImage: `url("${profileImage}")`,
+              backgroundPosition: "center",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
+            }}
           >
             <div className="placeholder-gloss" />
             <div className="placeholder-avatar">
-              {props.picture ? (
-                <img src={props.picture} alt="Profile" />
-              ) : (
-                <IconUser />
-              )}
+              <img
+                src={profileImage}
+                alt="Profile"
+                onError={(e) => {
+                  if (e.currentTarget.src !== DEFAULT_PROFILE_IMAGE) {
+                    e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
+                  }
+                }}
+              />
             </div>
           </div>
         ) : (
