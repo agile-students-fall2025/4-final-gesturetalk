@@ -125,15 +125,23 @@ function Meeting() {
     baseStream.addTrack(videoTrack);
 
     Object.values(peerConnectionsRef.current).forEach((pc) => {
-      const sender = pc
-        .getSenders()
-        .find((s) => s.track && s.track.kind === "video");
+      let sender = pc.__shuwaLocalVideoSender;
+      if (!sender) {
+        sender = pc
+          .getSenders()
+          .find((s) => s.track && s.track.kind === "video");
+        if (sender) {
+          pc.__shuwaLocalVideoSender = sender;
+        }
+      }
+
       if (sender) {
         sender.replaceTrack(videoTrack).catch((err) => {
           console.warn("replaceTrack failed", err);
         });
       } else {
-        pc.addTrack(videoTrack, baseStream);
+        const newSender = pc.addTrack(videoTrack, baseStream);
+        pc.__shuwaLocalVideoSender = newSender;
       }
     });
 
@@ -309,7 +317,10 @@ function Meeting() {
 
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => {
-          pc.addTrack(track, localStreamRef.current);
+          const sender = pc.addTrack(track, localStreamRef.current);
+          if (track.kind === "video") {
+            pc.__shuwaLocalVideoSender = sender;
+          }
         });
       }
 
@@ -356,7 +367,10 @@ function Meeting() {
 
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => {
-          pc.addTrack(track, localStreamRef.current);
+          const sender = pc.addTrack(track, localStreamRef.current);
+          if (track.kind === "video") {
+            pc.__shuwaLocalVideoSender = sender;
+          }
         });
       }
 
