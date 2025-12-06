@@ -31,12 +31,13 @@ p, input, a {
 }
 
 #sub{
-    margin-top: 10%;
+    margin-top: 12%;
     font-size: 20px;
 }
 
 img{
-    margin-top: 10%;
+    margin-top: 8%;
+    width: 35%;
 }
 
 #hook{
