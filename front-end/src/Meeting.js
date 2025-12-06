@@ -275,7 +275,7 @@ function Meeting() {
       streamsSet.forEach((stream) => stopStreamTracks(stream));
       streamsSet.clear();
     };
-  }, [meetingId, currentUser]);
+  }, [meetingId, currentUser, stopStreamTracks]);
 
   // ---- WebRTC functions ----
   async function makeCall(peerId) {
@@ -399,12 +399,6 @@ function Meeting() {
   // ---- Camera/Mic toggles ----
   useEffect(() => {
     if (!localStream) return;
-    const vTracks = localStream.getVideoTracks();
-    vTracks.forEach((t) => (t.enabled = camOn));
-  }, [camOn, localStream]);
-
-  useEffect(() => {
-    if (!localStream) return;
     const aTracks = localStream.getAudioTracks();
     aTracks.forEach((t) => (t.enabled = micOn));
   }, [micOn, localStream]);
@@ -474,7 +468,7 @@ function Meeting() {
     }
 
     enableCamera();
-  }, [camOn, disableCamera, enableCamera]);
+  }, [camOn, localStream, disableCamera, enableCamera]);
 
   return (
     <div id="page-content">
