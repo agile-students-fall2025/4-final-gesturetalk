@@ -93,13 +93,13 @@ app.post("/api/translate", auth, translateValidation, async (req, res) => {
     });
 
     console.log(`✅ Translation log saved for meeting ${meetingId}`);
-
+    // eslint-disable-next-line no-use-before-define
     io.to(meetingId).emit("new-translation", {
       userName: userName || "Guest",
       sentence,
       timestamp: new Date().toISOString(),
     });
-    
+
     res.json({ sentence });
   } catch (err) {
     console.error("Translation error:", err);
@@ -148,7 +148,7 @@ io.on("connection", (socket) => {
     const roomID = meetingId;
     peers[socket.id] = roomID;
     socket.join(roomID);
-    
+
     // User join room, increment count
     // Emit as object (front-end expects data.socketId)
     socket.to(roomID).emit("user-joined", { socketId: socket.id });
@@ -215,7 +215,7 @@ io.on("connection", (socket) => {
 
 function error(err, req, res, next) {
   console.error(err.stack);
-  if (res && typeof res.status === 'function') {
+  if (res && typeof res.status === "function") {
     res.status(500).json({ ok: false, error: "Internal Server Error" });
   }
 }

@@ -7,6 +7,8 @@ export const validate = (req, res, next) => {
     return res.status(400).json({ ok: false, errors: errors.array() });
   }
   next();
+  // eslint-disable-next-line no-useless-return, consistent-return
+  return;
 };
 
 // Auth validators
@@ -46,10 +48,7 @@ export const googleSignInValidation = [
 
 export const updatePasswordValidation = [
   body("userId").trim().notEmpty().withMessage("User ID is required"),
-  body("oldPassword")
-    .trim()
-    .notEmpty()
-    .withMessage("Old password is required"),
+  body("oldPassword").trim().notEmpty().withMessage("Old password is required"),
   body("newPassword")
     .trim()
     .isLength({ min: 6 })
@@ -79,7 +78,9 @@ export const createMeetingValidation = [
     .isLength({ min: 3, max: 50 })
     .withMessage("Meeting code must be between 3 and 50 characters")
     .matches(/^[a-zA-Z0-9_-]+$/)
-    .withMessage("Meeting code can only contain letters, numbers, hyphens, and underscores"),
+    .withMessage(
+      "Meeting code can only contain letters, numbers, hyphens, and underscores",
+    ),
   validate,
 ];
 

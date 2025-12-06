@@ -1,9 +1,12 @@
 // train4-5.js  (hand-only LSTM with wrist-centered normalization + class weight for "name")
-
+// eslint-disable-next-line no-undef, import/no-unresolved
 const tf = require("@tensorflow/tfjs-node");
+// eslint-disable-next-line no-undef
 const fs = require("fs");
+// eslint-disable-next-line no-undef
 const path = require("path");
 
+// eslint-disable-next-line no-undef
 const DATA_DIR = path.join(__dirname, "data");
 const SEQ_LENGTH = 30;
 const HAND_DIM = 126; // 21 landmarks * 3 coords * 2 hands
@@ -27,9 +30,7 @@ function loadDataset() {
     files.forEach((file) => {
       if (!file.endsWith(".json")) return;
 
-      const seq = JSON.parse(
-        fs.readFileSync(path.join(DATA_DIR, label, file))
-      );
+      const seq = JSON.parse(fs.readFileSync(path.join(DATA_DIR, label, file)));
 
       X.push(seq);
       y.push(idx);
@@ -66,9 +67,11 @@ function normalizeHandFrame(frame126) {
     let y = frame126[i + 1];
     let z = frame126[i + 2];
 
+    /* eslint-disable no-restricted-globals */
     if (!isFinite(x)) x = 0;
     if (!isFinite(y)) y = 0;
     if (!isFinite(z)) z = 0;
+    /* eslint-enable no-restricted-globals */
 
     out.push(x - wristX);
     out.push(y - wristY);
@@ -94,7 +97,6 @@ function padSequence(seq) {
   return cleaned;
 }
 
-
 // --------------------------------------------------
 // 6. Build LSTM model
 // --------------------------------------------------
@@ -106,7 +108,7 @@ function buildModel(numClasses) {
       units: 256,
       returnSequences: true,
       inputShape: [SEQ_LENGTH, HAND_DIM],
-    })
+    }),
   );
   model.add(tf.layers.dropout({ rate: 0.3 }));
 
@@ -142,6 +144,7 @@ async function main() {
 
   // class counts
   const counts = new Array(labels.length).fill(0);
+  // eslint-disable-next-line no-plusplus
   y.forEach((c) => counts[c]++);
   console.log("Class counts:");
   labels.forEach((lab, i) => {
@@ -162,6 +165,7 @@ async function main() {
   // Apply padding + wrist-centered normalization
   const padded = X.map(padSequence); // shape: [N, 30, 126]
 
+  // eslint-disable-next-line no-undef
   const { trainX, trainY, testX, testY } = stratifiedSplit(padded, y, 0.1);
 
   const trainTensor = tf.tensor3d(trainX);

@@ -41,19 +41,7 @@ function Meeting() {
 
   // ---- Translation log (remove initial dummy messages if you want) ----
   const [messages, setMessages] = useState([]);
-
-  const appendMessage = (who, text, color = "indigo") => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: prev.length ? prev[prev.length - 1].id + 1 : 1,
-        who,
-        t: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-        text,
-        color,
-      },
-    ]);
-  };
+  // Translation messages state; append helper removed because it was unused.
 
    // ---- Update local participant picture when currentUser changes ----
   useEffect(() => {
@@ -328,7 +316,7 @@ function Meeting() {
                     picture={p.picture}
                     isLocal={p.isLocal}
                     gestureOn={gestureOn}
-                    cameraOn={camOn}
+                    cameraOn={p.isLocal ? camOn : undefined}
                     badgeText={p.isLocal ? "You" : "Participant"}
                     meetingId={meetingId} 
                     /// onTranslatedSentence={handleTranslatedSentence} // Pass callback

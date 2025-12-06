@@ -1,1 +1,4 @@
 automations/
+tfjstraining/
+back-end/tests/getCallHistory.test.js
+back-end/tests/getTranslationLog.test.js

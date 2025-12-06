@@ -6,11 +6,11 @@
 # Team Members
 | Name | Sprint 0 | Sprint 1 |  Sprint 2 | Sprint 3 |  Sprint 4 |
 | :------- | :------: | -------: | -------: | -------: |  -------: |
-| [Iva Park](https://github.com/ivapark)  | --- | Product Owner |  ---  | ---  | --- |
+| [Iva Park](https://github.com/ivapark)  | --- | Product Owner |  ---  | ---  | Scrum Master |
 | [Jasmine Fan](https://github.com/jasmine7310)  | Product Owner  | ---  |  ---  | Scrum Master  | --- |
 | [Terry Cao](https://github.com/cao-exe)  | Scrum Master  |   ---  | Product Owner  | --- | --- |
 | [Walker Tupman](https://github.com/bestole)  | ---  | Scrum Master |  ---  | Product Owner | --- |
-| [Venetia Liu](https://github.com/venetialiu)  | ---  | ---  | Scrum Master  | ---  | --- |
+| [Venetia Liu](https://github.com/venetialiu)  | ---  | ---  | Scrum Master  | ---  | Product Owner |
 
 # Project History
 - Shuwa came to be through the Agile Software Development & DevOps class for Fall 2025. Our team completed a project proposal to work on for the entire semester, the outcome of that being Shuwa. We also wanted to build a sign language interpreter for the sake of accessibility. A person who understands sign language and can readily translate it is not always available. So, by usingShuwa, anyone can translate sign language to text.
@@ -30,7 +30,7 @@
 ``` npm install ```
 
  Before starting create a .env in the front-end folder with the following:
- ``` REACT_APP_API_URL=http://localhost:5001/ ```
+ ``` REACT_APP_API_URL=http://localhost:5001 ```
  
  run npm start to run the React.js server:
 
@@ -54,7 +54,7 @@ OPENROUTER_MODEL=openai/gpt-oss-20b:free
 OPENROUTER_API_KEY=[API key]
 MONGODB_URI=[MongoDB Atlas Cluster]
 PORT=5001
-SERVER_URL=http://localhost:3000/
+SERVER_URL=http://localhost:5001
 JWT_SECRET=[JWT key]
 JWT_EXPIRES_IN=7d
 CORS_ORIGIN=http://localhost:3000

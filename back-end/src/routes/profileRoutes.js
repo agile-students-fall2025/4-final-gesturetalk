@@ -9,7 +9,7 @@ router.post(
   "/upload",
   upload.single("picture"),
   uploadProfilePictureValidation,
-  uploadProfilePicture
+  uploadProfilePicture,
 );
 
 export default router;
