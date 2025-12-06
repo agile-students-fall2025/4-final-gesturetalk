@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
 import VideoTile from "./components/VideoTile";
 import ControlsBar from "./components/ControlsBar";
 import TranslationFeed from "./components/TranslationFeed";
@@ -33,14 +33,115 @@ function Meeting() {
   const localStreamRef = useRef(null);
   const createdStreamsRef = useRef(new Set());
 
-  const stopStreamTracks = (stream) => {
+  const stopStreamTracks = useCallback((stream) => {
     if (!stream) return;
     stream.getTracks().forEach((track) => {
       if (track.readyState !== "ended") {
         track.stop();
       }
     });
-  };
+  }, []);
+
+  const disableCamera = useCallback(() => {
+    const baseStream = localStreamRef.current;
+    if (!baseStream) return;
+
+    const videoTracks = baseStream.getVideoTracks();
+    if (!videoTracks.length) return;
+
+    const trackIds = new Set(videoTracks.map((track) => track.id));
+
+    Object.values(peerConnectionsRef.current).forEach((pc) => {
+      pc.getSenders().forEach((sender) => {
+        const senderTrack = sender.track;
+        if (senderTrack && trackIds.has(senderTrack.id)) {
+          sender
+            .replaceTrack(null)
+            .catch((err) => console.warn("replaceTrack(null) failed", err));
+        }
+      });
+    });
+
+    videoTracks.forEach((track) => {
+      baseStream.removeTrack(track);
+      if (track.readyState !== "ended") {
+        track.stop();
+      }
+    });
+
+    const toRemove = [];
+    createdStreamsRef.current.forEach((stream) => {
+      if (stream === baseStream) return;
+      const sharesTrack = stream
+        .getTracks()
+        .some((track) => trackIds.has(track.id));
+      if (sharesTrack) {
+        toRemove.push(stream);
+      }
+    });
+    toRemove.forEach((stream) => {
+      stopStreamTracks(stream);
+      createdStreamsRef.current.delete(stream);
+    });
+  }, [stopStreamTracks]);
+
+  const enableCamera = useCallback(async () => {
+    const baseStream = localStreamRef.current;
+    if (!baseStream) return;
+
+    const liveTrack = baseStream
+      .getVideoTracks()
+      .find((track) => track.readyState === "live");
+
+    if (liveTrack) {
+      if (!liveTrack.enabled) {
+        liveTrack.enabled = true;
+      }
+      return;
+    }
+
+    let videoStream;
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: 640, height: 360 },
+        audio: false,
+      });
+    } catch (err) {
+      console.error("Failed to acquire video stream", err);
+      setCamOn(false);
+      return;
+    }
+
+    createdStreamsRef.current.add(videoStream);
+
+    const [videoTrack] = videoStream.getVideoTracks();
+    if (!videoTrack) {
+      stopStreamTracks(videoStream);
+      createdStreamsRef.current.delete(videoStream);
+      setCamOn(false);
+      return;
+    }
+
+    baseStream.addTrack(videoTrack);
+
+    Object.values(peerConnectionsRef.current).forEach((pc) => {
+      const sender = pc
+        .getSenders()
+        .find((s) => s.track && s.track.kind === "video");
+      if (sender) {
+        sender.replaceTrack(videoTrack).catch((err) => {
+          console.warn("replaceTrack failed", err);
+        });
+      } else {
+        pc.addTrack(videoTrack, baseStream);
+      }
+    });
+
+    videoTrack.addEventListener("ended", () => {
+      createdStreamsRef.current.delete(videoStream);
+      setCamOn(false);
+    });
+  }, [stopStreamTracks]);
 
   // ---- State ----
   const [micOn, setMicOn] = useState(true);
@@ -362,6 +463,18 @@ function Meeting() {
     window.__meeting = { localStreamRef };
     return () => { delete window.__meeting; };
   }, []);
+
+  useEffect(() => {
+    const baseStream = localStreamRef.current;
+    if (!baseStream) return;
+
+    if (!camOn) {
+      disableCamera();
+      return;
+    }
+
+    enableCamera();
+  }, [camOn, disableCamera, enableCamera]);
 
   return (
     <div id="page-content">
