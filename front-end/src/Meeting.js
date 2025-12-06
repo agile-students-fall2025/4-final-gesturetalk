@@ -31,6 +31,19 @@ function Meeting() {
   const socketRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const localStreamRef = useRef(null);
+  const createdStreamsRef = useRef(new Set());
+
+  const stopStreamTracks = (stream, label = "") => {
+    if (!stream) return;
+    console.log("[stopStreamTracks]", label, "stream", stream.id);
+    stream.getTracks().forEach((track) => {
+      console.log("  before stop", track.kind, track.id, track.readyState);
+      if (track.readyState !== "ended") {
+        track.stop();
+      }
+      console.log("  after stop", track.kind, track.id, track.readyState);
+    });
+  };
 
   // ---- State ----
   const [micOn, setMicOn] = useState(true);
@@ -55,6 +68,19 @@ function Meeting() {
 
   // ---- Initialize socket & media ----
   useEffect(() => {
+    let cancelled = false;
+
+    if (!navigator.mediaDevices.__patched) {
+      const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      navigator.mediaDevices.getUserMedia = async (...args) => {
+        console.trace("getUserMedia called", args);
+        const stream = await orig(...args);
+        console.log("stream id", stream.id, stream.getTracks().map(t => t.id));
+        return stream;
+      };
+      navigator.mediaDevices.__patched = true;
+    }
+
     socketRef.current = io(process.env.REACT_APP_API_URL, { transports: ["websocket"] });
     const socket = socketRef.current;
 
@@ -64,9 +90,18 @@ function Meeting() {
           video: { facingMode: "user", width: 640, height: 360 },
           audio: true,
         });
+
+        console.log("[startMedia] got stream", stream.id, stream.getTracks().map((t) => `${t.kind}:${t.id}`));
+        createdStreamsRef.current.add(stream);
+
+        if (cancelled) {
+          stopStreamTracks(stream);
+          createdStreamsRef.current.delete(stream);
+          return;
+        }
+
         localStreamRef.current = stream;
         setLocalStream(stream);
-
         const userPicture = currentUser?.picture || "/profile.svg";
         setParticipants([{ id: socket.id, isLocal: true, stream, picture: userPicture }]);
 
@@ -136,11 +171,18 @@ function Meeting() {
     });
 
     return () => {
+      cancelled = true;
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((t) => t.stop());
+        localStreamRef.current = null;
       }
       if (socket) socket.disconnect();
       Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+      console.log("[useEffect cleanup] triggered");
+      stopStreamTracks(localStreamRef.current, "cleanup-local");
+      localStreamRef.current = null;
+      createdStreamsRef.current.forEach((stream) => stopStreamTracks(stream, "cleanup-created"));
+      createdStreamsRef.current.clear();
     };
   }, [meetingId, currentUser]);
 
@@ -282,16 +324,46 @@ function Meeting() {
   const handleToggleGesture = () => setGestureOn((g) => !g);
 
   const handleEndCall = () => {
-    Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+    Object.entries(peerConnectionsRef.current).forEach(([peerId, pc]) => {
+      pc.getSenders().forEach((sender) => {
+        const track = sender.track;
+        console.log("Stopping track for sender:", sender);
+        if (track && track.readyState !== "ended") {
+          track.stop();
+        }
+      });
+      pc.getReceivers().forEach((receiver) => {
+        const track = receiver.track;
+        console.log("Stopping track for receiver:", receiver);
+        if (track && track.readyState !== "ended") {
+          track.stop();
+        }
+      });
+      pc.getTransceivers().forEach((transceiver) => {
+        if (typeof transceiver.stop === "function") {
+          transceiver.stop();
+        }
+      });
+      pc.close();
+      delete peerConnectionsRef.current[peerId];
+    });
     peerConnectionsRef.current = {};
 
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((t) => t.stop());
-      localStreamRef.current = null;
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
     }
 
+    console.log("[handleEndCall] stopping created streams", createdStreamsRef.current.size);
+    createdStreamsRef.current.forEach((stream) => stopStreamTracks(stream, "handleEndCall"));
+    createdStreamsRef.current.clear();
+    localStreamRef.current = null;
+
+    setLocalStream(null);
+    setParticipants([]);
     setCamOn(false);
-    
+    setMicOn(false);
+
     navigate("/home");
   };
   /*
@@ -300,6 +372,11 @@ function Meeting() {
     appendMessage("You", sentence, "pink");
   };
   */
+
+  useEffect(() => {
+    window.__meeting = { localStreamRef };
+    return () => { delete window.__meeting; };
+  }, []);
 
   return (
     <div id="page-content">
