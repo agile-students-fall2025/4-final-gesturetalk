@@ -33,15 +33,12 @@ function Meeting() {
   const localStreamRef = useRef(null);
   const createdStreamsRef = useRef(new Set());
 
-  const stopStreamTracks = (stream, label = "") => {
+  const stopStreamTracks = (stream) => {
     if (!stream) return;
-    console.log("[stopStreamTracks]", label, "stream", stream.id);
     stream.getTracks().forEach((track) => {
-      console.log("  before stop", track.kind, track.id, track.readyState);
       if (track.readyState !== "ended") {
         track.stop();
       }
-      console.log("  after stop", track.kind, track.id, track.readyState);
     });
   };
 
@@ -91,7 +88,6 @@ function Meeting() {
           audio: true,
         });
 
-        console.log("[startMedia] got stream", stream.id, stream.getTracks().map((t) => `${t.kind}:${t.id}`));
         createdStreamsRef.current.add(stream);
 
         if (cancelled) {
@@ -172,16 +168,20 @@ function Meeting() {
 
     return () => {
       cancelled = true;
+
+      if (socket) {
+        socket.disconnect();
+      }
+
+      Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+      peerConnectionsRef.current = {};
+
       if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((t) => t.stop());
+        stopStreamTracks(localStreamRef.current);
         localStreamRef.current = null;
       }
-      if (socket) socket.disconnect();
-      Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
-      console.log("[useEffect cleanup] triggered");
-      stopStreamTracks(localStreamRef.current, "cleanup-local");
-      localStreamRef.current = null;
-      createdStreamsRef.current.forEach((stream) => stopStreamTracks(stream, "cleanup-created"));
+
+      createdStreamsRef.current.forEach((stream) => stopStreamTracks(stream));
       createdStreamsRef.current.clear();
     };
   }, [meetingId, currentUser]);
@@ -326,17 +326,13 @@ function Meeting() {
   const handleEndCall = () => {
     Object.entries(peerConnectionsRef.current).forEach(([peerId, pc]) => {
       pc.getSenders().forEach((sender) => {
-        const track = sender.track;
-        console.log("Stopping track for sender:", sender);
-        if (track && track.readyState !== "ended") {
-          track.stop();
+        if (sender.track && sender.track.readyState !== "ended") {
+          sender.track.stop();
         }
       });
       pc.getReceivers().forEach((receiver) => {
-        const track = receiver.track;
-        console.log("Stopping track for receiver:", receiver);
-        if (track && track.readyState !== "ended") {
-          track.stop();
+        if (receiver.track && receiver.track.readyState !== "ended") {
+          receiver.track.stop();
         }
       });
       pc.getTransceivers().forEach((transceiver) => {
@@ -354,8 +350,7 @@ function Meeting() {
       socketRef.current = null;
     }
 
-    console.log("[handleEndCall] stopping created streams", createdStreamsRef.current.size);
-    createdStreamsRef.current.forEach((stream) => stopStreamTracks(stream, "handleEndCall"));
+    createdStreamsRef.current.forEach((stream) => stopStreamTracks(stream));
     createdStreamsRef.current.clear();
     localStreamRef.current = null;
 
