@@ -43,20 +43,20 @@ function loadMediapipeFromCDN() {
 
 function getGlobalHands(HandsCtor) {
   if (!window.__aslHandsInstance) {
-    const hands = new HandsCtor({
+    window.__aslHandsInstance = new HandsCtor({
       locateFile: (file) =>
         `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`,
     });
-    hands.setOptions({
-      maxNumHands: 2,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.6,
-      minTrackingConfidence: 0.6,
-      selfieMode: true,
-    });
-    window.__aslHandsInstance = hands;
   }
-  return window.__aslHandsInstance;
+  const hands = window.__aslHandsInstance;
+  hands.setOptions({
+    maxNumHands: 2,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.6,
+    minTrackingConfidence: 0.6,
+    selfieMode: false,
+  });
+  return hands;
 }
 
 // =========================
@@ -94,6 +94,7 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
   const processingRef = useRef(false);
   const noHandsTimerRef = useRef(null);
   const removeLoadedListenerRef = useRef(null);
+  const hiddenCanvasRef = useRef(null); // ✅ Hidden canvas for processing
 
   function pushAndSmooth(label, score, windowSize = 5) {
     const buf = historyRef.current;
@@ -135,6 +136,13 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
       if (canvasEl) {
         ctxRef.current = canvasEl.getContext("2d");
       }
+
+      // ✅ Create hidden canvas for processing raw video
+      if (!hiddenCanvasRef.current) {
+        hiddenCanvasRef.current = document.createElement('canvas');
+      }
+      const hiddenCanvas = hiddenCanvasRef.current;
+      const hiddenCtx = hiddenCanvas.getContext('2d');
 
       const hands = getGlobalHands(Hands);
 
@@ -196,19 +204,17 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
           const seq = seqRef.current;
           if (seq.length > 0) seq.shift();
 
-          // ✅ Start timer when no hands detected
           if (!noHandsTimerRef.current) {
             noHandsTimerRef.current = setTimeout(() => {
               if (typeof onNoHandsDetected === 'function') {
                 onNoHandsDetected();
               }
               noHandsTimerRef.current = null;
-            }, 2000); // 2 seconds
+            }, 2000);
           }
           return;
         }
 
-        // ✅ Clear timer when hands are detected again
         if (noHandsTimerRef.current) {
           clearTimeout(noHandsTimerRef.current);
           noHandsTimerRef.current = null;
@@ -284,8 +290,17 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
 
           if (!processingRef.current && videoEl.readyState >= 2) {
             processingRef.current = true;
+            
+            // ✅ Draw raw (non-mirrored) video to hidden canvas
+            const w = videoEl.videoWidth || 640;
+            const h = videoEl.videoHeight || 480;
+            hiddenCanvas.width = w;
+            hiddenCanvas.height = h;
+            hiddenCtx.drawImage(videoEl, 0, 0, w, h);
+            
+            // ✅ Send the raw canvas image to MediaPipe
             hands
-              .send({ image: videoEl })
+              .send({ image: hiddenCanvas })
               .catch((err) => console.error("MediaPipe send error:", err))
               .finally(() => {
                 processingRef.current = false;
@@ -341,6 +356,8 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
         removeLoadedListenerRef.current = null;
       }
 
+      // ✅ Clean up hidden canvas
+      hiddenCanvasRef.current = null;
       ctxRef.current = null;
     };
   }, [enabled, videoEl, canvasEl, onGesture, onNoHandsDetected]);
