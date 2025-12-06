@@ -31,12 +31,13 @@ p, input, a {
 }
 
 #sub{
-    margin-top: 10%;
+    margin-top: 12%;
     font-size: 20px;
 }
 
 img{
-    margin-top: 10%;
+    margin-top: 8%;
+    width: 35%;
 }
 
 #hook{
@@ -89,6 +90,21 @@ a{
 
 button:hover{
     background-color: rgb(145, 97, 218);
+}
+
+#signup-link{
+    background-color: transparent;
+    text-decoration: underline;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    padding-top: 0;
+    padding-bottom: 0;
+    color: black;
+}
+
+#signup-link:hover{
+    color:rgb(145, 97, 218);
 }
 
 @media (max-width: 800px){

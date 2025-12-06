@@ -1,5 +1,8 @@
 # gesturetalk
 
+![CI/CD](https://github.com/agile-students-fall2025/4-final-gesturetalk/actions/workflows/deploy.yml/badge.svg)
+
+
 # Product Vision Statement
 - Shuwa is a live video conference app designed to translate sign language into summarized text during a meeting, recognizing short and simple signs through a web cam and display translated short summary captions.
 
