@@ -1,10 +1,10 @@
+version: "3.9"
+
 services:
   front-end:
     build: ./front-end
     container_name: front-end_container
     restart: always
-    ports: 
-    - "3000:80"
 
   back-end:
     build: ./back-end
@@ -12,17 +12,28 @@ services:
     restart: always
     env_file:
       - ./back-end/.env
-    ports: 
-    - "5001:5001"
+    expose:
+      - "5001"
 
   nginx:
     image: nginx:latest
     container_name: nginx_container
+    restart: always
     volumes:
-    - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
     ports:
-    - "80:80"
-    - "443:443"
+      - "80:80"
+      - "443:443"
     depends_on:
-    - front-end
-    - back-end
+      - front-end
+      - back-end
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 12h & wait $${!}; done;'"
