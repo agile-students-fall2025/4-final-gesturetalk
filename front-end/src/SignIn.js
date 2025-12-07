@@ -106,7 +106,7 @@ function SignIn(){
                                 <input type='password' placeholder='password' value={password} onChange={e=>setPassword(e.target.value)} />
                                 {error && <div style={{color:'red', fontSize:12}}>{error}</div>}
                                 <button onClick={handleEmailSignIn} disabled={loading}>{loading? 'Signing in...':'Sign in'}</button>
-                                <a onClick={toSignUp}>Getting started? Sign Up Here</a>
+                                <button type="button" className="link-button" onClick={toSignUp} id="signup-link">Getting started? Sign Up Here</button>
 
                                 <div style={{ marginTop: 12 }}>
                                     <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />

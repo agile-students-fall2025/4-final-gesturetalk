@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef, useCallback } from "react";
 import VideoTile from "./components/VideoTile";
 import ControlsBar from "./components/ControlsBar";
 import TranslationFeed from "./components/TranslationFeed";
@@ -13,7 +13,7 @@ const configuration = {
       urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
     },
   ],
-  iceCandidatePoolSize: 4,
+  iceCandidatePoolSize: 5,
 };
 
 function Meeting() {
@@ -21,14 +21,135 @@ function Meeting() {
   const { meetingId } = useParams();
   const { currentUser } = useContext(UserContext);
 
-  if (!currentUser) {
-    navigate("/");
-  } // user not signed in, redirect to sign in
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, navigate]);// user not signed in, redirect to sign in
 
   // ---- Socket & WebRTC state (use refs for persistence) ----
   const socketRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const localStreamRef = useRef(null);
+  const createdStreamsRef = useRef(new Set());
+
+  const stopStreamTracks = useCallback((stream) => {
+    if (!stream) return;
+    stream.getTracks().forEach((track) => {
+      if (track.readyState !== "ended") {
+        track.stop();
+      }
+    });
+  }, []);
+
+  const disableCamera = useCallback(() => {
+    const baseStream = localStreamRef.current;
+    if (!baseStream) return;
+
+    const videoTracks = baseStream.getVideoTracks();
+    if (!videoTracks.length) return;
+
+    const trackIds = new Set(videoTracks.map((track) => track.id));
+
+    Object.values(peerConnectionsRef.current).forEach((pc) => {
+      pc.getSenders().forEach((sender) => {
+        const senderTrack = sender.track;
+        if (senderTrack && trackIds.has(senderTrack.id)) {
+          sender
+            .replaceTrack(null)
+            .catch((err) => console.warn("replaceTrack(null) failed", err));
+        }
+      });
+    });
+
+    videoTracks.forEach((track) => {
+      baseStream.removeTrack(track);
+      if (track.readyState !== "ended") {
+        track.stop();
+      }
+    });
+
+    const toRemove = [];
+    createdStreamsRef.current.forEach((stream) => {
+      if (stream === baseStream) return;
+      const sharesTrack = stream
+        .getTracks()
+        .some((track) => trackIds.has(track.id));
+      if (sharesTrack) {
+        toRemove.push(stream);
+      }
+    });
+    toRemove.forEach((stream) => {
+      stopStreamTracks(stream);
+      createdStreamsRef.current.delete(stream);
+    });
+  }, [stopStreamTracks]);
+
+  const enableCamera = useCallback(async () => {
+    const baseStream = localStreamRef.current;
+    if (!baseStream) return;
+
+    const liveTrack = baseStream
+      .getVideoTracks()
+      .find((track) => track.readyState === "live");
+
+    if (liveTrack) {
+      if (!liveTrack.enabled) {
+        liveTrack.enabled = true;
+      }
+      return;
+    }
+
+    let videoStream;
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: 640, height: 360 },
+        audio: false,
+      });
+    } catch (err) {
+      console.error("Failed to acquire video stream", err);
+      setCamOn(false);
+      return;
+    }
+
+    createdStreamsRef.current.add(videoStream);
+
+    const [videoTrack] = videoStream.getVideoTracks();
+    if (!videoTrack) {
+      stopStreamTracks(videoStream);
+      createdStreamsRef.current.delete(videoStream);
+      setCamOn(false);
+      return;
+    }
+
+    baseStream.addTrack(videoTrack);
+
+    Object.values(peerConnectionsRef.current).forEach((pc) => {
+      let sender = pc.__shuwaLocalVideoSender;
+      if (!sender) {
+        sender = pc
+          .getSenders()
+          .find((s) => s.track && s.track.kind === "video");
+        if (sender) {
+          pc.__shuwaLocalVideoSender = sender;
+        }
+      }
+
+      if (sender) {
+        sender.replaceTrack(videoTrack).catch((err) => {
+          console.warn("replaceTrack failed", err);
+        });
+      } else {
+        const newSender = pc.addTrack(videoTrack, baseStream);
+        pc.__shuwaLocalVideoSender = newSender;
+      }
+    });
+
+    videoTrack.addEventListener("ended", () => {
+      createdStreamsRef.current.delete(videoStream);
+      setCamOn(false);
+    });
+  }, [stopStreamTracks]);
 
   // ---- State ----
   const [micOn, setMicOn] = useState(true);
@@ -39,19 +160,7 @@ function Meeting() {
 
   // ---- Translation log (remove initial dummy messages if you want) ----
   const [messages, setMessages] = useState([]);
-
-  const appendMessage = (who, text, color = "indigo") => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: prev.length ? prev[prev.length - 1].id + 1 : 1,
-        who,
-        t: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-        text,
-        color,
-      },
-    ]);
-  };
+  // Translation messages state; append helper removed because it was unused.
 
    // ---- Update local participant picture when currentUser changes ----
   useEffect(() => {
@@ -65,8 +174,11 @@ function Meeting() {
 
   // ---- Initialize socket & media ----
   useEffect(() => {
+    let cancelled = false;
+
     socketRef.current = io(process.env.REACT_APP_API_URL, { transports: ["websocket"] });
     const socket = socketRef.current;
+    const streamsSet = createdStreamsRef.current;
 
     async function startMedia() {
       try {
@@ -74,9 +186,17 @@ function Meeting() {
           video: { facingMode: "user", width: 640, height: 360 },
           audio: true,
         });
+
+        streamsSet.add(stream);
+
+        if (cancelled) {
+          stopStreamTracks(stream);
+          streamsSet.delete(stream);
+          return;
+        }
+
         localStreamRef.current = stream;
         setLocalStream(stream);
-
         const userPicture = currentUser?.picture || "/profile.svg";
         setParticipants([{ id: socket.id, isLocal: true, stream, picture: userPicture }]);
 
@@ -92,9 +212,31 @@ function Meeting() {
     // ---- Socket event handlers ----
     socket.on("user-joined", async (data) => {
       console.log(`Peer joined:`, data);
-      const peerId = data.socketId;
+      const peerId = typeof data === 'string' ? data : data.socketId;
+      if (!peerId) return;
       await makeCall(peerId);
     });
+
+    socket.on("new-translation", (data) => {
+    const { userName, sentence, timestamp } = data;
+    console.log("New translation received:", data);
+    
+    // Add to translation feed
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: prev.length ? prev[prev.length - 1].id + 1 : 1,
+        who: userName,
+        t: new Date(timestamp).toLocaleTimeString([], { 
+          hour: "2-digit", 
+          minute: "2-digit", 
+          second: "2-digit" 
+        }),
+        text: sentence,
+        color: userName === currentUser?.name ? "pink" : "indigo",
+      },
+    ]);
+  });
 
     socket.on("offer", async (data) => {
       const { sdp, sender } = data;
@@ -113,7 +255,8 @@ function Meeting() {
 
     socket.on("user-left", (data) => {
       console.log(`Peer left:`, data);
-      const peerId = data.socketId;
+      const peerId = typeof data === 'string' ? data : data.socketId;
+      if (!peerId) return;
       const pc = peerConnectionsRef.current[peerId];
       if (pc) {
         pc.close();
@@ -123,13 +266,24 @@ function Meeting() {
     });
 
     return () => {
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((t) => t.stop());
+      cancelled = true;
+
+      if (socket) {
+        socket.disconnect();
       }
-      if (socket) socket.disconnect();
+
       Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+      peerConnectionsRef.current = {};
+
+      if (localStreamRef.current) {
+        stopStreamTracks(localStreamRef.current);
+        localStreamRef.current = null;
+      }
+
+      streamsSet.forEach((stream) => stopStreamTracks(stream));
+      streamsSet.clear();
     };
-  }, [meetingId, currentUser]);
+  }, [meetingId, currentUser, stopStreamTracks]);
 
   // ---- WebRTC functions ----
   async function makeCall(peerId) {
@@ -163,7 +317,10 @@ function Meeting() {
 
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => {
-          pc.addTrack(track, localStreamRef.current);
+          const sender = pc.addTrack(track, localStreamRef.current);
+          if (track.kind === "video") {
+            pc.__shuwaLocalVideoSender = sender;
+          }
         });
       }
 
@@ -193,6 +350,7 @@ function Meeting() {
           });
         }
       };
+      
 
       pc.ontrack = (e) => {
         console.log("Remote track received from", peerId);
@@ -209,7 +367,10 @@ function Meeting() {
 
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => {
-          pc.addTrack(track, localStreamRef.current);
+          const sender = pc.addTrack(track, localStreamRef.current);
+          if (track.kind === "video") {
+            pc.__shuwaLocalVideoSender = sender;
+          }
         });
       }
 
@@ -252,12 +413,6 @@ function Meeting() {
   // ---- Camera/Mic toggles ----
   useEffect(() => {
     if (!localStream) return;
-    const vTracks = localStream.getVideoTracks();
-    vTracks.forEach((t) => (t.enabled = camOn));
-  }, [camOn, localStream]);
-
-  useEffect(() => {
-    if (!localStream) return;
     const aTracks = localStream.getAudioTracks();
     aTracks.forEach((t) => (t.enabled = micOn));
   }, [micOn, localStream]);
@@ -268,23 +423,66 @@ function Meeting() {
   const handleToggleGesture = () => setGestureOn((g) => !g);
 
   const handleEndCall = () => {
-    Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+    Object.entries(peerConnectionsRef.current).forEach(([peerId, pc]) => {
+      pc.getSenders().forEach((sender) => {
+        if (sender.track && sender.track.readyState !== "ended") {
+          sender.track.stop();
+        }
+      });
+      pc.getReceivers().forEach((receiver) => {
+        if (receiver.track && receiver.track.readyState !== "ended") {
+          receiver.track.stop();
+        }
+      });
+      pc.getTransceivers().forEach((transceiver) => {
+        if (typeof transceiver.stop === "function") {
+          transceiver.stop();
+        }
+      });
+      pc.close();
+      delete peerConnectionsRef.current[peerId];
+    });
     peerConnectionsRef.current = {};
 
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((t) => t.stop());
-      localStreamRef.current = null;
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
     }
 
+    createdStreamsRef.current.forEach((stream) => stopStreamTracks(stream));
+    createdStreamsRef.current.clear();
+    localStreamRef.current = null;
+
+    setLocalStream(null);
+    setParticipants([]);
     setCamOn(false);
-    
+    setMicOn(false);
+
     navigate("/home");
   };
-
+  /*
   // Callback to receive translated sentence from VideoTile
   const handleTranslatedSentence = (sentence) => {
     appendMessage("You", sentence, "pink");
   };
+  */
+
+  useEffect(() => {
+    window.__meeting = { localStreamRef };
+    return () => { delete window.__meeting; };
+  }, []);
+
+  useEffect(() => {
+    const baseStream = localStreamRef.current;
+    if (!baseStream) return;
+
+    if (!camOn) {
+      disableCamera();
+      return;
+    }
+
+    enableCamera();
+  }, [camOn, localStream, disableCamera, enableCamera]);
 
   return (
     <div id="page-content">
@@ -301,10 +499,10 @@ function Meeting() {
                     picture={p.picture}
                     isLocal={p.isLocal}
                     gestureOn={gestureOn}
-                    cameraOn={camOn}
+                    cameraOn={p.isLocal ? camOn : undefined}
                     badgeText={p.isLocal ? "You" : "Participant"}
                     meetingId={meetingId} 
-                    onTranslatedSentence={handleTranslatedSentence} // Pass callback
+                    /// onTranslatedSentence={handleTranslatedSentence} // Pass callback
                   />
                 ))}
               </div>

@@ -48,7 +48,7 @@ const CallHistory = () => {
         }
         fetchCallHistory();
 
-    }, []);
+    }, [baseURL, token]);
 
     const handleClick = (meetingId) => {
         navigate(`/translation-log/${meetingId}`);

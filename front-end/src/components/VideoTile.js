@@ -4,6 +4,8 @@ import * as tf from "@tensorflow/tfjs";
 import { useContext } from "react";
 import  UserContext from "../contexts/UserContext";
 
+const DEFAULT_PROFILE_IMAGE = `${process.env.PUBLIC_URL || ""}/defaultPFP.png`;
+
 // =========================
 //  MediaPipe loader (CDN)
 // =========================
@@ -43,19 +45,20 @@ function loadMediapipeFromCDN() {
 
 function getGlobalHands(HandsCtor) {
   if (!window.__aslHandsInstance) {
-    const hands = new HandsCtor({
+    window.__aslHandsInstance = new HandsCtor({
       locateFile: (file) =>
         `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`,
     });
-    hands.setOptions({
-      maxNumHands: 2,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.6,
-      minTrackingConfidence: 0.6,
-    });
-    window.__aslHandsInstance = hands;
   }
-  return window.__aslHandsInstance;
+  const hands = window.__aslHandsInstance;
+  hands.setOptions({
+    maxNumHands: 2,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.6,
+    minTrackingConfidence: 0.6,
+    selfieMode: false,
+  });
+  return hands;
 }
 
 // =========================
@@ -89,8 +92,11 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
   const ctxRef = useRef(null);
   const seqRef = useRef([]);
   const historyRef = useRef([]);
-  const cameraRef = useRef(null);
+  const frameReqRef = useRef(null);
+  const processingRef = useRef(false);
   const noHandsTimerRef = useRef(null);
+  const removeLoadedListenerRef = useRef(null);
+  const hiddenCanvasRef = useRef(null); // ✅ Hidden canvas for processing
 
   function pushAndSmooth(label, score, windowSize = 5) {
     const buf = historyRef.current;
@@ -126,12 +132,19 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
       await Promise.all([loadMediapipeFromCDN(), loadASLModel()]);
       if (cancelled) return;
 
-      const { Hands, Camera, drawConnectors, drawLandmarks } =
+      const { Hands, drawConnectors, drawLandmarks } =
         await loadMediapipeFromCDN();
 
       if (canvasEl) {
         ctxRef.current = canvasEl.getContext("2d");
       }
+
+      // ✅ Create hidden canvas for processing raw video
+      if (!hiddenCanvasRef.current) {
+        hiddenCanvasRef.current = document.createElement('canvas');
+      }
+      const hiddenCanvas = hiddenCanvasRef.current;
+      const hiddenCtx = hiddenCanvas.getContext('2d');
 
       const hands = getGlobalHands(Hands);
 
@@ -170,9 +183,6 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
 
         ctx.save();
         ctx.clearRect(0, 0, w, h);
-        if (results.image) {
-          ctx.drawImage(results.image, 0, 0, w, h);
-        }
 
         if (results.multiHandLandmarks && results.multiHandLandmarks.length) {
           for (const lm of results.multiHandLandmarks) {
@@ -196,19 +206,17 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
           const seq = seqRef.current;
           if (seq.length > 0) seq.shift();
 
-          // ✅ Start timer when no hands detected
           if (!noHandsTimerRef.current) {
             noHandsTimerRef.current = setTimeout(() => {
               if (typeof onNoHandsDetected === 'function') {
                 onNoHandsDetected();
               }
               noHandsTimerRef.current = null;
-            }, 2000); // 2 seconds
+            }, 2000);
           }
           return;
         }
 
-        // ✅ Clear timer when hands are detected again
         if (noHandsTimerRef.current) {
           clearTimeout(noHandsTimerRef.current);
           noHandsTimerRef.current = null;
@@ -262,7 +270,7 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
           });
         }
 
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
         ctx.fillRect(0, 0, 350, 45);
         ctx.fillStyle = "white";
         ctx.font = "28px Arial";
@@ -273,17 +281,56 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
         );
       });
 
-      const camera = new Camera(videoEl, {
-        onFrame: async () => {
-          if (cancelled) return;
-          await hands.send({ image: videoEl });
-        },
-        width: 640,
-        height: 480,
-      });
+      const startLoop = () => {
+        if (!videoEl) return;
+        if (frameReqRef.current) {
+          cancelAnimationFrame(frameReqRef.current);
+        }
 
-      cameraRef.current = camera;
-      camera.start();
+        const loop = () => {
+          if (cancelled) return;
+
+          if (!processingRef.current && videoEl.readyState >= 2) {
+            processingRef.current = true;
+            
+            // ✅ Draw raw (non-mirrored) video to hidden canvas
+            const w = videoEl.videoWidth || 640;
+            const h = videoEl.videoHeight || 480;
+            hiddenCanvas.width = w;
+            hiddenCanvas.height = h;
+            hiddenCtx.drawImage(videoEl, 0, 0, w, h);
+            
+            // ✅ Send the raw canvas image to MediaPipe
+            hands
+              .send({ image: hiddenCanvas })
+              .catch((err) => console.error("MediaPipe send error:", err))
+              .finally(() => {
+                processingRef.current = false;
+              });
+          }
+
+          if (!cancelled) {
+            frameReqRef.current = requestAnimationFrame(loop);
+          }
+        };
+
+        loop();
+      };
+
+      if (videoEl?.readyState >= 2) {
+        startLoop();
+      } else if (videoEl) {
+        const onLoadedData = () => {
+          if (cancelled) return;
+          videoEl.removeEventListener("loadeddata", onLoadedData);
+          removeLoadedListenerRef.current = null;
+          startLoop();
+        };
+        removeLoadedListenerRef.current = () => {
+          videoEl.removeEventListener("loadeddata", onLoadedData);
+        };
+        videoEl.addEventListener("loadeddata", onLoadedData);
+      }
     }
 
     if (enabled) {
@@ -295,20 +342,24 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
       historyRef.current = [];
       seqRef.current = [];
       
-      // ✅ Clear timer on cleanup
       if (noHandsTimerRef.current) {
         clearTimeout(noHandsTimerRef.current);
         noHandsTimerRef.current = null;
       }
 
-      if (cameraRef.current && cameraRef.current.stop) {
-        try {
-          cameraRef.current.stop();
-        } catch (e) {
-          console.warn("Camera stop error:", e);
-        }
+      if (frameReqRef.current) {
+        cancelAnimationFrame(frameReqRef.current);
+        frameReqRef.current = null;
       }
-      cameraRef.current = null;
+      processingRef.current = false;
+
+      if (removeLoadedListenerRef.current) {
+        removeLoadedListenerRef.current();
+        removeLoadedListenerRef.current = null;
+      }
+
+      // ✅ Clean up hidden canvas
+      hiddenCanvasRef.current = null;
       ctxRef.current = null;
     };
   }, [enabled, videoEl, canvasEl, onGesture, onNoHandsDetected]);
@@ -330,6 +381,8 @@ export default function VideoTile(props) {
   const canvasRef = useRef(null);
   const [gesture, setGesture] = useState(null);
   const { currentUser } = useContext(UserContext);
+  const profileImage =
+    props.picture && props.picture.trim() ? props.picture : DEFAULT_PROFILE_IMAGE;
 
   const [signedWords, setSignedWords] = useState([]);
   const [translatedSentence, setTranslatedSentence] = useState('');
@@ -545,25 +598,44 @@ export default function VideoTile(props) {
               autoPlay
               muted={!!props.isLocal}
               className="tile-video"
+              style={{ transform: props.isLocal ? "scaleX(-1)" : "none" }}
+
             />
             <canvas
               ref={canvasRef}
               className="tile-overlay"
-              style={{ opacity: props.gestureOn ? 1 : 0 }}
+              style={{
+                opacity: props.gestureOn ? 1 : 0,
+                transform: props.isLocal ? "scaleX(-1)" : "none",
+                pointerEvents: "none",
+              }}
               width={640}
               height={480}
             />
           </>
-        ) : hasStream && !cameraOn && props.picture ? (
+        ) : hasStream && !cameraOn ? (
           <div
-            className="placeholder"
+            className="placeholder placeholder-profile"
             style={{
-              background: '#f0f0f0',
-              backgroundImage: `url(${props.picture})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
+              backgroundImage: `url("${profileImage}")`,
+              backgroundPosition: "center",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
             }}
-          />
+          >
+            <div className="placeholder-gloss" />
+            <div className="placeholder-avatar">
+              <img
+                src={profileImage}
+                alt="Profile"
+                onError={(e) => {
+                  if (e.currentTarget.src !== DEFAULT_PROFILE_IMAGE) {
+                    e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
+                  }
+                }}
+              />
+            </div>
+          </div>
         ) : (
           <div className="placeholder">
             <IconUser />

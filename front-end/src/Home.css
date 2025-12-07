@@ -29,6 +29,12 @@ body {
     letter-spacing: 1px;
     color: #1f1f1f;
   }
+
+  #logoHome{
+    margin-top: 8%;
+    margin-bottom: 5%;
+    
+  }
   
   .profile {
     display: flex;
@@ -48,7 +54,7 @@ body {
     height: 40px;
     border-radius: 50%;
     /* show full avatar without cropping */
-    object-fit: contain;
+    object-fit: cover;
     object-position: center center;
     background: #f3f4f8;
     display: inline-block;
@@ -147,10 +153,7 @@ body {
     color: #444;
   }
 
-  #logoHome{
-    margin-top: 8%;
-    margin-bottom: 5%;
-  }
+
 
   #homeSpan{
     padding-top: 5x;

@@ -9,7 +9,7 @@ export default function Home() {
   const [meetingName, setMeetingName] = useState("");
   const [meetingCode, setMeetingCode] = useState("");
   const [joinCode, setJoinCode] = useState("");
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [,setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const { currentUser, isLoading } = useContext(UserContext);
 
@@ -42,7 +42,7 @@ export default function Home() {
     updateClock();
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
-  }, []);
+  });
 
   const handleCopy = () => {
     navigator.clipboard.writeText(meetingCode);
@@ -59,7 +59,7 @@ export default function Home() {
     const res = await fetch(
       `${process.env.REACT_APP_API_URL}/api/meetings/join/${joinCode}`,
       {
-        method: "POST",
+        method: "GET",
         headers: { 
           Accept: "application/json",
           Authorization: `Bearer ${token}`
