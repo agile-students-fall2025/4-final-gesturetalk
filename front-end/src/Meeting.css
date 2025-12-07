@@ -323,10 +323,10 @@ body{
   }
 }
 
-.tile { position: relative; background: #000; overflow: hidden; border-radius: 10px; }
+.tile { position: relative; background: #f0f0f0; overflow: hidden; border-radius: 10px; }
 .tile-media { position: relative; width: 100%; height: 100%; }
-.tile-video, .tile-overlay, .placeholder { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.placeholder { display:flex; align-items:center; justify-content:center; color:#999; background:#111; }
+.tile-video, .tile-overlay, .placeholder { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.placeholder { display:flex; align-items:center; justify-content:center; color:#999; background:#f0f0f0; }
 .tile-controls { position: absolute; top: 8px; right: 8px; z-index: 2; display:flex; gap: 8px; }
 .tile-btn { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: none; cursor: pointer; }
 .tile-btn.on { background: #111827; color: #fff; }
