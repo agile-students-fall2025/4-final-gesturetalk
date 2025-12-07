@@ -3,7 +3,8 @@ services:
     build: ./front-end
     container_name: front-end_container
     restart: always
-    ports: "3000:80"
+    ports: 
+    - "3000:80"
 
   back-end:
     build: ./back-end
@@ -11,7 +12,8 @@ services:
     restart: always
     env_file:
       - ./back-end/.env
-    ports: "5001:5001"
+    ports: 
+    - "5001:5001"
 
   nginx:
     image: nginx:latest
