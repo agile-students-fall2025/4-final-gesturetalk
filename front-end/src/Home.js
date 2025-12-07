@@ -7,7 +7,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [meetingName, setMeetingName] = useState("");
-  const [meetingCode, setMeetingCode] = useState("Code-123");
+  const [meetingCode, setMeetingCode] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [,setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -101,7 +101,7 @@ export default function Home() {
         "Accept": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ meetingName, meetingCode })
+      body: JSON.stringify({ meetingName: meetingName, meetingCode: meetingCode })
     });
 
     if (res.status === 409) {
@@ -115,6 +115,7 @@ export default function Home() {
     }
 
     // SUCCESS
+    console.log(res.meeting);
     setShowCreateModal(false);
     alert(`Meeting "${meetingName}" created! Code: ${meetingCode}`);
     navigate(`/meeting/${meetingCode}`);

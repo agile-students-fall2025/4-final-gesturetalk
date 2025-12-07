@@ -16,7 +16,7 @@ export const getTranslationLog = async (req, res) => {
       return res.status(404).json({ ok: false, error: "Meeting not found" });
     }
 
-    // const userTranslationLogs = mockTranslationLogs;
+    // find translation log
     const userTranslationLogs = await TranslationLog.findOne({ meetingId });
     if (!userTranslationLogs) {
       return res
@@ -24,7 +24,9 @@ export const getTranslationLog = async (req, res) => {
         .json({ ok: false, error: "Translation logs not found" });
     }
 
-    const flattened = userTranslationLogs.messages.map((m) => ({
+    const flattened = userTranslationLogs.messages
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .map((m) => ({
       _id: m._id,
       user: m.user,
       message: m.message,

@@ -28,16 +28,3 @@ const MeetingRoomSchema = new mongoose.Schema(
 const MeetingRoom = mongoose.model("MeetingRoom", MeetingRoomSchema);
 export default MeetingRoom;
 
-/* 
-Potentially how the schemas for call history / translation log can look like:
-
-const CallHistorySchema = new mongoose.Schema({
-  meetingId: { type: String, required: true },
-  meetingName: { type: String, required: true }, 
-  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  startTime: { type: Date, required: true },
-  endTime: { type: Date },
-  duration: { type: Number }, 
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
-}, { timestamps: true });
-*/

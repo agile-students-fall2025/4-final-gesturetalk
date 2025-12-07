@@ -1,6 +1,7 @@
 import MeetingRoom from "../models/MeetingRoom.js";
 import User from "../models/User.js";
 
+
 export const createMeetingRoom = async (req, res) => {
   const { meetingName, meetingCode } = req.body;
   if (!meetingName || !meetingCode) {
@@ -8,13 +9,17 @@ export const createMeetingRoom = async (req, res) => {
   }
   try {
     const exists = await MeetingRoom.findOne({ meetingCode });
+    console.log(exists);
     if (exists) {
       return res
         .status(409)
         .json({ ok: false, error: "Meeting code already exists" });
     }
 
-    const newMeeting = await MeetingRoom.create({ meetingName, meetingCode });
+    const newMeeting = await MeetingRoom.create({
+      meetingName,
+      meetingCode,
+    });
 
     // add meeting to current user's meetings array
     if (req.user && req.user._id) {
@@ -25,8 +30,10 @@ export const createMeetingRoom = async (req, res) => {
       );
     }
     console.log("meeting added to user for create Meeting Room");
+    console.log("newMeeting:", newMeeting);
 
     return res.status(201).json({ ok: true, meeting: newMeeting });
+
   } catch (err) {
     console.error("Meeting creation error:", err);
     res.status(500).json({ ok: false, error: "Server error" });
@@ -59,3 +66,6 @@ export const joinMeetingRoom = async (req, res) => {
     res.status(500).json({ ok: false, error: "Server error" });
   }
 };
+
+
+// for meeting 
