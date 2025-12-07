@@ -33,6 +33,7 @@
 ``` npm install ```
 
  Before starting create a .env in the front-end folder with the following:
+ 
  ``` REACT_APP_API_URL=http://localhost:5001 ```
  
  run npm start to run the React.js server:
