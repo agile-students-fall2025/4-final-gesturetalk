@@ -390,6 +390,8 @@ header {
 }
 
 .modal-card {
+  display: flex;
+  flex-direction: column;
   position: relative;
   width: 350px;
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.6), rgba(230, 210, 255, 0.5));
@@ -399,6 +401,10 @@ header {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   text-align: center;
   animation: popIn 0.3s ease-out;
+  padding-bottom: 4%;
+  padding-top: 4%;
+  margin: 0 auto;
+  padding: 28px 24px
 }
 
 @keyframes popIn {
@@ -408,14 +414,20 @@ header {
 
 .modal-card .close-btn {
   position: absolute;
-  top: -32px;
-  right: -32px;
+  top: 15px;
+  right: 20px;
   font-size: 1.4rem;
   background: transparent;
   border: none;
   cursor: pointer;
   color: #111;
+  z-index: 999;
+  padding: 0;
+  margin: 0;
+  width: auto;
+  line-height: 1;
 }
+
 
 .modal-title {
   font-size: 1.5rem;
