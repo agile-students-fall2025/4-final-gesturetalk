@@ -195,10 +195,12 @@ io.on("connection", (socket) => {
         { new: true },
       );
 
+      /*
       if (decrementCount && decrementCount.participantCount <= 0) {
         await MeetingRoom.deleteOne({ meetingCode: roomID });
-        console.log(`Meeting Room ${roomID} deleted. Last participant left.`);
+        console.log(`Meeting Room ${roomID} closed. Last participant left.`);
       }
+      */
     }
   });
 });

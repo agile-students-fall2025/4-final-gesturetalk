@@ -16,16 +16,11 @@ export const createMeetingRoom = async (req, res) => {
         .json({ ok: false, error: "Meeting code already exists" });
     }
 
-    const userId = req.user?._id;
-
     const newMeeting = await MeetingRoom.create({
       meetingName,
       meetingCode,
-      participantCount: userId ? 1 : 0,
-      participants: userId ? [userId] : [],
     });
 
-    
     // add meeting to current user's meetings array
     if (req.user && req.user._id) {
       await User.findByIdAndUpdate(
@@ -35,8 +30,10 @@ export const createMeetingRoom = async (req, res) => {
       );
     }
     console.log("meeting added to user for create Meeting Room");
+    console.log("newMeeting:", newMeeting);
 
     return res.status(201).json({ ok: true, meeting: newMeeting });
+
   } catch (err) {
     console.error("Meeting creation error:", err);
     res.status(500).json({ ok: false, error: "Server error" });
