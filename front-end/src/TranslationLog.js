@@ -74,28 +74,31 @@ const TranslationLog = () => {
                 <div className="log-container">
                     <div className='log-list-container'>
 
-                        {logData.map((entry) => {
-                            const colorClass = userColors[entry.user];
+                        {logData && logData.length > 0 ? (
+                            logData.map((entry) => {
+                                const colorClass = userColors[entry.user];
 
-                            return (
-                                <div
-                                    key={entry._id}
-                                    className={`log-entry ${colorClass}`}
-                                >
-                                    <div className="entry-header">
-                                        <span className="display-name">{entry.user}</span>
-                                        <span className="timestamp">
-                                            {new Date(entry.timestamp).toLocaleTimeString([], {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit'
-                                            })}
-                                        </span>
+                                return (
+                                    <div
+                                        key={entry._id}
+                                        className={`log-entry ${colorClass}`}
+                                    >
+                                        <div className="entry-header">
+                                            <span className="display-name">{entry.user}</span>
+                                            <span className="timestamp">
+                                                {new Date(entry.timestamp).toLocaleTimeString([], {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    second: '2-digit'
+                                                })}
+                                            </span>
+                                        </div>
+                                        <p className="entry-text">{entry.message}</p>
                                     </div>
-                                    <p className="entry-text">{entry.message}</p>
-                                </div>
-                            );
-                        })}
+                                );
+                        })) : (
+                             <p>No translation log.</p>
+                        ) }
 
                     </div>
                 </div>
