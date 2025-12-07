@@ -16,8 +16,16 @@ export const createMeetingRoom = async (req, res) => {
         .json({ ok: false, error: "Meeting code already exists" });
     }
 
-    const newMeeting = await MeetingRoom.create({ meetingName, meetingCode });
+    const userId = req.user?._id;
 
+    const newMeeting = await MeetingRoom.create({
+      meetingName,
+      meetingCode,
+      participantCount: userId ? 1 : 0,
+      participants: userId ? [userId] : [],
+    });
+
+    
     // add meeting to current user's meetings array
     if (req.user && req.user._id) {
       await User.findByIdAndUpdate(
@@ -61,3 +69,6 @@ export const joinMeetingRoom = async (req, res) => {
     res.status(500).json({ ok: false, error: "Server error" });
   }
 };
+
+
+// for meeting 
