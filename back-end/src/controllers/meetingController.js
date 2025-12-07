@@ -1,6 +1,7 @@
 import MeetingRoom from "../models/MeetingRoom.js";
 import User from "../models/User.js";
 
+
 export const createMeetingRoom = async (req, res) => {
   const { meetingName, meetingCode } = req.body;
   if (!meetingName || !meetingCode) {
@@ -8,6 +9,7 @@ export const createMeetingRoom = async (req, res) => {
   }
   try {
     const exists = await MeetingRoom.findOne({ meetingCode });
+    console.log(exists);
     if (exists) {
       return res
         .status(409)
