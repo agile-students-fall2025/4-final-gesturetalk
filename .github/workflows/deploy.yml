@@ -26,7 +26,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             if [ ! -d "/var/www/app" ]; then
-              git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git /var/www/app
+              git clone -b container https://github.com/agile-students-fall2025/4-final-gesturetalk.git /var/www/app
             else
               cd /var/www/app
               git pull
