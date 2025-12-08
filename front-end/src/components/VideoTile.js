@@ -1,8 +1,7 @@
 // src/components/VideoTile.js
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import * as tf from "@tensorflow/tfjs";
-import { useContext } from "react";
-import  UserContext from "../contexts/UserContext";
+import UserContext from "../contexts/UserContext";
 
 const DEFAULT_PROFILE_IMAGE = `${process.env.PUBLIC_URL || ""}/defaultPFP.png`;
 
@@ -83,45 +82,101 @@ async function loadASLModel() {
 }
 
 // =========================
-//  Hook: ASL from video
+//  Shared constants
 // =========================
 const SEQ_LENGTH = 30;
-const HAND_DIM = 126;
+const HAND_DIM = 126; // 63 left + 63 right
 
-function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetected }) {
+// Match script.js smoothing logic
+const CONF_THRESHOLD = 0.7;
+const PRED_WINDOW = 30;
+
+// Majority vote helper (same idea as script.js)
+function majorityVote(arr) {
+  const counts = {};
+  arr.forEach((l) => {
+    counts[l] = (counts[l] || 0) + 1;
+  });
+  let best = null;
+  let bestCount = 0;
+  Object.entries(counts).forEach(([label, count]) => {
+    if (count > bestCount) {
+      best = label;
+      bestCount = count;
+    }
+  });
+  return best;
+}
+
+// =========================
+//  Hook: ASL from video
+// =========================
+
+
+  // Helper to draw prediction text on the overlay canvas
+function drawPredictionText(ctx, canvas, text) {
+    if (!ctx || !canvas) return;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+    ctx.fillRect(0, 0, 350, 45);
+
+    ctx.fillStyle = "white";
+    ctx.font = "28px Arial";
+    ctx.fillText(`Prediction: ${text}`, 10, 32);
+    ctx.restore();
+}
+
+function useASLFromVideo({
+  videoEl,
+  canvasEl,
+  enabled,
+  onGesture,
+  onNoHandsDetected,
+}) {
   const ctxRef = useRef(null);
-  const seqRef = useRef([]);
-  const historyRef = useRef([]);
+  const seqRef = useRef([]); // sequence of 30 frames
+  const predictionHistoryRef = useRef([]); // recent confident labels
+  const currentLabelRef = useRef(""); // smoothed label
   const frameReqRef = useRef(null);
   const processingRef = useRef(false);
   const noHandsTimerRef = useRef(null);
   const removeLoadedListenerRef = useRef(null);
-  const hiddenCanvasRef = useRef(null); // ✅ Hidden canvas for processing
+  const hiddenCanvasRef = useRef(null); // hidden canvas for raw processing
 
-  function pushAndSmooth(label, score, windowSize = 5) {
-    const buf = historyRef.current;
-    buf.push({ label, score });
-    if (buf.length > windowSize) buf.shift();
+  // Feature extraction: same as script.js
+  function extractHandFeatures(results) {
+    // 21 landmarks * 3 coords = 63 per hand
+    let left = new Array(63).fill(0);
+    let right = new Array(63).fill(0);
 
-    const counts = new Map();
-    for (const item of buf) {
-      counts.set(item.label, (counts.get(item.label) || 0) + 1);
+    const handsLms = results.multiHandLandmarks;
+    const handedness = results.multiHandedness;
+
+    if (handsLms && handedness) {
+      handsLms.forEach((hand, idx) => {
+        const side = handedness[idx].label; // "Left" or "Right"
+
+        // Wrist-centered: subtract wrist (landmark 0) from all points
+        const wrist = hand[0];
+        const centeredFlat = hand.flatMap((lm) => [
+          lm.x - wrist.x,
+          lm.y - wrist.y,
+          lm.z - wrist.z,
+        ]); // length 63
+
+        if (side === "Left") {
+          left = centeredFlat;
+        } else if (side === "Right") {
+          right = centeredFlat;
+        }
+      });
     }
-    let bestLabel = null;
-    let bestCount = -1;
-    for (const [k, c] of counts.entries()) {
-      if (c > bestCount) {
-        bestCount = c;
-        bestLabel = k;
-      }
-    }
-    const subset = buf.filter((x) => x.label === bestLabel);
-    const avgScore =
-      subset.reduce((acc, x) => acc + x.score, 0) /
-      Math.max(1, subset.length);
 
-    return { label: bestLabel, score: avgScore };
+    const frame = left.concat(right); // 126-dim
+    return frame.map((v) => (Number.isFinite(v) ? v : 0));
   }
+
 
   useEffect(() => {
     let cancelled = false;
@@ -139,48 +194,14 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
         ctxRef.current = canvasEl.getContext("2d");
       }
 
-      // ✅ Create hidden canvas for processing raw video
+      // Hidden canvas for non-mirrored processing
       if (!hiddenCanvasRef.current) {
-        hiddenCanvasRef.current = document.createElement('canvas');
+        hiddenCanvasRef.current = document.createElement("canvas");
       }
       const hiddenCanvas = hiddenCanvasRef.current;
-      const hiddenCtx = hiddenCanvas.getContext('2d');
+      const hiddenCtx = hiddenCanvas.getContext("2d");
 
       const hands = getGlobalHands(Hands);
-
-      function extractHandFeatures(results) {
-        // 21 landmarks * 3 coords = 63 per hand
-        let left = new Array(63).fill(0);
-        let right = new Array(63).fill(0);
-
-        const handsLms = results.multiHandLandmarks;
-        const handedness = results.multiHandedness;
-
-        if (handsLms && handedness) {
-          handsLms.forEach((hand, idx) => {
-            const side = handedness[idx].label; // "Left" or "Right"
-
-            // Wrist-centered: subtract wrist (landmark 0) from all points
-            const wrist = hand[0];
-            const centeredFlat = hand.flatMap((lm) => [
-              lm.x - wrist.x,
-              lm.y - wrist.y,
-              lm.z - wrist.z,
-            ]); // length 63
-
-            // Match Python + training: Left → left slot, Right → right slot
-            if (side === "Left") {
-              left = centeredFlat;
-            } else if (side === "Right") {
-              right = centeredFlat;
-            }
-          });
-        }
-
-        const frame = left.concat(right); // 126-dim
-        return frame.map((v) => (Number.isFinite(v) ? v : 0));
-      }
-
 
       hands.onResults((results) => {
         if (cancelled) return;
@@ -195,7 +216,12 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
         ctx.save();
         ctx.clearRect(0, 0, w, h);
 
-        if (results.multiHandLandmarks && results.multiHandLandmarks.length) {
+        const hasHands =
+          results.multiHandLandmarks &&
+          results.multiHandLandmarks.length > 0;
+
+        // Draw hand landmarks on overlay
+        if (hasHands) {
           for (const lm of results.multiHandLandmarks) {
             drawConnectors(ctx, lm, window.HAND_CONNECTIONS, {
               color: "#00FF00",
@@ -209,59 +235,60 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
         }
         ctx.restore();
 
-        const hasHands =
-          results.multiHandLandmarks &&
-          results.multiHandLandmarks.length > 0;
-
+        // === No-hands timer for auto-translate (kept same as before) ===
         if (!hasHands) {
-          const seq = seqRef.current;
-          if (seq.length > 0) seq.shift();
-
           if (!noHandsTimerRef.current) {
             noHandsTimerRef.current = setTimeout(() => {
-              if (typeof onNoHandsDetected === 'function') {
+              if (typeof onNoHandsDetected === "function") {
                 onNoHandsDetected();
               }
               noHandsTimerRef.current = null;
             }, 2000);
           }
-          return;
-        }
-
-        if (noHandsTimerRef.current) {
+        } else if (noHandsTimerRef.current) {
           clearTimeout(noHandsTimerRef.current);
           noHandsTimerRef.current = null;
         }
 
+        // === Sequence + model logic aligned with script.js ===
+
+        // Always extract features; if no hands, this returns zeros
         const features = extractHandFeatures(results);
+
         const seq = seqRef.current;
         seq.push(features);
         if (seq.length > SEQ_LENGTH) seq.shift();
 
-        if (!ASLModel || !ASLLabels || seq.length < SEQ_LENGTH) {
+        // If model not ready
+        if (!ASLModel || !ASLLabels) {
+          drawPredictionText(ctxRef.current, canvasEl, "loading…");
           return;
         }
 
-        const flat = seq.flat();
-        const input = tf.tensor3d(flat, [1, SEQ_LENGTH, HAND_DIM]);
 
-        let bestIdx = 0;
-        let bestScore = 0;
+        // Wait until we have a full 30-frame window
+        if (seq.length < SEQ_LENGTH) {
+          const labelToShow =
+            currentLabelRef.current && currentLabelRef.current.length > 0
+              ? currentLabelRef.current
+              : "…";
+          drawPredictionText(ctxRef.current, canvasEl, labelToShow);
+          return;
+        }
 
+
+        // shape [1, 30, 126] like script.js: tf.tensor3d([sequence], ...)
+        const input = tf.tensor3d([seq], [1, SEQ_LENGTH, HAND_DIM]);
+
+        let maxProb = 0;
+        let predLabel = "";
         try {
           const logits = ASLModel.predict(input);
-          const probs = logits.dataSync();
+          const probs = Array.from(logits.dataSync());
 
-          if (probs && probs.length > 0) {
-            bestIdx = 0;
-            bestScore = probs[0];
-            for (let i = 1; i < probs.length; i++) {
-              if (probs[i] > bestScore) {
-                bestScore = probs[i];
-                bestIdx = i;
-              }
-            }
-          }
+          maxProb = Math.max(...probs);
+          const predIdx = probs.indexOf(maxProb);
+          predLabel = ASLLabels[predIdx];
 
           logits.dispose();
         } catch (e) {
@@ -270,26 +297,40 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
           input.dispose();
         }
 
-        const label = ASLLabels[bestIdx] || `class_${bestIdx}`;
-        const smoothed = pushAndSmooth(label, bestScore, 5);
+        // Update prediction history only if confident enough (>= 0.7)
+        if (maxProb >= CONF_THRESHOLD && predLabel) {
+          const hist = predictionHistoryRef.current;
+          hist.push(predLabel);
+          if (hist.length > PRED_WINDOW) {
+            hist.shift();
+          }
 
-        if (typeof onGesture === "function") {
+          const majority = majorityVote(hist);
+          if (majority) {
+            currentLabelRef.current = majority;
+          }
+        }
+
+        const labelToShow = currentLabelRef.current
+          ? `${currentLabelRef.current} (${(maxProb * 100).toFixed(0)}%)`
+          : "…";
+
+        // Draw prediction text onto overlay
+        drawPredictionText(ctxRef.current, canvasEl, labelToShow);
+
+
+        // Call onGesture with smoothed label + current prob
+        if (
+          typeof onGesture === "function" &&
+          currentLabelRef.current &&
+          maxProb > 0
+        ) {
           onGesture({
-            label: smoothed.label,
-            score: smoothed.score,
+            label: currentLabelRef.current,
+            score: maxProb,
             source: "asl",
           });
         }
-
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-        ctx.fillRect(0, 0, 350, 45);
-        ctx.fillStyle = "white";
-        ctx.font = "28px Arial";
-        ctx.fillText(
-          `Prediction: ${smoothed.label} ${(smoothed.score * 100).toFixed(0)}%`,
-          10,
-          32
-        );
       });
 
       const startLoop = () => {
@@ -303,15 +344,16 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
 
           if (!processingRef.current && videoEl.readyState >= 2) {
             processingRef.current = true;
-            
-            // ✅ Draw raw (non-mirrored) video to hidden canvas
+
             const w = videoEl.videoWidth || 640;
             const h = videoEl.videoHeight || 480;
             hiddenCanvas.width = w;
             hiddenCanvas.height = h;
+
+            // Draw raw (non-mirrored) video to hidden canvas
             hiddenCtx.drawImage(videoEl, 0, 0, w, h);
-            
-            // ✅ Send the raw canvas image to MediaPipe
+
+            // Send the raw canvas image to MediaPipe
             hands
               .send({ image: hiddenCanvas })
               .catch((err) => console.error("MediaPipe send error:", err))
@@ -350,9 +392,12 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
 
     return () => {
       cancelled = true;
-      historyRef.current = [];
+
+      // Reset buffers
       seqRef.current = [];
-      
+      predictionHistoryRef.current = [];
+      currentLabelRef.current = "";
+
       if (noHandsTimerRef.current) {
         clearTimeout(noHandsTimerRef.current);
         noHandsTimerRef.current = null;
@@ -369,7 +414,6 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
         removeLoadedListenerRef.current = null;
       }
 
-      // ✅ Clean up hidden canvas
       hiddenCanvasRef.current = null;
       ctxRef.current = null;
     };
@@ -393,124 +437,130 @@ export default function VideoTile(props) {
   const [gesture, setGesture] = useState(null);
   const { currentUser } = useContext(UserContext);
   const profileImage =
-    props.picture && props.picture.trim() ? props.picture : DEFAULT_PROFILE_IMAGE;
+    props.picture && props.picture.trim()
+      ? props.picture
+      : DEFAULT_PROFILE_IMAGE;
 
   const [signedWords, setSignedWords] = useState([]);
-  const [translatedSentence, setTranslatedSentence] = useState('');
+  const [translatedSentence, setTranslatedSentence] = useState("");
   const [translating, setTranslating] = useState(false);
   const lastLockedWordRef = useRef(null);
 
-  // ✅ Auto-translate when no hands detected
+  // Auto-translate when no hands detected for 2s
   const handleNoHandsDetected = async () => {
     if (!signedWords.length || translating) return;
 
-    console.log('⏱️ No hands detected for 2s, auto-translating:', signedWords);
+    console.log("⏱️ No hands detected for 2s, auto-translating:", signedWords);
 
     setTranslating(true);
-    setTranslatedSentence('');
-    const token = localStorage.getItem('authToken');
-    // Prefer context (already available)
-    let userName = currentUser?.name
-      || currentUser?.username
-      || (currentUser?.email ? currentUser.email.split('@')[0] : null);
+    setTranslatedSentence("");
+    const token = localStorage.getItem("authToken");
+
+    let userName =
+      currentUser?.name ||
+      currentUser?.username ||
+      (currentUser?.email
+        ? currentUser.email.split("@")[0]
+        : null);
 
     let userId = currentUser?._id || currentUser?.id;
 
-    // Fallback to localStorage if context missing
     if (!userName || !userId) {
-      const raw = localStorage.getItem('currentUser');
+      const raw = localStorage.getItem("currentUser");
       if (raw) {
         try {
           const parsed = JSON.parse(raw);
-          userName = userName || parsed.name || parsed.username || (parsed.email ? parsed.email.split('@')[0] : null);
+          userName =
+            userName ||
+            parsed.name ||
+            parsed.username ||
+            (parsed.email ? parsed.email.split("@")[0] : null);
           userId = userId || parsed._id || parsed.id;
         } catch (e) {
-          console.warn('Failed to parse currentUser from localStorage', e);
+          console.warn("Failed to parse currentUser from localStorage", e);
         }
       }
     }
 
-    // Final fallback
-    if (!userName) userName = 'Anonymous';
+    if (!userName) userName = "Anonymous";
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/translate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
-        },
-        body: JSON.stringify({
-          signedWords,
-          meetingId: props.meetingId,
-          userId,
-          userName,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/translate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+          body: JSON.stringify({
+            signedWords,
+            meetingId: props.meetingId,
+            userId,
+            userName,
+          }),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Translation failed');
+        throw new Error(data.error || "Translation failed");
       }
 
       setTranslatedSentence(data.sentence);
-      
-      // Send to translation feed
-      if (typeof props.onTranslatedSentence === 'function') {
+
+      if (typeof props.onTranslatedSentence === "function") {
         props.onTranslatedSentence(data.sentence);
       }
 
-      // Clear for next sentence
       setSignedWords([]);
       lastLockedWordRef.current = null;
 
-      // Clear sentence display after 3 seconds
       setTimeout(() => {
-        setTranslatedSentence('');
+        setTranslatedSentence("");
       }, 3000);
-
     } catch (err) {
-      console.error('Translation error:', err);
+      console.error("Translation error:", err);
     } finally {
       setTranslating(false);
     }
   };
 
   const [cameraOn, setCameraOn] = useState(true);
-  
+
   useEffect(() => {
     if (props.cameraOn !== undefined) {
       setCameraOn(props.cameraOn);
     }
   }, [props.cameraOn]);
-  
+
   useEffect(() => {
     if (props.cameraOn !== undefined) {
       return;
     }
-    
+
     if (!props.stream || !(props.stream instanceof MediaStream)) {
       return;
     }
-    
+
     const videoTrack = props.stream.getVideoTracks()[0];
     if (!videoTrack) {
       return;
     }
-    
+
     setCameraOn(videoTrack.enabled);
-    
+
     const checkInterval = setInterval(() => {
       setCameraOn(videoTrack.enabled);
     }, 200);
-    
+
     return () => clearInterval(checkInterval);
   }, [props.cameraOn, props.stream]);
 
   useEffect(() => {
     if (!videoRef.current) return;
     const hasStream = props.stream instanceof MediaStream;
-    
+
     if (hasStream) {
       if (videoRef.current.srcObject !== props.stream) {
         videoRef.current.srcObject = props.stream;
@@ -520,6 +570,8 @@ export default function VideoTile(props) {
     }
   }, [props.stream, cameraOn, props.badgeText]);
 
+
+
   useASLFromVideo({
     videoEl: videoRef.current,
     canvasEl: canvasRef.current,
@@ -527,12 +579,13 @@ export default function VideoTile(props) {
     onGesture: (g) => {
       setGesture(g);
 
-      if (g.score > 0.80 && g.label !== lastLockedWordRef.current) {
+      // Keep existing "word locking" behavior
+      if (g.score > 0.8 && g.label !== lastLockedWordRef.current) {
         lastLockedWordRef.current = g.label;
         setSignedWords((prev) => [...prev, g.label]);
       }
     },
-    onNoHandsDetected: handleNoHandsDetected, // ✅ Pass callback
+    onNoHandsDetected: handleNoHandsDetected,
   });
 
   const hasStream = props.stream instanceof MediaStream;
@@ -541,7 +594,6 @@ export default function VideoTile(props) {
 
   return (
     <div className="tile" style={{ position: "relative" }}>
-      {/* ✅ Simplified panel - no buttons */}
       {props.isLocal && (
         <div
           style={{
@@ -610,7 +662,6 @@ export default function VideoTile(props) {
               muted={!!props.isLocal}
               className="tile-video"
               style={{ transform: props.isLocal ? "scaleX(-1)" : "none" }}
-
             />
             <canvas
               ref={canvasRef}
