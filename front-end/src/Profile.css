@@ -16,11 +16,34 @@
 
   display: flex;
   flex-direction: column;
-  align-items: center;     /* center the card, but header stays full-width */
+  align-items: stretch;     /* center the card, but header stays full-width */
   justify-content: flex-start;
 
   font-family: "Poppins", sans-serif;
   
+  
+}
+
+
+body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background-image: url('/public/signInUpBg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+#profile-content > header {
+  width: min(720px, 100%);
+  margin: 0 auto 40px;
+  padding: 0 20px 0;
+  margin-top: 4px;
+  margin-right: -2px;
 }
 
 
@@ -41,7 +64,7 @@
   justify-content: space-between;  
   align-items: center;
   width: 100%;                    
-  padding: 20px 40px 0;           
+  padding: 0px 40px 0;           
   margin: 0 0 20px;
   z-index: 1;
   position: relative;
@@ -79,7 +102,8 @@ header {
     padding: 8px 20px;
     box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
     transition: transform 0.3s ease;
-    margin-top: 1%;
+    margin-top: 4px;
+    margin-left: 30px;
 }
 
 .profile1 img {

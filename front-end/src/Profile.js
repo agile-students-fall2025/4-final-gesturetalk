@@ -156,9 +156,6 @@ function Profile() {
     <div id="profile-content">
       <header>
         <h1 className="logo1" id="logoHome1">shuwa</h1>
-        <div className="profile1" onClick={() => navigate("/profile")} style={{ cursor: "pointer" }}>
-          <img src={currentUser?.picture || "/profile.svg"} alt="Profile" />
-        </div>
       </header>
 
 
