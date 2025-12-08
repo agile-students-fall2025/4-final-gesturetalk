@@ -1,6 +1,6 @@
 # gesturetalk
 
-![CI/CD](https://github.com/agile-students-fall2025/4-final-gesturetalk/actions/workflows/deploy.yml/badge.svg?branch=fix-badge)
+![CI/CD](https://github.com/agile-students-fall2025/4-final-gesturetalk/actions/workflows/deploy.yml/badge.svg?branch=master)
 
 
 # Product Vision Statement
