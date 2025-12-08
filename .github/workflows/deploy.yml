@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: cicd
+    branches: fix-badge
   pull_request:
     branches: [ master ]
 
