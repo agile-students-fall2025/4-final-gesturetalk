@@ -111,6 +111,22 @@ function majorityVote(arr) {
 // =========================
 //  Hook: ASL from video
 // =========================
+
+
+  // Helper to draw prediction text on the overlay canvas
+function drawPredictionText(ctx, canvas, text) {
+    if (!ctx || !canvas) return;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+    ctx.fillRect(0, 0, 350, 45);
+
+    ctx.fillStyle = "white";
+    ctx.font = "28px Arial";
+    ctx.fillText(`Prediction: ${text}`, 10, 32);
+    ctx.restore();
+}
+
 function useASLFromVideo({
   videoEl,
   canvasEl,
@@ -161,20 +177,6 @@ function useASLFromVideo({
     return frame.map((v) => (Number.isFinite(v) ? v : 0));
   }
 
-  // Draw prediction text on overlay canvas (adapted from script.js)
-  function drawPredictionText(text) {
-    const ctx = ctxRef.current;
-    if (!ctx || !canvasEl) return;
-
-    ctx.save();
-    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    ctx.fillRect(0, 0, 350, 45);
-
-    ctx.fillStyle = "white";
-    ctx.font = "28px Arial";
-    ctx.fillText(`Prediction: ${text}`, 10, 32);
-    ctx.restore();
-  }
 
   useEffect(() => {
     let cancelled = false;
@@ -259,9 +261,10 @@ function useASLFromVideo({
 
         // If model not ready
         if (!ASLModel || !ASLLabels) {
-          drawPredictionText("loading…");
+          drawPredictionText(ctxRef.current, canvasEl, "loading…");
           return;
         }
+
 
         // Wait until we have a full 30-frame window
         if (seq.length < SEQ_LENGTH) {
@@ -269,9 +272,10 @@ function useASLFromVideo({
             currentLabelRef.current && currentLabelRef.current.length > 0
               ? currentLabelRef.current
               : "…";
-          drawPredictionText(labelToShow);
+          drawPredictionText(ctxRef.current, canvasEl, labelToShow);
           return;
         }
+
 
         // shape [1, 30, 126] like script.js: tf.tensor3d([sequence], ...)
         const input = tf.tensor3d([seq], [1, SEQ_LENGTH, HAND_DIM]);
@@ -312,7 +316,8 @@ function useASLFromVideo({
           : "…";
 
         // Draw prediction text onto overlay
-        drawPredictionText(labelToShow);
+        drawPredictionText(ctxRef.current, canvasEl, labelToShow);
+
 
         // Call onGesture with smoothed label + current prob
         if (
@@ -564,6 +569,8 @@ export default function VideoTile(props) {
       videoRef.current.srcObject = null;
     }
   }, [props.stream, cameraOn, props.badgeText]);
+
+
 
   useASLFromVideo({
     videoEl: videoRef.current,
