@@ -149,27 +149,38 @@ function useASLFromVideo({ videoEl, canvasEl, enabled, onGesture, onNoHandsDetec
       const hands = getGlobalHands(Hands);
 
       function extractHandFeatures(results) {
-        let left = Array(63).fill(0);
-        let right = Array(63).fill(0);
+        // 21 landmarks * 3 coords = 63 per hand
+        let left = new Array(63).fill(0);
+        let right = new Array(63).fill(0);
 
         const handsLms = results.multiHandLandmarks;
         const handedness = results.multiHandedness;
 
         if (handsLms && handedness) {
           handsLms.forEach((hand, idx) => {
-            const side = handedness[idx].label;
-            const flat = hand.flatMap((lm) => [lm.x, lm.y, lm.z]);
+            const side = handedness[idx].label; // "Left" or "Right"
 
+            // Wrist-centered: subtract wrist (landmark 0) from all points
+            const wrist = hand[0];
+            const centeredFlat = hand.flatMap((lm) => [
+              lm.x - wrist.x,
+              lm.y - wrist.y,
+              lm.z - wrist.z,
+            ]); // length 63
+
+            // Match Python + training: Left → left slot, Right → right slot
             if (side === "Left") {
-              right = flat;
+              left = centeredFlat;
             } else if (side === "Right") {
-              left = flat;
+              right = centeredFlat;
             }
           });
         }
 
-        return left.concat(right).map((v) => (Number.isFinite(v) ? v : 0));
+        const frame = left.concat(right); // 126-dim
+        return frame.map((v) => (Number.isFinite(v) ? v : 0));
       }
+
 
       hands.onResults((results) => {
         if (cancelled) return;
