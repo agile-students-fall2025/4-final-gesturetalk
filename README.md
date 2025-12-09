@@ -18,12 +18,12 @@
 | [Venetia Liu](https://github.com/venetialiu)  | ---  | ---  | Scrum Master  | ---  | Product Owner |
 
 # Project History
-- Shuwa came to be through the Agile Software Development & DevOps class for Fall 2025. Our team completed a project proposal to work on for the entire semester, the outcome of that being Shuwa. We also wanted to build a sign language interpreter for the sake of accessibility. A person who understands sign language and can readily translate it is not always available. So, by usingShuwa, anyone can translate sign language to text.
+- Shuwa came to be through the Agile Software Development & DevOps class for Fall 2025. Our team completed a project proposal to work on for the entire semester, the outcome of that being Shuwa. We also wanted to build a sign language interpreter for the sake of accessibility. A person who understands sign language and can readily translate it is not always available. So, by using Shuwa, anyone can translate sign language to text.
 
 # How to Contribute
 - [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-# How to Build and Test (Locally)
+# How to Build and Test Locally
  Copy the repository onto your local computer
 
  Open the terminal and change into the front-end folder with the command:
