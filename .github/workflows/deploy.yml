@@ -2,9 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches: fix-badge
+    branches: fix-deploy-yml
   pull_request:
-    branches: [ master ]
+    branches: master 
 
 jobs:
   deploy:
@@ -17,15 +17,10 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        # cache: 'npm'
-        # cache-dependency-path: "./front-end/package-lock.json"
     
     - name: Install frontend dependencies
       working-directory: ./front-end
       run: npm install
-    
-    # - name: Run tests
-    #   run: npm test -- --coverage --watchAll=false
     
     - name: Build React app
       working-directory: ./front-end
@@ -75,7 +70,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           # Navigate to backend directory on server
-          cd /var/www/backend
+          cd /var/www/back-end
           git pull
           npm install
           pm2 restart --update-env
