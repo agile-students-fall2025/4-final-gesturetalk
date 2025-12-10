@@ -62,6 +62,17 @@ export const uploadProfilePictureValidation = [
   validate,
 ];
 
+export const updateProfileValidation = [
+  body("userId").trim().notEmpty().withMessage("User ID is required"),
+  body("name")
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage("Name must be between 1 and 100 characters")
+    .escape(),
+  validate,
+];
+
 // Meeting validators
 export const createMeetingValidation = [
   body("meetingName")
