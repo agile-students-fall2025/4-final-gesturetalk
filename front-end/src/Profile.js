@@ -30,12 +30,33 @@ function Profile() {
   }, [currentUser]);
 
   const handleSave = async () => {
-    // Update the app-level user object with edited fields
-    const updated = { ...(currentUser || {}), name: displayName, email };
-    setCurrentUser(updated);
+    // Save name to database
     try {
-      localStorage.setItem('currentUser', JSON.stringify(updated));
-    } catch (e) {}
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/profile/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUser.id || currentUser.email,
+          name: displayName,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        // Update local state with response from server
+        const updated = { ...currentUser, name: data.user.name };
+        setCurrentUser(updated);
+        localStorage.setItem('currentUser', JSON.stringify(updated));
+        console.log('Profile name saved to database');
+      } else {
+        console.error('Profile update failed:', data.error);
+        alert('Failed to save profile: ' + (data.error || 'Unknown error'));
+        return;
+      }
+    } catch (err) {
+      console.error('Profile update error:', err);
+      alert('Network error saving profile');
+      return;
+    }
     
     // If password was changed, send update to backend
     if (password) {
