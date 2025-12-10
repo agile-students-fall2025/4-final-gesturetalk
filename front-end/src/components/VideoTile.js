@@ -112,7 +112,7 @@ function majorityVote(arr) {
 //  Hook: ASL from video
 // =========================
 
-
+/*
   // Helper to draw prediction text on the overlay canvas
 function drawPredictionText(ctx, canvas, text) {
     if (!ctx || !canvas) return;
@@ -126,6 +126,7 @@ function drawPredictionText(ctx, canvas, text) {
     ctx.fillText(`Prediction: ${text}`, 10, 32);
     ctx.restore();
 }
+*/
 
 function useASLFromVideo({
   videoEl,
@@ -261,7 +262,8 @@ function useASLFromVideo({
 
         // If model not ready
         if (!ASLModel || !ASLLabels) {
-          drawPredictionText(ctxRef.current, canvasEl, "loading…");
+          /// drawPredictionText(ctxRef.current, canvasEl, "loading…");
+          console.warn("ASL model or labels not loaded yet.");
           return;
         }
 
@@ -272,7 +274,7 @@ function useASLFromVideo({
             currentLabelRef.current && currentLabelRef.current.length > 0
               ? currentLabelRef.current
               : "…";
-          drawPredictionText(ctxRef.current, canvasEl, labelToShow);
+          ///drawPredictionText(ctxRef.current, canvasEl, labelToShow);
           return;
         }
 
@@ -316,7 +318,7 @@ function useASLFromVideo({
           : "…";
 
         // Draw prediction text onto overlay
-        drawPredictionText(ctxRef.current, canvasEl, labelToShow);
+        // drawPredictionText(ctxRef.current, canvasEl, labelToShow);
 
 
         // Call onGesture with smoothed label + current prob
