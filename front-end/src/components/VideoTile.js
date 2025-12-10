@@ -262,19 +262,12 @@ function useASLFromVideo({
 
         // If model not ready
         if (!ASLModel || !ASLLabels) {
-          /// drawPredictionText(ctxRef.current, canvasEl, "loading…");
           console.warn("ASL model or labels not loaded yet.");
           return;
         }
 
-
         // Wait until we have a full 30-frame window
         if (seq.length < SEQ_LENGTH) {
-          const labelToShow =
-            currentLabelRef.current && currentLabelRef.current.length > 0
-              ? currentLabelRef.current
-              : "…";
-          ///drawPredictionText(ctxRef.current, canvasEl, labelToShow);
           return;
         }
 
@@ -312,14 +305,6 @@ function useASLFromVideo({
             currentLabelRef.current = majority;
           }
         }
-
-        const labelToShow = currentLabelRef.current
-          ? `${currentLabelRef.current} (${(maxProb * 100).toFixed(0)}%)`
-          : "…";
-
-        // Draw prediction text onto overlay
-        // drawPredictionText(ctxRef.current, canvasEl, labelToShow);
-
 
         // Call onGesture with smoothed label + current prob
         if (
