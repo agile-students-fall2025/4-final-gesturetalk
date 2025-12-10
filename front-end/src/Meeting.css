@@ -95,6 +95,13 @@ body{
   line-height: 1.1;
 }
 
+.meeting-title-1 .meeting-code{
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-left: 4px;
+}
+
 /* ========== Video grid (dynamic, fills majority) ========== */
 .video-grid{
   flex: 1;

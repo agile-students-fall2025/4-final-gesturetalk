@@ -157,6 +157,33 @@ function Meeting() {
   const [gestureOn, setGestureOn] = useState(false);
   const [localStream, setLocalStream] = useState(null);
   const [participants, setParticipants] = useState([]);
+  const [meetingName, setMeetingName] = useState("");
+
+  // ---- Fetch meeting name on mount ----
+  useEffect(() => {
+    const fetchMeetingDetails = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/meetings/join/${meetingId}`,
+          {
+            headers: {
+              Authorization: token ? `Bearer ${token}` : "",
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.ok && data.meeting?.meetingName) {
+          setMeetingName(data.meeting.meetingName);
+        }
+      } catch (err) {
+        console.error("Failed to fetch meeting details:", err);
+      }
+    };
+    if (meetingId) {
+      fetchMeetingDetails();
+    }
+  }, [meetingId]);
 
   // ---- Translation log (remove initial dummy messages if you want) ----
   const [messages, setMessages] = useState([]);
@@ -490,7 +517,9 @@ function Meeting() {
         <div className="meeting-main">
           <section className="meeting-left">
             <div className="panel">
-              <div className="meeting-title-1">Meeting {meetingId}</div>
+              <div className="meeting-title-1">
+                {meetingName || "Meeting"} <span className="meeting-code">({meetingId})</span>
+              </div>
               <div className="video-grid">
                 {participants.map((p) => (
                   <VideoTile
