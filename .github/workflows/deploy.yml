@@ -17,15 +17,10 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        # cache: 'npm'
-        # cache-dependency-path: "./front-end/package-lock.json"
     
     - name: Install frontend dependencies
       working-directory: ./front-end
       run: npm install
-    
-    # - name: Run tests
-    #   run: npm test -- --coverage --watchAll=false
     
     - name: Build React app
       working-directory: ./front-end
@@ -74,9 +69,6 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          # Navigate to backend directory on server
-          cd /var/www/back-end
-          git pull
-          npm install
+          # just restart pm2
           pm2 restart --update-env
           pm2 save
