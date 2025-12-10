@@ -32,9 +32,13 @@ function Profile() {
   const handleSave = async () => {
     // Save name to database
     try {
+      const token = localStorage.getItem('authToken');
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/profile/update`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify({
           userId: currentUser.id || currentUser.email,
           name: displayName,
