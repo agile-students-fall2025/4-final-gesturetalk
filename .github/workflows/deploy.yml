@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: fix-deploy-yml
+    branches: fix-routing
   pull_request:
     branches: master 
 
@@ -73,5 +73,10 @@ jobs:
           cd /var/www/back-end
           git pull
           npm install
+
+          export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+          export MONGODB_URI="${{ secrets.MONGODB_URI }}"
+          export CORS_ORIGIN="https://www.shuwameetingapp.com"
+
           pm2 restart --update-env
           pm2 save
