@@ -48,7 +48,6 @@ export const googleSignInValidation = [
 
 export const updatePasswordValidation = [
   body("userId").trim().notEmpty().withMessage("User ID is required"),
-  body("oldPassword").trim().notEmpty().withMessage("Old password is required"),
   body("newPassword")
     .trim()
     .isLength({ min: 6 })
