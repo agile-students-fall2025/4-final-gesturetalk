@@ -40,46 +40,21 @@ body {
 
 #profile-content > header {
   width: min(720px, 100%);
-  margin: 0 auto 40px;
-  padding: 0 20px 0;
-  margin-top: 4px;
-  margin-right: -2px;
 }
 
-
-#gradient-blob {
-  position: absolute;
-  width: 800px;
-  height: 700px;
-  right: 0;
-  top: 0;
-  filter: blur(150px);
-  flex-shrink: 0;
-  z-index: 0;
-}
-
-
-#profileheader {
+#profile-header {
   display: flex;
   justify-content: space-between;  
   align-items: center;
-  width: 100%;                    
-  padding: 0px 40px 0;           
-  margin: 0 0 20px;
+  width: 100%;                             
   z-index: 1;
   position: relative;
   width: min(720px, 100%);
-  margin: 0 auto;
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
+  margin: 0;
+  margin-left: 40px;
 }
   
- .logo1 {
+.logo1 {
     font-size: 38px;
     letter-spacing: 1px;
     color: #000000;
@@ -138,7 +113,6 @@ header {
   margin: 0 auto;
   padding-bottom: 5%;
   padding-top: 4%;
-  margin-top: 40px;
 }
 
 #profile-card .close-btn {
