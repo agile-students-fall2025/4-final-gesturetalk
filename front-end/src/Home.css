@@ -183,6 +183,7 @@ body {
     backdrop-filter: blur(25px);
     border-radius: 25px;
     padding: 40px 30px;
+    padding-top: 20px;
     box-shadow: 0 4px 21.6px 0 rgba(174, 176, 240, 0.91);
     text-align: center;
     animation: popIn 0.3s ease-out;
@@ -202,6 +203,7 @@ body {
     border: none;
     cursor: pointer;
     color: #111;
+    margin-top: 20px;
   }
  
   .close-btn-home:hover {

@@ -279,6 +279,7 @@ body {
   #profile-card {
     width: 85%;
     border-radius: 31px;
+    margin-top: 15%;
   }
 
   #profile-title {
